@@ -148,6 +148,24 @@
 
 # Django
 ########
+- name: Update manage.py with local/production environment variable.
+  template:
+    src: templates/manage.py.j2
+    dest: "{{ scantron_dir }}/manage.py"
+    backup: no
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    mode: 0644
+
+- name: Update production.py with local/production environment variable.
+  template:
+    src: templates/production.py.j2
+    dest: "{{ scantron_dir }}/config/settings/production.py"
+    backup: no
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    mode: 0644
+  when: application_environment == "production"
 
 - name: Update django_connector.py with local/production environment variable.
   template:
@@ -232,25 +250,6 @@
     owner: root
     group: root
     state: link
-
-- name: Update manage.py with local/production environment variable.
-  template:
-    src: templates/manage.py.j2
-    dest: "{{ scantron_dir }}/manage.py"
-    backup: no
-    owner: "{{ non_root_user }}"
-    group: "{{ non_root_user }}"
-    mode: 0644
-
-- name: Update production.py with local/production environment variable.
-  template:
-    src: templates/production.py.j2
-    dest: "{{ scantron_dir }}/config/settings/production.py"
-    backup: no
-    owner: "{{ non_root_user }}"
-    group: "{{ non_root_user }}"
-    mode: 0644
-  when: application_environment == "production"
 
 - name: Update scantron_uwsgi.ini with "{{ scantron_dir }}" directory.
   template:

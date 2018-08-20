@@ -2,6 +2,7 @@
 scantron_secrets.json
 autossh.key
 autossh.pub
+*.retry
 
 # Boilerplate
 # https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore
