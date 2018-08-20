@@ -1,0 +1,269 @@
+# Zenburn color theme for the color GNU ls utility.
+# Ivaylo Kuzev <ivkuzev@gmail.com>, 2014 - 2015
+
+# Term Section
+TERM Eterm
+TERM ansi
+TERM color-xterm
+TERM con132x25
+TERM con132x30
+TERM con132x43
+TERM con132x60
+TERM con80x25
+TERM con80x28
+TERM con80x30
+TERM con80x43
+TERM con80x50
+TERM con80x60
+TERM cons25
+TERM console
+TERM cygwin
+TERM dtterm
+TERM eterm-color
+TERM gnome
+TERM gnome-256color
+TERM jfbterm
+TERM konsole
+TERM kterm
+TERM linux
+TERM linux-c
+TERM mach-color
+TERM mlterm
+TERM putty
+TERM rxvt
+TERM rxvt-256color
+TERM rxvt-cygwin
+TERM rxvt-cygwin-native
+TERM rxvt-unicode
+TERM rxvt-unicode256
+TERM rxvt-unicode-256color
+TERM screen
+TERM screen-256color
+TERM screen-256color-bce
+TERM screen-bce
+TERM screen-w
+TERM screen.linux
+TERM st
+TERM st-meta
+TERM st-256color
+TERM st-meta-256color
+TERM vt100
+TERM xterm
+TERM xterm-16color
+TERM xterm-256color
+TERM xterm-88color
+TERM xterm-color
+TERM xterm-debian
+TERM xterm-termite
+
+## Documentation
+#
+# Attribute codes:
+# 00=none 01=bold 04=underscore 05=blink 07=reverse 08=concealed
+# Text color codes:
+# 30=black 31=red 32=green 33=yellow 34=blue 35=magenta 36=cyan 37=white
+# Background color codes:
+# 40=black 41=red 42=green 43=yellow 44=blue 45=magenta 46=cyan 47=white
+#
+# Text 256 color coding:
+# 38;5;COLOR_NUMBER
+# Background 256 color coding:
+# 48;5;COLOR_NUMBER
+
+# block device driver:
+BLK 48;5;108;38;5;223;01
+# file with capability:
+CAPABILITY 01;38;5;95
+# character device driver:
+CHR 48;5;108;38;5;223;01
+# directory:
+DIR 01;38;5;223
+# door:
+DOOR 48;5;234;38;5;180;01
+# This is for files with execute permission:
+EXEC 01;38;5;108
+# pipe:
+FIFO 48;5;234;38;5;180;01
+# regular file:
+#FILE 00
+# symbolic link:
+LINK 48;5;234;38;5;223
+# normal (nonfilename) text:
+#NORMAL 00
+# orphaned symbolic link:
+ORPHAN 48;5;234;38;5;187
+# directory that is other-writable (o+w) and not sticky:
+OTHER_WRITABLE 48;5;234;38;5;180
+# file that is setuid (u+s):
+SETUID 48;5;234;38;5;66
+# file that is setgid (g+s):
+SETGID 48;5;234;38;5;66
+# socket:
+SOCK 48;5;234;38;5;180;01
+# directory with the sticky bit set (+t) and not other-writable:
+STICKY 48;5;180;38;5;234
+# dir that is sticky and other-writable (+t,o+w):
+STICKY_OTHER_WRITABLE 48;5;180;38;5;234
+
+# archives
+.7z 01;38;5;174
+.arj 01;38;5;174
+.bz2 01;38;5;174
+.bz 01;38;5;174
+.gz 01;38;5;174
+.rar 01;38;5;174
+.tar 01;38;5;174
+.tgz 01;38;5;174
+.tbz 01;38;5;174
+.tbz2 01;38;5;174
+.xz 01;38;5;174
+.zip 01;38;5;174
+
+# packaged apps
+.apk 01;38;5;95
+.deb 01;38;5;174
+.jad 01;38;5;95
+.jar 01;38;5;95
+.rpm 01;38;5;174
+
+# images|graphics
+.bmp 00;38;5;109
+.gif 00;38;5;109
+.ico 00;38;5;109
+.jpg 00;38;5;109
+.JPG 00;38;5;109
+.jpeg 00;38;5;109
+.png 00;38;5;109
+.svg 00;38;5;109
+.xbm 00;38;5;109
+.xpm 00;38;5;109
+
+# audio formats
+.aac 00;38;5;116
+.au 00;38;5;116
+.flac 00;38;5;116
+.mid 00;38;5;116
+.midi 00;38;5;116
+.mka 00;38;5;116
+.mp3 00;38;5;116
+.mpc 00;38;5;116
+.ogg 00;38;5;116
+.ra 00;38;5;116
+.wav 00;38;5;116
+
+# video formats
+.mov 00;38;5;66
+.mpg 00;38;5;66
+.mpeg 00;38;5;66
+.m2v 00;38;5;66
+.mkv 00;38;5;66
+.ogm 00;38;5;66
+.mp4 00;38;5;66
+.m4v 00;38;5;66
+.mp4v 00;38;5;66
+.vob 00;38;5;66
+.qt 00;38;5;66
+.nuv 00;38;5;66
+.wmv 00;38;5;66
+.asf 00;38;5;66
+.rm 00;38;5;66
+.rmvb 01;38;5;66
+.flc 00;38;5;66
+.avi 00;38;5;66
+.fli 00;38;5;66
+.flv 00;38;5;66
+.gl 00;38;5;66
+.m2ts 00;38;5;66
+.divx 00;38;5;66
+.webm 00;38;5;66
+
+# shell
+.awk 00;38;5;151
+.bash 00;38;5;151
+.bat 00;38;5;151
+.BAT 00;38;5;151
+.sed 00;38;5;151
+.sh 00;38;5;151
+.zsh 00;38;5;151
+
+# build
+*CMakeLists.txt 00;38;5;187
+.cabal 00;38;5;187
+*Makefile 00;38;5;187
+.mk 00;38;5;187
+.make 00;38;5;187
+
+# source files
+.c 01;38;5;187
+.h 01;38;5;187
+.s 01;38;5;187
+.cs 01;38;5;187
+.java 01;38;5;187
+.scala 01;38;5;187
+.hs 01;38;5;187
+.py 01;38;5;187
+.rb 01;38;5;187
+.php 01;38;5;187
+.pl 01;38;5;187
+.vim 01;38;5;187
+.js 01;38;5;187
+.coffee 01;38;5;187
+.go 01;38;5;187
+.lisp 01;38;5;187
+.scm 01;38;5;187
+
+# documents
+.txt 04;38;5;188
+.tex 04;38;5;188
+.html 04;38;5;188
+.xhtml 04;38;5;188
+.xml 04;38;5;188
+.md 04;38;5;188
+.mkd 04;38;5;188
+.markdown 04;38;5;188
+.org 04;38;5;188
+.pandoc 04;38;5;188
+.pdc 04;38;5;188
+.pdf 04;38;5;188
+
+# Files of special interest
+*rc 04;38;5;180
+.conf 04;38;5;180
+*Dockerfile 04;38;5;180
+
+# meta
+*README 04;38;5;187
+*LICENSE 04;38;5;187
+*AUTHORS 04;38;5;187
+
+# version control
+.gitignore 00;38;5;248
+.gitmodules 00;38;5;248
+
+# logs and backups
+.log 00;37;
+.bak 00;37;
+.aux 00;37;
+.toc 00;37;
+*~ 00;37;
+*# 00;37;
+.swp 00;37;
+.tmp 00;37;
+.temp 00;37;
+.o 00;37;
+.pyc 00;37;
+.class 00;37;
+.cache 00;37;
+
+# pacman files
+.pacnew 48;5;95;38;5;108
+.pacsave 48;5;95;38;5;108
+.pacorig 48;5;95;38;5;108
+*PKGBUILD 00;38;5;110
+
+# rpm files
+.rpmsave 48;5;95;38;5;108
+.rpmorig 48;5;95;38;5;108
+.rpmnew 48;5;95;38;5;108
+.spec 00;38;5;110
+

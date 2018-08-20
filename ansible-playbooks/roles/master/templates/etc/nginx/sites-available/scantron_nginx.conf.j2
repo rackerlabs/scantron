@@ -1,0 +1,45 @@
+# http://uwsgi-docs.readthedocs.io/en/latest/tutorials/Django_and_nginx.html
+
+# The upstream component nginx needs to connect to
+upstream scantron {
+    server unix:/tmp/uwsgi.sock;
+    #server 127.0.0.1:8000;
+}
+
+# Redirect all non-encrypted (HTTP) to encrypted (HTTPS)
+server {
+    listen 80;
+    server_name {{ master_fqdn }};  # Machine's IP address or FQDN
+    return 301 https://$server_name$request_uri;
+}
+
+# Primary configuration
+server {
+    listen 443;
+    server_name {{ master_fqdn }};  # Substitute your machine's IP address or FQDN
+
+    ssl on;
+    ssl_certificate /etc/ssl/scantron.crt;
+    ssl_certificate_key /etc/ssl/scantron.key;
+
+    location = /favicon.ico {
+        access_log off;
+        log_not_found off;
+    }
+
+    # Utilizes X-Accel-Redirect to authenticate users before serving files via nginx.
+    # https://wellfire.co/learn/nginx-django-x-accel-redirects/
+    location /protected/complete {
+        internal;
+        alias {{ scantron_dir }}/nmap_results/complete;
+    }
+
+    location /static {
+        alias /var/www/static;  # The Django project's static files.
+    }
+
+    location / {
+        uwsgi_pass scantron;
+        include uwsgi_params;
+    }
+}

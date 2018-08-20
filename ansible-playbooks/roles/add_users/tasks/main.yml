@@ -1,0 +1,42 @@
+- name: Create user(s).
+  user:
+    name: "{{ item }}"
+    password: "{{ temp_user_pass }}"
+    groups: sudo
+    shell: /bin/bash
+  with_items: "{{ users }}"
+
+- name: Update additional user's files.
+  copy:
+    src: .bash_aliases
+    dest: "/home/{{ item }}"
+  with_items: "{{ users }}"
+
+- copy:
+    src: .vimrc
+    dest: "/home/{{ item }}"
+  with_items: "{{ users }}"
+
+- copy:
+    src: .dircolors
+    dest: "/home/{{ item }}"
+  with_items: "{{ users }}"
+
+- name: Change ownership of home directory.
+  file:
+    path: "/home/{{ item }}"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    recurse: yes
+  with_items: "{{ users }}"
+
+- name: Create sudoers.
+  template:
+    src: templates/sudoers.d.j2
+    dest: "/etc/sudoers.d/{{ item }}"
+    mode: 0440
+    owner: root
+    group: root
+    validate: "/usr/sbin/visudo -cf %s"
+  with_items: "{{ users }}"
+  when: sudoers_nopasswd

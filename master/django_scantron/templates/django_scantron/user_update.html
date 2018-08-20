@@ -1,0 +1,51 @@
+{% extends "django_scantron/user_base.html" %}
+
+    {% load crispy_forms_tags %}
+
+    {% block javascript %}
+        {{ block.super }}
+        {{ form.media }}
+    {% endblock javascript %}
+
+{% block title %}
+    Update {{ user }}
+{% endblock %}
+
+{% block content %}
+<a href={% url "user_list" %} title='Back'><i class="fa fa-mail-reply"></i></a>
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-3"></div>
+        <div class="col-xs-6">
+            <div class="alert alert-info" role="alert">
+                <i class="icon fa fa-life-ring"></i>
+                All users are created with an unusable password by default. Passwords can be set using the <a target="_blank" href="{% url 'admin:index' %}auth/user">Django Admin Interface</a>.
+            </div>
+        </div>
+        <div class="col-xs-3"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3"></div>
+        <div class="col-xs-6">
+            <form id="user_update_form" action="" method="post">
+                {% csrf_token %}
+                {{ form | crispy }}
+            </form>
+        </div>
+        <div class="col-xs-3"></div>
+    </div>
+
+    <div align="center" class="row">
+        <div class="col-xs-3"></div>
+        <div class="col-xs-3">
+            <input form="user_update_form" title="Update" type="submit" value="Update" class="btn btn-success"/>
+        </div>
+        <div class="col-xs-3">
+            <a href={% url "user_list" %} class="btn btn-danger">Cancel</a>
+        </div>
+        <div class="col-xs-3"></div>
+    </div>
+</div>
+
+{% endblock %}

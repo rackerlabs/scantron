@@ -1,0 +1,76 @@
+- name: Update APT package cache.
+  apt:
+    update_cache: yes
+
+- name: Install specified packages.
+  apt:
+    pkg: "{{ item }}"
+    state: latest
+  with_items: "{{ install_packages }}"
+
+- name: Create autossh user.
+  user:
+    name: autossh
+    shell: /bin/bash
+
+- name: Push autossh.pub authorized_keys to remote server.
+  authorized_key:
+    user: autossh
+    key: "{{ lookup('file', 'files/autossh.pub') }}"
+
+- name: rsync agent files to server.
+  synchronize:
+    src: ../../../../agent
+    dest: /root
+  # Only required if re-running Ansible on an agent that alraedy has comms with master.
+  # Ansible will get angry since it can't chown /root/agent/nmap_results and /root/agent/target_files
+  ignore_errors: yes
+
+- name: Create "{{ venv_dir }}" virtualenv directory.
+  command: "virtualenv -p /usr/bin/python3.6 {{ venv_dir }}"
+  ignore_errors: yes  # For reruns only.
+
+- name: Install pip requirements.
+  pip:
+    requirements: "{{ agent_dir }}/requirements.txt"
+    virtualenv: "{{ venv_dir }}"
+    virtualenv_python: "{{ venv_python }}"
+
+- name: Add crontab entry for nfs_watcher.sh
+  cron:
+    name: nfs_watcher.sh
+    minute: "*"
+    hour: "*"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: /root/agent/nfs_watcher.sh
+    user: root
+
+- name: Make nfs_watcher.sh executable.
+  file:
+    path: /root/agent/nfs_watcher.sh
+    owner: root
+    group: root
+    mode: 0700
+
+- name: "Create symbolic link for scantron-agent service configuration file -- {{ agent_dir }}/scantron-agent.service --> /lib/systemd/system/scantron-agent.service"
+  file:
+    src: "{{ agent_dir }}/scantron-agent.service"
+    dest: /lib/systemd/system/scantron-agent.service
+    owner: root
+    group: root
+    state: link
+
+- name: chmod files to root only
+  file:
+    path: "{{ agent_dir }}"
+    owner: root
+    group: root
+    recurse: yes
+    mode: 0700
+  ignore_errors: True  # For rerun conflicts.
+
+- name: Reboot the box in 1 minute.
+  command: shutdown -r 1
+  when: reboot_box

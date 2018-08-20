@@ -1,0 +1,85 @@
+{% extends "django_scantron/user_base.html" %}
+
+{% block title %}
+    Users
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-xs-4">
+            <h3>
+                <a
+                    href={% url "user_create" %}
+                    title="New User"
+                    class="btn btn-info">
+                    <i class="fa fa-plus"></i> New User
+                </a>
+            </h3>
+        </div>
+        <div class="col-xs-4">
+            <div align="center" class="alert alert-info" role="alert">
+                <i class="icon fa fa-life-ring"></i>
+                Manage passwords using the <a target="_blank" href="{% url 'admin:index' %}auth/user">Django Admin Interface</a>.
+            </div>
+        </div>
+        <div class="col-xs-4"></div>
+    </div>
+
+    {% if user_list %}
+        <table id="example2" class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>User Name</th>
+                    <th>Email</th>
+                    <th>Active</th>
+                    <th>Administrator</th>
+                    <th>Last Login</th>
+                    <th>Account Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for user in user_list %}
+                <tr>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td align="center">
+                        {% if user.is_active == 1 %}
+                            <i class="fa fa-check" style="color:#49a332"></i>
+                        {% elif user.is_active == 0 %}
+                            <i class="fa fa-times-circle" style="color:#d62828"></i>
+                        {% endif %}
+                    </td>
+                    <td align="center">
+                        {% if user.is_superuser == 1 %}
+                            <i class="fa fa-check" style="color:#49a332"></i>
+                        {% elif user.is_superuser == 0 %}
+                            <i class="fa fa-times-circle" style="color:#d62828"></i>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.last_login|date:"D Y-m-j H:i:s e" }}</td>
+                    <td>{{ user.date_joined|date:"D Y-m-j H:i:s e"}}</td>
+                    <td>
+                        <a
+                            href={% url "user_update" user.pk %}
+                            class="btn btn-info">Update
+                        </a>
+                        <form style="display:inline;" action={% url "user_delete" user.pk %} method="post" onsubmit="return confirm('Are you sure you want to delete {{ user }}?')">
+                            {% csrf_token %}
+                            <input title="Delete" type="submit" class="btn btn-danger" value="Delete" /></form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        No users yet.
+    {% endif %}
+
+{% endblock %}

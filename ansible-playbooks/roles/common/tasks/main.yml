@@ -1,0 +1,92 @@
+- name: Update APT package cache.
+  apt:
+    update_cache: yes
+
+- name: Install aptitude
+  apt:
+    name: aptitude
+    state: latest
+
+- name: Upgrade APT to the latest packages.
+  apt:
+    upgrade=safe
+
+- name: Install specified apt packages.
+  apt:
+    pkg: "{{ item }}"
+    state: latest
+  with_items: "{{ install_packages }}"
+
+- name: Enable ufw.
+  ufw:
+    state: enabled
+    policy: deny
+    logging: low
+  when: enable_ufw_firewall
+
+# Must allow SSH first, then enable UFW to prevent blocking remote SSH access
+- name: Setup ufw SSH.
+  ufw:
+    rule: allow
+    port: "{{ sshd_port }}"
+    proto: tcp
+    comment: ssh
+  when: enable_ufw_firewall
+
+- name: Update SSHD configuration file.
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Restart SSH and ensure SSH is enabled at boot.
+  service:
+    name: ssh
+    state: restarted
+    enabled: yes
+
+- name: Updating root's .bash_aliases file
+  copy:
+    src: .bash_aliases
+    dest: /root
+
+- name: Updating root's .vimrc file
+  copy:
+    src: .vimrc
+    dest: /root
+
+- name: Updating root's .dircolors file
+  copy:
+    src: .dircolors
+    dest: /root
+
+- name: Disable IPv6 in ufw.
+  lineinfile:
+    path: /etc/default/ufw
+    regexp: "IPV6=yes"
+    line: "IPV6=no"
+    backup: yes
+  when: enable_ufw_firewall
+
+- name: Disable IPv6 in GRUB config file.
+  lineinfile:
+    path: /etc/default/grub
+    regexp: 'GRUB_CMDLINE_LINUX=""'
+    line: 'GRUB_CMDLINE_LINUX="ipv6.disable=1"'
+    backup: yes
+  when: disable_ipv6
+
+- name: Update GRUB config using update-grub2.
+  command: update-grub2
+  when: disable_ipv6
+
+- name: Set timezone.
+  timezone:
+    name: "{{ timezone }}"
+
+- name: Reboot the box in 1 minute
+  command: shutdown -r 1
+  when: reboot_box

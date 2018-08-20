@@ -1,0 +1,6 @@
+---
+- hosts: master
+  roles:
+    - common
+    - add_users
+    - master

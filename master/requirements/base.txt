@@ -1,0 +1,32 @@
+# Password storage
+argon2-cffi==18.1.0
+
+# Django
+Django==1.11.15
+
+# Forms
+django-crispy-forms==1.7.2
+
+# Django environ
+django-environ==0.4.5
+
+# Django filters for API
+django-filter==2.0.0
+
+# Django recurrences for periodic tasks
+django-recurrence==1.6.0
+
+# Django REST Framework Swagger
+django-rest-swagger==2.2.0
+
+# Django REST Framework
+djangorestframework==3.8.2
+
+# ipython
+ipython==6.4.0
+
+# Python-PostgreSQL Database Adapter
+psycopg2-binary==2.7.5
+
+# nmap
+python-libnmap==0.7.0

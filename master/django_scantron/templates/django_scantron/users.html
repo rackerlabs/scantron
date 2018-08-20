@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Users
+{% endblock %}
+
+{% block content %}
+    <div class="table-responsive">
+        <div class="col-xs-12">
+            <table id="example2" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>User Name</th>
+                        <th>Email</th>
+                        <th>Active</th>
+                        <th>Administrator</th>
+                        <th>Last Login</th>
+                        <th>Account Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% if users %}
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.first_name }}</td>
+                        <td>{{ user.last_name }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.is_active }}</td>
+                        <td>{{ user.is_superuser }}</td>
+                        <td>{{ user.last_login|date:"Y-m-j H:i:s" }}</td>
+                        <td>{{ user.date_joined|date:"Y-m-j H:i:s"}}</td>
+                        <td>
+                            <form action="{% url 'user_delete' user.id %}" method="post" onsubmit="return confirm('Are you sure you want to delete user {{ user.username }}?')">
+                                {% csrf_token %}
+                                {{ form }}
+                                <input title="Delete" type="submit" class="btn btn-danger btn-xs btn-block" value="Delete" />
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

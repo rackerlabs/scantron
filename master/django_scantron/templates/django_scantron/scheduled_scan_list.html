@@ -1,0 +1,52 @@
+{% extends "django_scantron/scheduled_scan_base.html" %}
+
+{% block title %}
+    Scheduled Scans
+{% endblock %}
+
+{% block content %}
+    <h3>
+        <a
+            href='/scantron-admin/django_scantron/scan/'
+            title="Create/Update/Delete Scans"
+            class="btn btn-info">
+            <i class="fa fa-plus"></i> Create/Update/Delete Scans
+        </a>
+    </h3>
+
+    {% if scheduled_scan_list %}
+        <table id="scan-table" class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Scan ID</th>
+                    <th>Site Name</th>
+                    <th>Scan Agent</th>
+                    <th>Scheduled Start Time</th>
+                    <th>nmap Command</th>
+                    <th>Scan Status</th>
+                    <th>Completion Time</th>
+                    <th>Results File</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for scan in scheduled_scan_list %}
+                <tr>
+                    <td>{{ scan.id }}</td>
+                    <td>{{ scan.site_name }}</td>
+                    <td>{{ scan.scan_agent }}</td>
+                    <td>{{ scan.start_time|date:"Y-m-j H:i:s" }}</td>
+                    <td>{{ scan.nmap_command }}</td>
+                    <td>{{ scan.scan_status }}</td>
+                    <td>{{ scan.completed_time|date:"Y-m-j H:i:s" }}</td>
+                    <td><a href={% url "retrieve_scan_file" scan.id %}>{{ scan.result_file_base_name }}.nmap</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        No scheduled scans yet.
+    {% endif %}
+
+{% endblock %}

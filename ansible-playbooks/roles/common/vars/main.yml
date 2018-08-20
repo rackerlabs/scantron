@@ -1,0 +1,17 @@
+---
+enable_ufw_firewall: true
+reboot_box: false
+disable_ipv6: false  # breaks nginx install
+timezone: America/Chicago
+
+# apt packages
+install_packages:
+
+
+# Used in configs/sshd_config.j2
+
+# The argument must be 'yes', 'prohibit-password', 'without-password',
+# 'forced-commands-only', or 'no'.
+permit_ssh_root_login: 'prohibit-password'
+sshd_port: 22
+gateway_ports: 'no'  # Allows -R to listen on ports < 1024

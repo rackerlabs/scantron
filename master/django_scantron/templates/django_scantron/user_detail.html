@@ -1,0 +1,14 @@
+{% extends "django_scantron/user_base.html" %}
+
+{% block title %}
+    {{ user }}
+{% endblock %}
+
+{% block content %}
+    <h1><a href={% url "user_list" %}>User</a></h1>
+    <h2>{{ user }} | <a href={% url "user_update" user.pk %}>Update</a> |
+    <form style="display:inline;" action={% url "user_delete" user.pk %} method="post" onsubmit="return confirm('Are you sure you want to delete {{ user }}?')">{% csrf_token %}
+    <input type="submit" value="Delete" />
+    </form>
+    </h2>
+{% endblock %}

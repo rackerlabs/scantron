@@ -1,0 +1,17 @@
+---
+# Specify Python version to use on managed machines.
+ansible_python_interpreter: "/usr/bin/python3"
+
+# Variables listed here are applicable to all roles.
+non_root_user: scantron
+
+# "production" or "local".  Used in manage.py and config/wsgi.py files.
+application_environment: production
+
+# IPs
+master_external_ip: "{{ groups.master[0] }}"  # Read from hosts file.
+master_internal_ip: "{{ groups.master[0] }}"  # Read from hosts file, change if dual-NIC'd.
+master_fqdn: "{{ groups.master[0] }}"  # master_fqdn: scantron.yourdomain.com.
+
+agent_exteral_ip: "{{ groups.agent[0] }}"  # Read from hosts file.
+agent_interal_ip: "{{ groups.agent[0] }}"  # Change if dual-NIC'd.

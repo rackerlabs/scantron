@@ -1,0 +1,14 @@
+{% extends "django_scantron/scan_base.html" %}
+
+{% block title %}
+    {{ scan }}
+{% endblock %}
+
+{% block content %}
+    <h1><a href={% url "scan_list" %}>Scans</a></h1>
+    <h2>{{ scan }} | <a href={% url "scan_update" scan.pk %}>Update</a> |
+    <form style="display:inline;" action={% url "scan_delete" scan.pk %} method="post" onsubmit="return confirm('Are you sure you want to delete {{ scan }}?')">{% csrf_token %}
+    <input type="submit" value="Delete" />
+    </form>
+    </h2>
+{% endblock %}

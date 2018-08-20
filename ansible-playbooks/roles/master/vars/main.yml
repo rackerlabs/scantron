@@ -1,0 +1,48 @@
+---
+enable_ufw_firewall: true
+reboot_box: true
+
+install_packages:
+  - autossh
+  - nfs-kernel-server
+  - nginx
+  - nmap
+  - python-dev
+  - python3-pip
+  - python-virtualenv
+  - postgresql-10
+  - postgresql-contrib
+  - python3-psycopg2  # python3-psycopg2 requried for Ansible.
+
+# secrets file
+scantron_secrets: "{{ lookup('file', '../../../master/scantron_secrets.json') | from_json }}"
+
+# postgresql
+postgresql_version: 10
+
+postgresql_admin_user: postgres
+
+# Host based authentication (hba) entries to be added to the pg_hba.conf. This
+# variable's defaults reflect the defaults that come with a fresh installation.
+postgresql_hba_entries:
+  - { type: local, database: all, user: postgres, auth_method: peer }
+  - { type: local, database: all, user: all, auth_method: peer }
+  - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5 }
+  - { type: host, database: all, user: all, address: '::1/128', auth_method: md5 }
+
+# pip
+scantron_dir: "/home/{{ non_root_user }}/master"
+venv_dir: "{{ scantron_dir }}/.venv"
+venv_python: "{{ venv_dir }}/bin/python3.6"
+
+# Django
+django_project_name: django_scantron
+
+django_super_user: admin
+django_super_user_email: changeme@localhost  # Filler email address, does not matter.
+
+django_user: agent1
+django_user_email: changeme@localhost  # Filler email address, does not matter.
+
+# uwsgi
+uwsgi_version: 2.0.17.1

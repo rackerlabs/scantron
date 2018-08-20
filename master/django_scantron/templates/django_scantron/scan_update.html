@@ -1,0 +1,41 @@
+{% extends "django_scantron/scan_base.html" %}
+
+    {% load crispy_forms_tags %}
+
+    {% block javascript %}
+        {{ block.super }}
+        {{ form.media }}
+    {% endblock javascript %}
+
+{% block title %}
+    Update {{ scan }}
+{% endblock %}
+
+{% block content %}
+<a href={% url "scan_list" %} title='Back'><i class="fa fa-mail-reply"></i></a>
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-3"></div>
+        <div class="col-xs-6">
+            <form id="scan_update_form" action="" method="post">
+                {% csrf_token %}
+                {{ form | crispy }}
+            </form>
+        </div>
+        <div class="col-xs-3"></div>
+    </div>
+
+    <div align="center" class="row">
+        <div class="col-xs-3"></div>
+        <div class="col-xs-3">
+            <input form="scan_update_form" title="Update" type="submit" value="Update" class="btn btn-success"/>
+        </div>
+        <div class="col-xs-3">
+            <a href={% url "scan_list" %} class="btn btn-danger">Cancel</a>
+        </div>
+        <div class="col-xs-3"></div>
+    </div>
+</div>
+
+{% endblock %}

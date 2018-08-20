@@ -1,0 +1,5 @@
+# ipython, not required, helpful when needing a Python shell.
+ipython==6.2.1
+
+# HTTP requests
+requests==2.18.4

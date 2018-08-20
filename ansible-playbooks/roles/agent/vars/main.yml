@@ -1,0 +1,18 @@
+---
+enable_ufw_firewall: true
+reboot_box: true
+
+install_packages:
+  - curl
+  - nfs-common
+  - nmap
+  - python-dev
+  - python3-pip
+  - python-virtualenv
+  - screen
+  - ufw
+
+# Python virtual environment.
+agent_dir: /root/agent
+venv_dir: "{{ agent_dir }}/.venv"
+venv_python: "{{ venv_dir }}/bin/python3.6"
