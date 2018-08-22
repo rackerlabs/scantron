@@ -22,7 +22,7 @@
   synchronize:
     src: ../../../../agent
     dest: /root
-  # Only required if re-running Ansible on an agent that alraedy has comms with master.
+  # Only required if re-running Ansible on an agent that already has comms with master.
   # Ansible will get angry since it can't chown /root/agent/nmap_results and /root/agent/target_files
   ignore_errors: yes
 

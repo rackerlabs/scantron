@@ -27,6 +27,5 @@ TCPKeepAlive yes
 AcceptEnv LANG LC_*
 Subsystem sftp /usr/lib/openssh/sftp-server
 UsePAM yes
-AllowUsers root autossh  # Adding root doesn't matter if PermitRootLogin is set to 'no'.
 AddressFamily inet  # IPv4 only.
 GatewayPorts {{ gateway_ports }}
