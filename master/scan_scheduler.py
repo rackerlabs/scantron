@@ -56,6 +56,7 @@ def main():
         # Populate variables from existing database relationships.
         site_name = scan.site.site_name
         scan_agent = scan.site.scan_agent.scan_agent
+        scan_binary = scan.site.nmap_command.scan_binary
         nmap_command = scan.site.nmap_command.nmap_command
         targets_file = scan.site.targets_file
 
@@ -69,11 +70,12 @@ def main():
 
         print("[+] Adding:")
         print(
-            "\t{}, {}, {}, {}, {}, {}".format(
+            "\t{}, {}, {}, {}, {}, {}, {}".format(
                 site_name,
                 scan_agent,
                 scan_occurence.date(),
                 start_time,
+                scan_binary,
                 nmap_command,
                 result_file_base_name,
             )
@@ -84,6 +86,7 @@ def main():
             site_name=site_name,
             scan_agent=scan_agent,
             start_time=start_time,
+            scan_binary=scan_binary,
             nmap_command=nmap_command,
             targets_file=targets_file,
             result_file_base_name=result_file_base_name,

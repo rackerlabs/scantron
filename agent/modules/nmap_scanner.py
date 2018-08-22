@@ -22,7 +22,8 @@ def scan_site(scan_job_dict):
 
         # Assign variables.
         site_name = scan_job["site_name"]
-        nmap_command = scan_job["nmap_command"]
+        scan_binary = scan_job["scan_binary"]
+        nmap_command = scan_job["nmap_command"]  # Also used for masscan.
         result_file_base_name = scan_job["result_file_base_name"]
 
         nmap_results_dir = config_data["nmap_results_dir"]
@@ -34,24 +35,81 @@ def scan_site(scan_job_dict):
         pending_files_dir = os.path.join(nmap_results_dir, "pending")
         complete_files_dir = os.path.join(nmap_results_dir, "complete")
 
-        # Three different scan result file types.
-        gnmap_file = os.path.join(pending_files_dir, "{}.gnmap".format(result_file_base_name))
-        nmap_file = os.path.join(pending_files_dir, "{}.nmap".format(result_file_base_name))
-        xml_file = os.path.join(pending_files_dir, "{}.xml".format(result_file_base_name))
+        if scan_binary == "masscan":
+            # Output format.
+            # xml_file = os.path.join(pending_files_dir, "{}.xml".format(result_file_base_name))
+            json_file = os.path.join(pending_files_dir, "{}.json".format(result_file_base_name))
 
-        # Check if the file already exists and resume scan.
-        if os.path.isfile(nmap_file):
-            logger.ROOT_LOGGER.info("Previous scan file found '{}'.  Resuming the scan.".format(nmap_file))
+            # Check if the paused.conf file already exists and resume scan.
+            # Only 1 paused.conf file exists, and can be overwritten with a different scan.
+            if os.path.isfile("paused.conf"):
+                with open("paused.conf", "r") as fh:
+                    paused_file = fh.read()
 
-            command = "nmap --resume {}".format(nmap_file)
+                    # Move back to the beginning of the file.
+                    fh.seek(0, 0)
 
-        # New scan.
+                    paused_file_lines = fh.readlines()
+
+                logger.ROOT_LOGGER.info("Previous paused.conf scan file found: {}".format(paused_file))
+
+                # Need to check if output-filename is the same as json_file.
+                paused_file_output_filename = None
+                for line in paused_file_lines:
+                    if line.startswith("output-filename"):
+                        paused_file_output_filename = line.split(" = ")[1].strip()
+
+                logger.ROOT_LOGGER.info("Checking if the output-filename is the same.")
+
+                if paused_file_output_filename == json_file:
+                    logger.ROOT_LOGGER.info(
+                        "paused.conf file's output-filename '{}' matches this scan request output filename '{}'".format(
+                            paused_file_output_filename, json_file
+                        )
+                    )
+                    command = "masscan --resume paused.conf"
+
+                else:
+                    logger.ROOT_LOGGER.info(
+                        "paused.conf file's output-filename '{}' does not match this scan request output filename '{}'".format(
+                            paused_file_output_filename, json_file
+                        )
+                    )
+                    return
+
+            # New scan.
+            else:
+                # Build the masscan command.
+                # Can only have 1 file output type.
+                file_options = "-iL {} -oJ {} --http-user-agent {}".format(
+                    targets_file, json_file, config_data["http_useragent"]
+                )
+
+                # nmap_command is used for both nmap and masscan commands.
+                command = "masscan {} {}".format(nmap_command, file_options)
+
+        elif scan_binary == "nmap":
+            # Three different nmap scan result file types.
+            gnmap_file = os.path.join(pending_files_dir, "{}.gnmap".format(result_file_base_name))
+            nmap_file = os.path.join(pending_files_dir, "{}.nmap".format(result_file_base_name))
+            xml_file = os.path.join(pending_files_dir, "{}.xml".format(result_file_base_name))
+
+            # Check if the file already exists and resume scan.
+            if os.path.isfile(nmap_file):
+                logger.ROOT_LOGGER.info("Previous scan file found '{}'.  Resuming the scan.".format(nmap_file))
+
+                command = "nmap --resume {}".format(nmap_file)
+
+            # New scan.
+            else:
+                # Build the nmap command.
+                file_options = "-iL {} -oG {} -oN {} -oX {} --script-args http.useragent='{}'".format(
+                    targets_file, gnmap_file, nmap_file, xml_file, config_data["http_useragent"]
+                )
+                command = "nmap {} {}".format(nmap_command, file_options)
+
         else:
-            # Build the nmap command.
-            file_options = "-iL {} -oG {} -oN {} -oX {} --script-args http.useragent='{}'".format(
-                targets_file, gnmap_file, nmap_file, xml_file, config_data["http_useragent"]
-            )
-            command = "nmap {} {}".format(nmap_command, file_options)
+            logger.ROOT_LOGGER.error("Invalid scan binary specified: {}".format(scan_binary))
 
         # Start the scan.
         logger.ROOT_LOGGER.info("Starting scan for site '{}' with command: {}".format(site_name, command))
