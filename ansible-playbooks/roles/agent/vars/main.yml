@@ -15,8 +15,8 @@ install_packages:
 masscan_install_packages:
   - git
   - gcc
-  - make
   - libpcap-dev
+  - make
 
 # Python virtual environment.
 agent_dir: /root/agent
