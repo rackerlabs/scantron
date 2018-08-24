@@ -19,6 +19,7 @@
     repo: "https://github.com/robertdavidgraham/masscan.git"
     dest: "{{ agent_dir }}/masscan"
     version: master
+  ignore_errors: true  # For re-runs only.
 
 - name: Run make for masscan.
   command: make -j

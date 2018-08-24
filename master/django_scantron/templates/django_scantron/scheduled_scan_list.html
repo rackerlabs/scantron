@@ -22,7 +22,8 @@
                     <th>Site Name</th>
                     <th>Scan Agent</th>
                     <th>Scheduled Start Time</th>
-                    <th>nmap Command</th>
+                    <th>Scan Binary</th>
+                    <th>Scan Command</th>
                     <th>Scan Status</th>
                     <th>Completion Time</th>
                     <th>Results File</th>
@@ -36,10 +37,17 @@
                     <td>{{ scan.site_name }}</td>
                     <td>{{ scan.scan_agent }}</td>
                     <td>{{ scan.start_time|date:"Y-m-j H:i:s" }}</td>
-                    <td>{{ scan.nmap_command }}</td>
+                    <td>{{ scan.scan_binary }}</td>
+                    <td>{{ scan.scan_binary }} {{ scan.nmap_command }}</td>
                     <td>{{ scan.scan_status }}</td>
                     <td>{{ scan.completed_time|date:"Y-m-j H:i:s" }}</td>
-                    <td><a href={% url "retrieve_scan_file" scan.id %}>{{ scan.result_file_base_name }}.nmap</a></td>
+                    {% if scan.scan_binary == "nmap" %}
+                        <td><a href={% url "retrieve_scan_file" scan.id %}>{{ scan.result_file_base_name }}.nmap</a></td>
+                    {% elif scan.scan_binary == "masscan" %}
+                        <td><a href={% url "retrieve_scan_file" scan.id %}>{{ scan.result_file_base_name }}.json</a></td>
+                    {% else %}
+                        <td>Unknown scan_binary</td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

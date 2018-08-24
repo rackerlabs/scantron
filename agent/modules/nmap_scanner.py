@@ -119,11 +119,16 @@ def scan_site(scan_job_dict):
         process.wait()
 
         # nmap process completed successfully.
+        # Move files from "pending" directory to "complete" directory.
         if process.returncode == 0:
-            # Move files from "pending" directory to "complete" directory.
-            shutil.move(nmap_file, os.path.join(complete_files_dir, os.path.basename(nmap_file)))
-            shutil.move(gnmap_file, os.path.join(complete_files_dir, os.path.basename(gnmap_file)))
-            shutil.move(xml_file, os.path.join(complete_files_dir, os.path.basename(xml_file)))
+
+            if scan_binary == "masscan":
+                shutil.move(json_file, os.path.join(complete_files_dir, os.path.basename(json_file)))
+
+            elif scan_binary == "nmap":
+                shutil.move(nmap_file, os.path.join(complete_files_dir, os.path.basename(nmap_file)))
+                shutil.move(gnmap_file, os.path.join(complete_files_dir, os.path.basename(gnmap_file)))
+                shutil.move(xml_file, os.path.join(complete_files_dir, os.path.basename(xml_file)))
 
             # Update completed_time, scan_status, and result_file_base_name.
             now_datetime = utils.get_current_time()
@@ -136,6 +141,6 @@ def scan_site(scan_job_dict):
             api.update_scan_information(config_data, scan_job, update_info)
 
     except Exception as e:
-        logger.ROOT_LOGGER.error("Error with scan ID {}.  Exception: {}".format(scan_job["id"], e))
+        logger.ROOT_LOGGER.exception("Error with scan ID {}.  Exception: {}".format(scan_job["id"], e))
         update_info = {"scan_status": "error"}
         api.update_scan_information(config_data, scan_job, update_info)
