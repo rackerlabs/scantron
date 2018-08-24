@@ -68,7 +68,18 @@ class Agent(models.Model):
 class NmapCommand(models.Model):
     """Model for a nmap command"""
 
+    SCAN_BINARY = (
+        ('masscan', 'masscan'),
+        ('nmap', 'nmap'),
+    )
+
     id = models.AutoField(primary_key=True, verbose_name='nmap command ID')
+    scan_binary = models.CharField(
+        max_length=7,
+        choices=SCAN_BINARY,
+        default='nmap',
+        verbose_name='Scan binary'
+    )
     nmap_scan_name = models.CharField(
         unique=True,
         max_length=255,
@@ -81,7 +92,7 @@ class NmapCommand(models.Model):
     )
 
     def __str__(self):
-        return '{}||{}'.format(self.nmap_scan_name, self.nmap_command)
+        return '{}||{}||{}'.format(self.scan_binary, self.nmap_scan_name, self.nmap_command)
         # return str(self.nmap_command)
 
     class Meta:
@@ -209,6 +220,12 @@ class ScheduledScan(models.Model):
         verbose_name='Agent Name'
     )
     start_time = models.DateTimeField(verbose_name='Scheduled scan start date and time')
+    scan_binary = models.CharField(
+        max_length=7,
+        default='nmap',
+        verbose_name='Scan binary'
+    )
+
     nmap_command = models.CharField(
         unique=False,
         max_length=1024,

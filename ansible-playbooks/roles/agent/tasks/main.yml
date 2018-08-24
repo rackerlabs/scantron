@@ -8,6 +8,33 @@
     state: latest
   with_items: "{{ install_packages }}"
 
+- name: Install masscan packages.
+  apt:
+    pkg: "{{ item }}"
+    state: latest
+  with_items: "{{ masscan_install_packages }}"
+
+- name: Clone masscan Github repo.
+  git:
+    repo: "https://github.com/robertdavidgraham/masscan.git"
+    dest: "{{ agent_dir }}/masscan"
+    version: master
+  ignore_errors: true  # For re-runs only.
+
+- name: Run make for masscan.
+  command: make -j
+  args:
+    chdir: "{{ agent_dir }}/masscan"
+
+- name: Check that masscan binary exists.
+  stat:
+    path: "{{ agent_dir }}/masscan/bin/masscan"
+  register: masscan_stat
+
+- name: Copy masscan binary to /usr/bin
+  command: cp "{{ agent_dir }}/masscan/bin/masscan" /usr/bin/masscan
+  when: masscan_stat.stat.exists == True
+
 - name: Create autossh user.
   user:
     name: autossh

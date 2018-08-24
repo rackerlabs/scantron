@@ -20,6 +20,7 @@ class NmapCommandSerializer(serializers.ModelSerializer):
     class Meta:
         model = NmapCommand
         fields = (
+            'scan_binary',
             'nmap_scan_name',
             'nmap_command',
         )  # Must have trailing ','
@@ -78,6 +79,7 @@ class ScheduledScanSerializer(serializers.ModelSerializer):
             'site_name',
             'scan_agent',
             'start_time',
+            'scan_binary',
             'nmap_command',
             'targets_file',
             'scan_status',

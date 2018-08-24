@@ -12,6 +12,12 @@ install_packages:
   - screen
   - ufw
 
+masscan_install_packages:
+  - git
+  - gcc
+  - libpcap-dev
+  - make
+
 # Python virtual environment.
 agent_dir: /root/agent
 venv_dir: "{{ agent_dir }}/.venv"

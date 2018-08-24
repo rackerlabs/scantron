@@ -23,6 +23,7 @@ class NmapCommandAdmin(admin.ModelAdmin):
 
     list_display = (
         'id',
+        'scan_binary',
         'nmap_scan_name',
         'nmap_command',
     )
@@ -62,6 +63,7 @@ class ScheduledScanAdmin(admin.ModelAdmin):
         'site_name',
         'scan_agent',
         'start_time',
+        'scan_binary',
         'nmap_command',
         'targets_file',
         'scan_status',
