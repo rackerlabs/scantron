@@ -175,14 +175,14 @@ In this example:
 # Master --> Agent 1
 su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -p 22 -R 4430:127.0.0.1:443 -R 2049:127.0.0.1:2049 -i /home/scantron/master/autossh.key autossh@192.168.1.100'
 
-# Master --> Agent 1
+# Master --> Agent 2
 su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -p 22 -R 4430:127.0.0.1:443 -R 2049:127.0.0.1:2049 -i /home/scantron/master/autossh.key autossh@192.168.1.101'
 ```
 
-If master cannot SSH to an agent, then the autossh command will be run on the agent and the port redirects will be forward (`-L`) instead of reverse (`-R`).
+If master cannot SSH to an agent, then the autossh command will be run on the agent and the port forwards will be local (`-L`) instead of remote (`-R`).
 
 ```bash
-# Agent 1 -- Master
+# Master <-- Agent 1
 su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -p 22 -L 4430:127.0.0.1:443 -L 2049:127.0.0.1:2049 -i /home/scantron/master/autossh.key autossh@192.168.1.99'
 ```
 
