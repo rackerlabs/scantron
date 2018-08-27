@@ -1,4 +1,4 @@
-# http://uwsgi-docs.readthedocs.io/en/latest/tutorials/Django_and_nginx.html
+processed_dir# http://uwsgi-docs.readthedocs.io/en/latest/tutorials/Django_and_nginx.html
 
 # The upstream component nginx needs to connect to
 upstream scantron {
@@ -31,7 +31,7 @@ server {
     # https://wellfire.co/learn/nginx-django-x-accel-redirects/
     location /protected/complete {
         internal;
-        alias {{ scantron_dir }}/nmap_results/complete;
+        alias {{ scantron_dir }}/nmap_results/processed;
     }
 
     location /static {
