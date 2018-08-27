@@ -34,9 +34,7 @@ def main():
     now_datetime = datetime.datetime.now()
 
     # Retrieve all scans.
-    scans = (
-        django_connector.Scan.objects.all()
-    )  # TODO filter based off start time < now_datetime
+    scans = django_connector.Scan.objects.all()  # TODO filter based off start time < now_datetime
 
     if not scans:
         print("[-] No scans exist")
@@ -44,9 +42,7 @@ def main():
 
     # Loop through each scan and extract any recurrences for today.
     for scan in scans:
-        scan_occurence = scan.recurrences.before(
-            now_datetime, dtstart=now_datetime, inc=False
-        )
+        scan_occurence = scan.recurrences.before(now_datetime, dtstart=now_datetime, inc=False)
         if not scan_occurence:
             continue
 
@@ -64,9 +60,7 @@ def main():
         timestamp = datetime.datetime.strftime(start_time, "%Y%m%d_%H%M")
 
         # Build results file.
-        result_file_base_name = "{}_{}_{}".format(
-            clean_text(site_name), clean_text(scan_agent), timestamp
-        )
+        result_file_base_name = "{}_{}_{}".format(clean_text(site_name), clean_text(scan_agent), timestamp)
 
         print("[+] Adding:")
         print(
