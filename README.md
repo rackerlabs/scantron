@@ -206,7 +206,7 @@ Agent settings:
 
 **callback_interval_in_seconds:** Number of seconds agents wait before calling back for scan jobs.
 
-**number_of_threads:** Number of threads used to execute scan jobs if multiple jobs may be required at the same time.  Not that important.
+**number_of_threads:** Experimental!  Number of threads used to execute scan jobs if multiple jobs may be required at the same time.  Keep at 1 to avoid a doubling scanning race condition.
 
 **target_files_dir:** Name of actual agent `target_files` directory on the agent box.
 
