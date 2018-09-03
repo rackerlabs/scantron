@@ -441,7 +441,7 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
     `/home/scantron/master/nmap_results/complete` - Completed scan files from agents are stored here before being processed by nmap_to_csv.py
 
-    The `scantron` user exectutes a cron job (`nmap_to_csv.sh` which calls `nmap_to_csv.py`) every 5 minutes that will process the `.xml` scan results found in the `complete` directory and move them to the `processed` directory.
+    The `scantron` user executes a cron job (`nmap_to_csv.sh` which calls `nmap_to_csv.py`) every 5 minutes that will process the `.xml` scan results found in the `complete` directory and move them to the `processed` directory.
 
     `/home/scantron/master/nmap_results/processed` - nmap scan files already processed by nmap_to_csv.py reside here.
 
