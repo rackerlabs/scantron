@@ -63,58 +63,68 @@ def main():
     processed_dir = os.path.join(root_dir, "nmap_results", "processed")
     for_splunk_dir = os.path.join(root_dir, "for_splunk")
 
-    # Grab all scan files.
-    scans = os.listdir(complete_dir)
-
-    # Grab a list of XMLfiles from the "complete" folder.
+    # Grab a list of xml files from the "complete" folder.
     xml_scans = glob.glob(os.path.join(complete_dir, "*.xml"))
 
     # Loop through all valid xml files and export them to csv files.
+    # Then move them to the "processed" directory.
     for scan in xml_scans:
-        events = []
-        report = NmapParser.parse_fromfile(scan)
 
-        # Loop though all hosts in xml file. Create event objects storing the necessary information.
-        for host in report.hosts:
-            # Loop through services for each host.
-            if len(host.services) != 0:
-                for service in host.services:
-                    event = ScanEvent()
-                    event.start_time = report.started
-                    event.end_time = report.endtime
+        try:
+            events = []
+            report = NmapParser.parse_fromfile(scan)
 
-                    # Regular expression to grab site name and scanner based off the filename.
-                    match = re.search('(\S+_)(office|customer)_', os.path.basename(scan))
-                    event.site_name = match.group(1).rstrip('_')
-                    event.scanner = match.group(2)
+            # Loop though all hosts in xml file. Create event objects storing the necessary information.
+            for host in report.hosts:
+                # Loop through services for each host.
+                if len(host.services) != 0:
+                    for service in host.services:
+                        event = ScanEvent()
+                        event.start_time = report.started
+                        event.end_time = report.endtime
 
-                    # Extract port and service information.
-                    event.address = host.address
-                    event.transport = service.protocol
-                    event.port = service.port
-                    event.app = service.service
-                    event.state = service.state
+                        # Regular expression to grab site name and scanner based off the filename.
+                        match = re.search('(\S+_)(office|customer)_', os.path.basename(scan))
+                        event.site_name = match.group(1).rstrip('_')
+                        event.scanner = match.group(2)
 
-                    data = service.service_dict
-                    event.app_version = ""
-                    if 'product' in data:
-                        event.app_version += data['product'] + " "
-                    if 'version' in data:
-                        event.app_version += data['version'] + " "
-                    if 'extrainfo' in data:
-                        event.app_version += data['extrainfo']
+                        # Extract port and service information.
+                        event.address = host.address
+                        event.transport = service.protocol
+                        event.port = service.port
+                        event.app = service.service
+                        event.state = service.state
 
-                    events.append(event)
+                        data = service.service_dict
+                        event.app_version = ""
+                        if 'product' in data:
+                            event.app_version += data['product'] + " "
+                        if 'version' in data:
+                            event.app_version += data['version'] + " "
+                        if 'extrainfo' in data:
+                            event.app_version += data['extrainfo']
 
-        # The file has been completely parsed...create csv files in 'for_splunk' directory.
-        export_to_csv(events, os.path.join(for_splunk_dir, os.path.basename(scan)))
+                        events.append(event)
 
-    # csv files have been created, move all nmap scan file types from "completed" to "processed" folder.
-    for name in scans:
-        shutil.move(
-            os.path.join(os.path.join(complete_dir, name)),
-            os.path.join(os.path.join(processed_dir, name))
-        )
+            # The file has been completely parsed...create csv files in 'for_splunk' directory.
+            export_to_csv(events, os.path.join(for_splunk_dir, os.path.basename(scan)))
+
+            # Extract the base file name from the .xml scan file name.
+            base_scan_file_name = scan.split("/")[-1].strip(".xml")
+
+            # Find all the .nmap, .xml, and .gnmap files for the base_scan_file_name.
+            base_scan_files = glob.glob(os.path.join(complete_dir, "{}*".format(base_scan_file_name)))
+
+            # csv files have been created, move all nmap scan file types from "completed" to "processed" folder.
+            # extract file name and rebuild full path for destination
+            for scan_file in base_scan_files:
+                shutil.move(
+                    scan_file,  # source
+                    os.path.join(os.path.join(processed_dir, scan_file.split("/")[-1]))  # destination
+                )
+
+        except:
+            print("Exception processing file: {}".format(scan))
 
 
 if __name__ == "__main__":
