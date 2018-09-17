@@ -87,7 +87,7 @@ class NmapCommand(models.Model):
     )
     nmap_command = models.CharField(
         unique=True,
-        max_length=2048,
+        max_length=8096,
         verbose_name='nmap command'
     )
 
