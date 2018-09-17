@@ -95,10 +95,10 @@ def scan_site(scan_job_dict):
             xml_file = os.path.join(pending_files_dir, "{}.xml".format(result_file_base_name))
 
             # Check if the file already exists and resume scan.
-            if os.path.isfile(nmap_file):
-                logger.ROOT_LOGGER.info("Previous scan file found '{}'.  Resuming the scan.".format(nmap_file))
+            if os.path.isfile(gnmap_file):
+                logger.ROOT_LOGGER.info("Previous scan file found '{}'.  Resuming the scan.".format(gnmap_file))
 
-                command = "nmap --resume {}".format(nmap_file)
+                command = "nmap --resume {}".format(gnmap_file)
 
             # New scan.
             else:

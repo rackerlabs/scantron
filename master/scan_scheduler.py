@@ -1,12 +1,22 @@
 #!/usr/bin/env python
-import datetime
 
+# Standard Python libraries.
+import datetime
+import logging
+
+# Third party Python libraries.
+
+# Custom Python libraries.
 import django_connector
 
 
+# Setup logging.
+LOG_FORMATTER = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+ROOT_LOGGER = logging.getLogger()
+
+
 def get_timestamp():
-    """Returns formated timestamp.
-    """
+    """Returns formated timestamp."""
 
     now = datetime.datetime.now()
     timestamp = datetime.datetime.strftime(now, "%Y%m%d_%H%M%S")
@@ -14,8 +24,7 @@ def get_timestamp():
 
 
 def clean_text(uncleaned_text):
-    """Clean text by replacing specific characters.
-    """
+    """Clean text by replacing specific characters."""
 
     cleaned_text = (
         uncleaned_text.lower()
@@ -31,23 +40,19 @@ def clean_text(uncleaned_text):
 def main():
     # Return the current local date and time: datetime.datetime(2018, 2, 27, 12, 31, 40, 554840)
     # https://docs.python.org/3.5/library/datetime.html#datetime.datetime.now
-    now_datetime = datetime.datetime.now()
+    now_datetime = datetime.datetime.now()  # + datetime.timedelta(hours=24)
 
     # Retrieve all scans.
     scans = django_connector.Scan.objects.all()  # TODO filter based off start time < now_datetime
 
     if not scans:
-        print("[-] No scans exist")
+        ROOT_LOGGER.debug("No scans exist")
         return
+
+    ROOT_LOGGER.debug("Found {} scans.".format(len(scans)))
 
     # Loop through each scan and extract any recurrences for today.
     for scan in scans:
-        scan_occurence = scan.recurrences.before(now_datetime, dtstart=now_datetime, inc=False)
-        if not scan_occurence:
-            continue
-
-        # Build start_time
-        start_time = datetime.datetime.combine(scan_occurence.date(), scan.start_time)
 
         # Populate variables from existing database relationships.
         site_name = scan.site.site_name
@@ -56,39 +61,74 @@ def main():
         nmap_command = scan.site.nmap_command.nmap_command
         targets_file = scan.site.targets_file
 
+        # ROOT_LOGGER.debug(
+        #     "Found scan: {}, {}, {}, {}, {}".format(
+        #         site_name,
+        #         targets_file,
+        #         nmap_command,
+        #         scan_agent,
+        #         scan_binary,
+        #     )
+        # )
+
+        # Retrieve scan occurences.
+        scan_occurence = scan.recurrences.before(now_datetime, dtstart=now_datetime, inc=False)
+        if not scan_occurence:
+            continue
+
+        # Build start_time.
+        start_time = datetime.datetime.combine(scan_occurence.date(), scan.start_time)
+
         # Convert start_time datetime object to string for result_file_base_name.
         timestamp = datetime.datetime.strftime(start_time, "%Y%m%d_%H%M")
 
         # Build results file.
         result_file_base_name = "{}_{}_{}".format(clean_text(site_name), clean_text(scan_agent), timestamp)
 
-        print("[+] Adding:")
-        print(
-            "\t{}, {}, {}, {}, {}, {}, {}".format(
-                site_name,
-                scan_agent,
-                scan_occurence.date(),
-                start_time,
-                scan_binary,
-                nmap_command,
-                result_file_base_name,
+        try:
+            # Add entry to ScheduledScan model.
+            obj, created = django_connector.ScheduledScan.objects.get_or_create(
+                site_name=site_name,
+                scan_agent=scan_agent,
+                start_time=start_time,
+                scan_binary=scan_binary,
+                nmap_command=nmap_command,
+                targets_file=targets_file,
+                result_file_base_name=result_file_base_name,
             )
-        )
 
-        # Add entry to ScheduledScan model.
-        django_connector.ScheduledScan.objects.get_or_create(
-            site_name=site_name,
-            scan_agent=scan_agent,
-            start_time=start_time,
-            scan_binary=scan_binary,
-            nmap_command=nmap_command,
-            targets_file=targets_file,
-            result_file_base_name=result_file_base_name,
-            # scan_status='pending',
-            # completed_time=,
-        )
+            if created:
+                ROOT_LOGGER.debug(
+                    "Adding to scheduled scans: {}, {}, {}, {}, {}, {}, {}, {}".format(
+                        site_name,
+                        scan_agent,
+                        scan_occurence.date(),
+                        start_time,
+                        scan_binary,
+                        nmap_command,
+                        targets_file,
+                        result_file_base_name,
+                    )
+                )
+
+        except:
+            ROOT_LOGGER.error("Error with site name: {}".format(site_name))
 
 
 if __name__ == "__main__":
+
+    ROOT_LOGGER.setLevel(10)  # DEBUG
+
+    # Log file handling.
+    file_handler = logging.FileHandler("scan_scheduler.log")
+    file_handler.setFormatter(LOG_FORMATTER)
+    ROOT_LOGGER.addHandler(file_handler)
+
+    # Console logging.
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(LOG_FORMATTER)
+    ROOT_LOGGER.addHandler(console_handler)
+
     main()
-    print("[+] Done!")
+
+    ROOT_LOGGER.debug("Done!")
