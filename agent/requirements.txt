@@ -2,4 +2,4 @@
 ipython==6.2.1
 
 # HTTP requests
-requests==2.18.4
+requests==2.20.0
