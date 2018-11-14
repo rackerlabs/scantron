@@ -455,4 +455,3 @@ Robot lovingly delivered by Robohash.org (<https://robohash.org>)
 
 * Improve scan scheduler
 * Gucci up the front end instead of relying on Django Admin
-* Implement [masscan](https://github.com/robertdavidgraham/masscan) using [python-masscan](https://github.com/MyKings/python-masscan)
