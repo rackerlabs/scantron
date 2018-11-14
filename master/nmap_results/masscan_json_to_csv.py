@@ -82,10 +82,9 @@ def main():
 
         results_list = []
 
-        # Regular expression to grab site name and scanner based off the filename.
-        match = re.search("(\S+_)(office|customer)_", os.path.basename(scan))
-        site_name = match.group(1).rstrip("_")
-        # scanner = match.group(2)
+        # "scan" variable is constructed as "result_file_base_name" in master/scan_scheduler.py
+        site_name = scan.split("__")[0]
+        # scan_agent = scan.split("__")[1]
 
         with open(scan, "r") as fh:
 
