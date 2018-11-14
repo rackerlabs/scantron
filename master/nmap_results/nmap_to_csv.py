@@ -8,7 +8,7 @@ import shutil
 from libnmap.parser import NmapParser
 
 
-class ScanEvent():
+class ScanEvent:
 
     # Variables that will eventually be fields in Splunk.
     def __init__(self):
@@ -40,14 +40,25 @@ class ScanEvent():
 
 
 def export_to_csv(events, output):
-    output = output.replace('.xml', '.csv')
+    output = output.replace(".xml", ".csv")
     if len(events) != 0:
         # print(output)
         # print(events)
 
-        header_fields = ['#starttime', 'endtime', 'siteName', 'scanner', 'dest_ip', 'transport', 'dest_port', 'app', 'service', 'state']
+        header_fields = [
+            "starttime",
+            "endtime",
+            "siteName",
+            "scanner",
+            "dest_ip",
+            "transport",
+            "dest_port",
+            "app",
+            "service",
+            "state",
+        ]
 
-        with open(output, 'w') as csvfile:
+        with open(output, "w") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(header_fields)
 
@@ -84,8 +95,8 @@ def main():
                         event.end_time = report.endtime
 
                         # Regular expression to grab site name and scanner based off the filename.
-                        match = re.search('(\S+_)(office|customer)_', os.path.basename(scan))
-                        event.site_name = match.group(1).rstrip('_')
+                        match = re.search("(\S+_)(office|customer)_", os.path.basename(scan))
+                        event.site_name = match.group(1).rstrip("_")
                         event.scanner = match.group(2)
 
                         # Extract port and service information.
@@ -97,12 +108,12 @@ def main():
 
                         data = service.service_dict
                         event.app_version = ""
-                        if 'product' in data:
-                            event.app_version += data['product'] + " "
-                        if 'version' in data:
-                            event.app_version += data['version'] + " "
-                        if 'extrainfo' in data:
-                            event.app_version += data['extrainfo']
+                        if "product" in data:
+                            event.app_version += data["product"] + " "
+                        if "version" in data:
+                            event.app_version += data["version"] + " "
+                        if "extrainfo" in data:
+                            event.app_version += data["extrainfo"]
 
                         events.append(event)
 
@@ -120,7 +131,7 @@ def main():
             for scan_file in base_scan_files:
                 shutil.move(
                     scan_file,  # source
-                    os.path.join(os.path.join(processed_dir, scan_file.split("/")[-1]))  # destination
+                    os.path.join(os.path.join(processed_dir, scan_file.split("/")[-1])),  # destination
                 )
 
         except:
