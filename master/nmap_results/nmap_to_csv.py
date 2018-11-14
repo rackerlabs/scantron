@@ -97,7 +97,7 @@ def main():
                         event.start_time = report.started
                         event.end_time = report.endtime
 
-                        # "scan" variable is constructed as "result_file_base_name" in scan_scheduler.py
+                        # "scan" variable is constructed as "result_file_base_name" in master/scan_scheduler.py
                         event.site_name = scan.split("__")[0]
                         event.scanner = scan.split("__")[1]
 

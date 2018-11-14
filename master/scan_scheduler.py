@@ -82,7 +82,7 @@ def main():
         # Convert start_time datetime object to string for result_file_base_name.
         timestamp = datetime.datetime.strftime(start_time, "%Y%m%d_%H%M")
 
-        # Build results file.  "__" is used by nmap_to_csv.py to .split() site_name and scan_agent.
+        # Build results file.  "__" is used by master/nmap_results/nmap_to_csv.py to .split() site_name and scan_agent.
         result_file_base_name = "{}__{}__{}".format(clean_text(site_name), clean_text(scan_agent), timestamp)
 
         try:
