@@ -1,11 +1,14 @@
 #!/usr/bin/env python
+# Standard Python libraries.
 import csv
 import glob
 import os
-import re
 import shutil
 
+# Third party Python libraries.
 from libnmap.parser import NmapParser
+
+# Custom Python libraries.
 
 
 class ScanEvent:
@@ -94,10 +97,9 @@ def main():
                         event.start_time = report.started
                         event.end_time = report.endtime
 
-                        # Regular expression to grab site name and scanner based off the filename.
-                        match = re.search("(\S+_)(office|customer)_", os.path.basename(scan))
-                        event.site_name = match.group(1).rstrip("_")
-                        event.scanner = match.group(2)
+                        # "scan" variable is constructed as "result_file_base_name" in scan_scheduler.py
+                        event.site_name = scan.split("__")[0]
+                        event.scanner = scan.split("__")[1]
 
                         # Extract port and service information.
                         event.address = host.address
