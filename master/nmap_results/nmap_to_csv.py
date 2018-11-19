@@ -98,8 +98,9 @@ def main():
                         event.end_time = report.endtime
 
                         # "scan" variable is constructed as "result_file_base_name" in master/scan_scheduler.py
-                        event.site_name = scan.split("__")[0]
-                        event.scanner = scan.split("__")[1]
+                        scan_file_name = os.path.basename(scan)
+                        event.site_name = scan_file_name.split("__")[0]
+                        event.scanner = scan_file_name.split("__")[1]
 
                         # Extract port and service information.
                         event.address = host.address

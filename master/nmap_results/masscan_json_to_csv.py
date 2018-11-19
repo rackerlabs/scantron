@@ -83,8 +83,9 @@ def main():
         results_list = []
 
         # "scan" variable is constructed as "result_file_base_name" in master/scan_scheduler.py
-        site_name = scan.split("__")[0]
-        # scan_agent = scan.split("__")[1]
+        scan_file_name = os.path.basename(scan)
+        site_name = scan_file_name.split("__")[0]
+        # scan_agent = scan_file_name.split("__")[1]
 
         with open(scan, "r") as fh:
 
