@@ -31,7 +31,7 @@ Scantron relies heavily on utilizing SSH port forwards (-R / -L) as an umbilical
 
 This is your local box, preferably Linux.  Ansible >= 2.4.0.0 is the minimum version required for utilizing ufw comments.
 
-Clone the project and make initial_setup.sh executable.
+Clone the project exectue `initial_setup.sh`.
 
 ```bash
 # Clone scantron project.
@@ -120,7 +120,7 @@ Populate all the values `master/scantron_secrets.json`, except the `local` key, 
 The `scantron` user password is not really leveraged and is populated by providing a salted hash of a random password generated using Python's `passlib` library.  If you want to change the password, you will have to generate a hash for the desired password and update the `temp_user_pass` variable in `scantron/ansible-playbooks/roles/add_users/vars/main.yml`.
 
 ```python
-pip install passlib # or pip3
+pip install passlib  # or pip3
 
 python -c "from passlib.hash import sha512_crypt; import getpass; print(sha512_crypt.encrypt(getpass.getpass()))"  # or python3
 ```
