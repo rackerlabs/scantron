@@ -76,7 +76,7 @@ Installation requires a general knowledge of Python, pip, and Ansible.  Every at
 
 #### IBM Cloud
 
-Per <https://github.com/0xtavian>:  For the Ansible workload to work on IBM Cloud: edit the file `/boot/grub/menu.lst` by changing
+Per <https://github.com/0xtavian>:  For the Ansible workload to work on IBM Cloud, edit the file `/boot/grub/menu.lst` by changing
 
 ```bash
 # groot=LABEL...
