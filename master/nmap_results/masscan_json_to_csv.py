@@ -135,8 +135,8 @@ def main():
                     sys.exit(0)
 
         # The file has been completely parsed...create csv files in "for_splunk" directory.
-        base_file_name = os.path.basename(scan).split(".json")[0]
-        masscan_csv_file_name = f"{base_file_name}.csv"
+        base_scan_file_name = os.path.basename(scan).split(".json")[0]
+        masscan_csv_file_name = f"{base_scan_file_name}.csv"
 
         # Pass results and full file path to "for_splunk" directory.
         write_results_to_csv_file(results_list, os.path.join(for_splunk_dir, masscan_csv_file_name))
