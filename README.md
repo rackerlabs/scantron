@@ -31,7 +31,7 @@ Scantron relies heavily on utilizing SSH port forwards (-R / -L) as an umbilical
 
 This is your local box, preferably Linux.  Ansible >= 2.4.0.0 is the minimum version required for utilizing ufw comments.
 
-Clone the project exectue `initial_setup.sh`.
+Clone the project and execute `initial_setup.sh`.
 
 ```bash
 # Clone scantron project.
@@ -41,6 +41,12 @@ cd scantron
 ```
 
 This is what `initial_setup.sh` does.
+
+Install python3-pip
+
+```bash
+apt install python3-pip -y
+```
 
 Install Ansible using pip.
 
@@ -65,6 +71,22 @@ mv autossh master/autossh.key
 ## Installation
 
 Installation requires a general knowledge of Python, pip, and Ansible.  Every attempt to make the deployment as simple as possible has been made.
+
+### Cloud Provider Caveats
+
+#### IBM Cloud
+
+Per <https://github.com/0xtavian>:  For the Ansible workload to work on IBM Cloud: edit the file `/boot/grub/menu.lst` by changing
+
+```bash
+# groot=LABEL...
+```
+
+to
+
+```bash
+# groot=(hd0)
+```
 
 ### Update hosts
 
