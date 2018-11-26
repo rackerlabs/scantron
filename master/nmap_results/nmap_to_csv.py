@@ -112,11 +112,11 @@ def main():
                         data = service.service_dict
                         event.app_version = ""
                         if "product" in data:
-                            event.app_version += data["product"] + " "
+                            event.app_version += f"{data['product']} "
                         if "version" in data:
-                            event.app_version += data["version"] + " "
+                            event.app_version += f"{data['version']} "
                         if "extrainfo" in data:
-                            event.app_version += data["extrainfo"]
+                            event.app_version += f"{data['extrainfo']} "
 
                         events.append(event)
 
@@ -124,7 +124,7 @@ def main():
             export_to_csv(events, os.path.join(for_splunk_dir, os.path.basename(scan)))
 
             # Extract the base file name from the .xml scan file name.
-            base_scan_file_name = scan.split("/")[-1].strip(".xml")
+            base_scan_file_name = os.path.basename(scan).split(".xml")[0]
 
             # Find all the .nmap, .xml, and .gnmap files for the base_scan_file_name.
             base_scan_files = glob.glob(os.path.join(complete_dir, "{}*".format(base_scan_file_name)))
@@ -137,8 +137,8 @@ def main():
                     os.path.join(os.path.join(processed_dir, scan_file.split("/")[-1])),  # destination
                 )
 
-        except:
-            print("Exception processing file: {}".format(scan))
+        except Exception as e:
+            print(f"Exception processing file: {scan}.  Exception: {e}")
 
 
 if __name__ == "__main__":

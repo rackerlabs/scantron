@@ -115,11 +115,11 @@ def main():
                         if "service" in port:
                             # Shorten SSL/TLS certificates.
                             if port["service"]["banner"].startswith("MII"):
-                                result_dict["service"] = "tva_custom_service_modification_TLS_cert"
+                                result_dict["service"] = "custom_service_modification_TLS_cert"
 
                             # Shorten source HTML source code pages.
                             elif re.search(r"\u003c", port["service"]["banner"]):
-                                result_dict["service"] = "tva_custom_service_modification_htlm_source_blob"
+                                result_dict["service"] = "custom_service_modification_html_source_blob"
 
                             else:
                                 # Replace newlines and carriage returns with spaces.
@@ -135,7 +135,8 @@ def main():
                     sys.exit(0)
 
         # The file has been completely parsed...create csv files in "for_splunk" directory.
-        masscan_csv_file_name = f"{scan.split('/')[-1].strip('.json')}.csv"
+        base_file_name = os.path.basename(scan).split('.json')[0]
+        masscan_csv_file_name = f"{base_file_name}.csv"
 
         # Pass results and full file path to "for_splunk" directory.
         write_results_to_csv_file(results_list, os.path.join(for_splunk_dir, masscan_csv_file_name))
