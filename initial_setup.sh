@@ -1,5 +1,11 @@
 #!/bin/bash
 
+
+# Install python3-pip.
+echo "[*] Installing pip3"
+apt update
+apt install python3-pip -y
+
 # Install Ansible with pip.
 echo "[*] Install ansible >=2.4.0.0 using pip"
 pip3 install ansible\>=2.4.0.0
