@@ -7,6 +7,7 @@ if [ "$(id -u)" == "0" ]; then
 fi
 
 # Ensure pip3 is installed.
+# https://stackoverflow.com/questions/592620/how-to-check-if-a-program-exists-from-a-bash-script
 command -v pip3 >/dev/null 2>&1 || { echo >&2 "Script require pip3 but it is not installed. \
 Courtesy pastable: 'sudo apt update && sudo apt install python3-pip -y'"; exit 1; }
 
