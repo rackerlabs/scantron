@@ -37,35 +37,45 @@ Clone the project and execute `initial_setup.sh`.
 # Clone scantron project.
 git clone https://github.com/rackerlabs/scantron.git
 cd scantron
-./initial_setup.sh
+./initial_setup.sh  # Run as non-root user.
 ```
 
 This is what `initial_setup.sh` does.
 
-Install python3-pip
+Provide pastable to install python3-pip if it already isn't
 
 ```bash
-apt install python3-pip -y
+sudo apt update && sudo apt install python3-pip -y
 ```
 
 Install Ansible using pip.
 
 ```bash
-# Install Ansible with pip.
-pip3 install ansible>=2.4.0.0
+pip3 install ansible\>=2.4.0.0
 ```
 
-Generate a passphrase-less SSH key pair for the autossh user and move each part to the respective location for Ansible.
+Generate a passphrase-less SSH key pair for the autossh user.
 
 ```bash
-# Generate a passphrase-less SSH key pair for the autossh user.
 ssh-keygen -b 4096 -t rsa -f autossh -q -N ""
+```
 
-# Move public key to the respective location for Ansible.
+Move public key to the respective location for Ansible.
+
+```bash
 mv autossh.pub ansible-playbooks/roles/agent/files/autossh.pub
+```
 
-# Move and rename private key to the respective location for Ansible.
+Move and rename private key to the respective location for Ansible.
+
+```bash
 mv autossh master/autossh.key
+```
+
+Create empty scantron_secrets.json from scantron_secrets.json.empty.
+
+```bash
+cp master/scantron_secrets.json.empty master/scantron_secrets.json
 ```
 
 ## Installation
