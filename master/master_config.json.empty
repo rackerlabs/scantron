@@ -1,6 +1,0 @@
-{
-    "scan_agent": "admin",
-    "api_token": "",
-    "master_address": "https://127.0.0.1",
-    "master_port": 443
-}
