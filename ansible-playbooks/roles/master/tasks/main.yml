@@ -370,6 +370,17 @@
   args:
      chdir: "{{ scantron_dir }}"
 
+- name: Determine the API token for the "agent1" user.
+  shell: echo "from rest_framework.authtoken.models import Token; print(Token.objects.filter(user__username='agent1')[0].key)" | {{ venv_python }} {{ scantron_dir }}/manage.py shell
+  args:
+    chdir: "{{ scantron_dir }}"
+  register: api_key_output
+  when: utilize_static_api_token_across_agents
+
+- name: Copy the API key to scantron/ansible-playbooks/group_vars/static_api_key
+  local_action: copy content="{{ api_key_output.stdout_lines[1] }}" dest="group_vars/static_api_key"
+  when: utilize_static_api_token_across_agents
+
 - name: Reboot the box in 1 minute.
   command: shutdown -r 1
   when: reboot_box
