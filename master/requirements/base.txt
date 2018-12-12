@@ -10,6 +10,9 @@ django-crispy-forms==1.7.2
 # Django environ
 django-environ==0.4.5
 
+# Django Extensions
+django-extensions==2.1.4
+
 # Django filters for API
 django-filter==2.0.0
 
@@ -27,6 +30,9 @@ ipython==6.4.0
 
 # Python-PostgreSQL Database Adapter
 psycopg2-binary==2.7.5
+
+# Used for django-extensions graph_models
+pygraphviz==1.5
 
 # nmap
 python-libnmap==0.7.0

@@ -365,6 +365,11 @@
     job: "{{ scantron_dir }}/nmap_results/nmap_to_csv.sh"
     user: scantron
 
+- name: Generate graph models using django-extensions's graph_models.
+  command: "{{ venv_python }} {{ scantron_dir }}/manage.py graph_models --pygraphviz --output scantron_model_graph.png django_scantron"
+  args:
+     chdir: "{{ scantron_dir }}"
+
 - name: Reboot the box in 1 minute.
   command: shutdown -r 1
   when: reboot_box
