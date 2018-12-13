@@ -104,48 +104,27 @@ Edit the hosts in this file:
 
 * `ansible-playbooks/hosts`
 
-### Agent Installtion
-
-#### Update Agent Ansible Variables
-
-The recommendation is to deploy the agents first.  Edit any variables in these files before running playbook:
-
-* `ansible-playbooks/group_vars/all`
-* `ansible-playbooks/roles/agent/vars/main.yml`
-
-#### Ensure proper user permissions
-
-Ensure you have a SSH key (or username/password) to access the agent box, specified by `--private-key` in the Ansible command.  The user **must** also have password-less sudo privileges.  If you are creating the boxes on AWS, then the user is `ubuntu` for Ubuntu distros and the user already has password-less sudo capabilities.  If you need to add passwordless-sudo capability to a user, create a `/etc/sudoder.d/<USERNAME>` file, where `<USERNAME>` is the actual user, and populate it with:
-
-```bash
-<USERNAME> ALL=(ALL) NOPASSWD: ALL
-```
-
-SSH-ing in as `root` will also work for the Ansible deployment, but is not generally recommended.
-
-#### Execute Agent Ansible Playbook
-
-```bash
-cd ansible-playbooks
-
-# non-root user with password-less sudo capabilities.
-ansible-playbook agent.yml -u ubuntu --become --private-key=<agent SSH key>
-
-# root user.
-ansible-playbook agent.yml -u root --private-key=<agent SSH key>
-```
-
 ### Master Installation
 
 #### Update Master Ansible Variables
 
-Rename `master/scantron_secrets.json.empty` to `master/scantron_secrets.json` (should be done for you by `initial_setup.sh`)
+Edit any variables in these files before running playbook:
+
+* `ansible-playbooks/group_vars/all`
+  
+If you plan on utilizing the same API key across all agents (not recommended, but easier for automated deployments), change `utilize_static_api_token_across_agents` to `True`.  This prevents you from having to log into each agent and update `agent_config.json` with the corresponding API key.  The `group_vars/static_api_key` will be created by the Master ansible playbook.  The Ansible agent playbook will autofill the `agent_config.json.j2` template with the API key found in `group_vars/static_api_key`.
+
+**WARNING**: The `agent_config.json.j2` has `agent1` pre-filled in, so if you deploy more than 1 agent, you will run into complications since the agen name determines what scan jobs are pulled through the API.
+
+#### Update Master Ansible Variables
+
+The recommendation is to deploy Master first.  Rename `master/scantron_secrets.json.empty` to `master/scantron_secrets.json` (should be done for you by `initial_setup.sh`)
+
+Populate all the values `master/scantron_secrets.json`, except the `local` key, unless you know what you are doing to test Django.  Only the `production` values are used.
 
 All Scantron Django passwords have a minimum password length of 12.
 
 For the "SECRET_KEY", per Django's [documentation](<https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/#secret-key>):    The secret key must be a large random value and it must be kept secret.
-
-Populate all the values `master/scantron_secrets.json`, except the `local` key, unless you know what you are doing to test Django.  Only the `production` values are used.
 
 #### Change scantron user password (optional)
 
@@ -183,6 +162,37 @@ but an actual file may be necessary:
 
 ```bash
 cp /home/scantron/master/uwsgi.service /lib/systemd/system/uwsgi.service
+```
+
+### Agent Installtion
+
+#### Update Agent Ansible Variables
+
+Edit any variables in these files before running playbook:
+
+* `ansible-playbooks/group_vars/all`
+* `ansible-playbooks/roles/agent/vars/main.yml`
+
+#### Ensure proper user permissions
+
+Ensure you have a SSH key (or username/password) to access the agent box, specified by `--private-key` in the Ansible command.  The user **must** also have password-less sudo privileges.  If you are creating the boxes on AWS, then the user is `ubuntu` for Ubuntu distros and the user already has password-less sudo capabilities.  If you need to add passwordless-sudo capability to a user, create a `/etc/sudoder.d/<USERNAME>` file, where `<USERNAME>` is the actual user, and populate it with:
+
+```bash
+<USERNAME> ALL=(ALL) NOPASSWD: ALL
+```
+
+SSH-ing in as `root` will also work for the Ansible deployment, but is not generally recommended.
+
+#### Execute Agent Ansible Playbook
+
+```bash
+cd ansible-playbooks
+
+# non-root user with password-less sudo capabilities.
+ansible-playbook agent.yml -u ubuntu --become --private-key=<agent SSH key>
+
+# root user.
+ansible-playbook agent.yml -u root --private-key=<agent SSH key>
 ```
 
 ## Adding additional agents
