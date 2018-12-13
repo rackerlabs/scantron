@@ -53,7 +53,7 @@
   # Ansible will get angry since it can't chown /root/agent/nmap_results and /root/agent/target_files
   ignore_errors: yes
 
-- name: Update agent_config.json configuration file with a static API token if utilize_static_api_token_across_agents in group_vars/all is set to True.
+- name: Update agent_config.json configuration file with a static API token and random agent name if utilize_static_api_token_across_agents in group_vars/all is set to True.
   template:
     src: templates/agent_config.json
     dest: /root/agent/agent_config.json

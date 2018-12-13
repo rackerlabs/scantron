@@ -114,7 +114,7 @@ Edit any variables in these files before running playbook:
   
 If you plan on utilizing the same API key across all agents (not recommended, but easier for automated deployments), change `utilize_static_api_token_across_agents` to `True`.  This prevents you from having to log into each agent and update `agent_config.json` with the corresponding API key.  The `group_vars/static_api_key` will be created by the Master ansible playbook.  The Ansible agent playbook will autofill the `agent_config.json.j2` template with the API key found in `group_vars/static_api_key`.
 
-**WARNING**: The `agent_config.json.j2` has `agent1` pre-filled in, so if you deploy more than 1 agent, you will run into complications since the agen name determines what scan jobs are pulled through the API.
+**WARNING**: The `agent_config.json.j2` will generate a random `scan_agent` (e.g., `agent-847623`), so if you deploy more than 1 agent, you won't run into complications with agent name collisions.  You will, however, need to add create the user on Master, since Master returns scheduled jobs to the agent based off the agent's name!
 
 #### Update Master Ansible Variables
 
