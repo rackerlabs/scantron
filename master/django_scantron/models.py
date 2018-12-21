@@ -51,7 +51,12 @@ class Agent(models.Model):
 class NmapCommand(models.Model):
     """Model for a nmap command"""
 
-    SCAN_BINARY = (("masscan", "masscan"), ("nmap", "nmap"))
+    # fmt: off
+    SCAN_BINARY = (
+            ("masscan", "masscan"),
+            ("nmap", "nmap")
+    )
+    # fmt: on
 
     id = models.AutoField(primary_key=True, verbose_name="nmap command ID")
     scan_binary = models.CharField(max_length=7, choices=SCAN_BINARY, default="nmap", verbose_name="Scan binary")
