@@ -6,6 +6,7 @@ timezone: America/Chicago
 
 # apt packages
 install_packages:
+  - proxychains
 
 
 # Used in configs/sshd_config.j2
