@@ -16,7 +16,7 @@ from django_scantron.models import Agent, NmapCommand, Scan, ScheduledScan, Site
 def get_current_time():
     """Retrieve a Django compliant pre-formated datetimestamp."""
 
-    now_datetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return now_datetime
 
 
@@ -24,7 +24,7 @@ class DefaultsMixin(object):
     """Default settings for view pagination and filtering."""
 
     paginate_by = 25
-    paginate_by_param = 'page_size'
+    paginate_by_param = "page_size"
     max_paginate_by = 100
 
 
@@ -101,12 +101,11 @@ class ScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
         assert self.serializer_class is not None, (
             "'%s' should either include a `serializer_class` attribute, "
-            "or override the `get_serializer_class()` method."
-            % self.__class__.__name__
+            "or override the `get_serializer_class()` method." % self.__class__.__name__
         )
 
         # Return different serializer if the request is a POST.
-        if http_method in ('POST'):
+        if http_method in ("POST"):
             serializer_class = ScanPOSTSerializer
             return serializer_class
         else:
@@ -121,12 +120,16 @@ class ScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
             queryset = Scan.objects.all()
 
         # Filter results based off user, 'Pending' scan status, and start_time for HTTP GET requests.
-        elif http_method == 'GET':
+        elif http_method == "GET":
             now_datetime = get_current_time()
-            queryset = Scan.objects.filter(site__scan_agent__scan_agent=user).filter(scan_status='pending').filter(start_time__lt=now_datetime)
+            queryset = (
+                Scan.objects.filter(site__scan_agent__scan_agent=user)
+                .filter(scan_status="pending")
+                .filter(start_time__lt=now_datetime)
+            )
 
         # Allow agents to update scan information.
-        elif http_method in ('PATCH'):
+        elif http_method in ("PATCH"):
             queryset = Scan.objects.filter(site__scan_agent__scan_agent=user)
 
         # Return empty queryset.
@@ -148,7 +151,7 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
         # Django compliant pre-formated datetimestamp.
         now_datetime = get_current_time()
-        
+
         # Update last_checkin time.
         Agent.objects.filter(scan_agent=user).update(last_checkin=now_datetime)
 
@@ -157,11 +160,15 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
             queryset = ScheduledScan.objects.all()
 
         # Filter results based off user, 'Pending' scan status, and start_time for HTTP GET requests.
-        elif http_method == 'GET':
-            queryset = ScheduledScan.objects.filter(scan_agent=user).filter(scan_status='pending').filter(start_time__lt=now_datetime)
+        elif http_method == "GET":
+            queryset = (
+                ScheduledScan.objects.filter(scan_agent=user)
+                .filter(scan_status="pending")
+                .filter(start_time__lt=now_datetime)
+            )
 
         # Allow agents to update scan information.
-        elif http_method in ('PATCH'):
+        elif http_method in ("PATCH"):
             queryset = ScheduledScan.objects.filter(scan_agent=user)
 
         # Return empty queryset.

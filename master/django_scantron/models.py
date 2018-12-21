@@ -25,10 +25,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 class Agent(models.Model):
     """Model for an Agent"""
 
-    id = models.AutoField(
-        primary_key=True,
-        verbose_name="Agent ID"
-    )
+    id = models.AutoField(primary_key=True, verbose_name="Agent ID")
     scan_agent = models.CharField(
         unique=True,
         max_length=255,
@@ -36,27 +33,13 @@ class Agent(models.Model):
             RegexValidator(
                 regex="^[a-zA-Z0-9/()_\- ]*$",  # Must escape -
                 message="Agent name can only contain alphanumeric characters, /, (), -, _, or spaces",
-            ),
+            )
         ],
-        verbose_name="Agent Name"
+        verbose_name="Agent Name",
     )
-    description = models.CharField(
-        unique=False,
-        max_length=255,
-        blank=True,
-        verbose_name="Agent Description"
-    )
-    api_token = models.CharField(
-        unique=True,
-        max_length=40,
-        blank=False,
-        verbose_name="API Key"
-    )
-    last_checkin = models.DateTimeField(
-        blank=True,
-        null=True,
-        verbose_name="Last Agent Check In"
-    )
+    description = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Agent Description")
+    api_token = models.CharField(unique=True, max_length=40, blank=False, verbose_name="API Key")
+    last_checkin = models.DateTimeField(blank=True, null=True, verbose_name="Last Agent Check In")
 
     def __str__(self):
         return str(self.scan_agent)
@@ -68,30 +51,15 @@ class Agent(models.Model):
 class NmapCommand(models.Model):
     """Model for a nmap command"""
 
-    SCAN_BINARY = (
-        ("masscan", "masscan"),
-        ("nmap", "nmap"),
-    )
+    SCAN_BINARY = (("masscan", "masscan"), ("nmap", "nmap"))
 
     id = models.AutoField(primary_key=True, verbose_name="nmap command ID")
-    scan_binary = models.CharField(
-        max_length=7,
-        choices=SCAN_BINARY,
-        default="nmap",
-        verbose_name="Scan binary"
-    )
-    nmap_scan_name = models.CharField(
-        unique=True,
-        max_length=255,
-        verbose_name="Scan Name"
-    )
-    nmap_command = models.TextField(
-        unique=False,
-        verbose_name="nmap command"
-    )
+    scan_binary = models.CharField(max_length=7, choices=SCAN_BINARY, default="nmap", verbose_name="Scan binary")
+    nmap_scan_name = models.CharField(unique=True, max_length=255, verbose_name="Scan Name")
+    nmap_command = models.TextField(unique=False, verbose_name="nmap command")
 
     def __str__(self):
-        return "{}||{}||{}".format(self.scan_binary, self.nmap_scan_name, self.nmap_command)
+        return f"{self.scan_binary}||{self.nmap_scan_name}||{self.nmap_command}"
         # return str(self.nmap_command)
 
     class Meta:
@@ -101,10 +69,7 @@ class NmapCommand(models.Model):
 class Site(models.Model):
     """Model for a Site.  Must be defined prior to Scan model."""
 
-    id = models.AutoField(
-        primary_key=True,
-        verbose_name="Site ID"
-    )
+    id = models.AutoField(primary_key=True, verbose_name="Site ID")
     site_name = models.CharField(
         unique=True,
         max_length=255,
@@ -112,31 +77,14 @@ class Site(models.Model):
             RegexValidator(
                 regex="^[a-zA-Z0-9/()_\- ]*$",  # Must escape -
                 message="Site name can only contain alphanumeric characters, /, (), -, _, or spaces",
-            ),
+            )
         ],
-        verbose_name="Site Name"
+        verbose_name="Site Name",
     )
-    description = models.CharField(
-        unique=False,
-        max_length=255,
-        blank=True,
-        verbose_name="Description"
-    )
-    targets_file = models.CharField(
-        unique=False,
-        max_length=255,
-        verbose_name="Targets file on disk"
-    )
-    nmap_command = models.ForeignKey(
-        NmapCommand,
-        on_delete=models.CASCADE,
-        verbose_name="nmap command"
-    )
-    scan_agent = models.ForeignKey(
-        Agent,
-        on_delete=models.CASCADE,
-        verbose_name="Scan Agent"
-    )
+    description = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Description")
+    targets_file = models.CharField(unique=False, max_length=255, verbose_name="Targets file on disk")
+    nmap_command = models.ForeignKey(NmapCommand, on_delete=models.CASCADE, verbose_name="nmap command")
+    scan_agent = models.ForeignKey(Agent, on_delete=models.CASCADE, verbose_name="Scan Agent")
 
     def __str__(self):
         return str(self.site_name)
@@ -148,20 +96,9 @@ class Site(models.Model):
 class Scan(models.Model):
     """Model for a type of Scan"""
 
-    id = models.AutoField(
-        primary_key=True,
-        verbose_name="Scan ID"
-    )
-    site = models.ForeignKey(
-        Site,
-        on_delete=models.CASCADE
-    )
-    scan_name = models.CharField(
-        unique=False,
-        max_length=255,
-        blank=True,
-        verbose_name="Scan Name"
-    )
+    id = models.AutoField(primary_key=True, verbose_name="Scan ID")
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    scan_name = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Scan Name")
     start_time = models.TimeField(verbose_name="First scheduled scan start time")
     recurrences = RecurrenceField(verbose_name="Recurrences")
 
@@ -192,10 +129,7 @@ class ScheduledScan(models.Model):
         ("error", "Error"),
     )
 
-    id = models.AutoField(
-        primary_key=True,
-        verbose_name="Scheduled Scan ID"
-    )
+    id = models.AutoField(primary_key=True, verbose_name="Scheduled Scan ID")
     site_name = models.CharField(
         unique=False,
         max_length=255,
@@ -203,9 +137,9 @@ class ScheduledScan(models.Model):
             RegexValidator(
                 regex="^[a-zA-Z0-9/()_\- ]*$",  # Must escape -
                 message="Site name can only contain alphanumeric characters, /, (), -, _, or spaces",
-            ),
+            )
         ],
-        verbose_name="Site Name"
+        verbose_name="Site Name",
     )
     scan_agent = models.CharField(
         unique=False,
@@ -214,43 +148,20 @@ class ScheduledScan(models.Model):
             RegexValidator(
                 regex="^[a-zA-Z0-9/()_\- ]*$",  # Must escape -
                 message="Agent name can only contain alphanumeric characters, /, (), -, _, or spaces",
-            ),
+            )
         ],
-        verbose_name="Agent Name"
+        verbose_name="Agent Name",
     )
     start_time = models.DateTimeField(verbose_name="Scheduled scan start date and time")
-    scan_binary = models.CharField(
-        max_length=7,
-        default="nmap",
-        verbose_name="Scan binary"
-    )
+    scan_binary = models.CharField(max_length=7, default="nmap", verbose_name="Scan binary")
 
-    nmap_command = models.CharField(
-        unique=False,
-        max_length=1024,
-        verbose_name="nmap command"
-    )
-    targets_file = models.CharField(
-        unique=False,
-        max_length=255,
-        verbose_name="Targets file on disk"
-    )
+    nmap_command = models.CharField(unique=False, max_length=1024, verbose_name="nmap command")
+    targets_file = models.CharField(unique=False, max_length=255, verbose_name="Targets file on disk")
     scan_status = models.CharField(
-        max_length=9,
-        choices=SCAN_STATUS_CHOICES,
-        default="pending",
-        verbose_name="Scan status"
+        max_length=9, choices=SCAN_STATUS_CHOICES, default="pending", verbose_name="Scan status"
     )
-    completed_time = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="Scan completion time"
-    )
-    result_file_base_name = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name="Result file base name"
-    )
+    completed_time = models.DateTimeField(null=True, blank=True, verbose_name="Scan completion time")
+    result_file_base_name = models.CharField(max_length=255, blank=True, verbose_name="Result file base name")
 
     def __str__(self):
         return str(self.id)

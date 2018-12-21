@@ -15,9 +15,22 @@ class UserListView(LoginRequiredMixin, ListView):
     paginate_by = 20
     context_object_name = "user_list"
     allow_empty = True
-    page_kwarg = 'page'
+    page_kwarg = "page"
     paginate_orphans = 0
-    fields = ['password', 'last_login', 'is_superuser', 'username', 'first_name', 'last_name', 'email', 'is_staff', 'is_active', 'date_joined', 'groups', 'user_permissions']
+    fields = [
+        "password",
+        "last_login",
+        "is_superuser",
+        "username",
+        "first_name",
+        "last_name",
+        "email",
+        "is_staff",
+        "is_active",
+        "date_joined",
+        "groups",
+        "user_permissions",
+    ]
 
     def __init__(self, **kwargs):
         return super(UserListView, self).__init__(**kwargs)
@@ -36,7 +49,7 @@ class UserListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         ret = super(UserListView, self).get_context_data(*args, **kwargs)
-        ret['fields'] = self.fields
+        ret["fields"] = self.fields
         return ret
 
     def get_paginate_by(self, queryset):
@@ -62,9 +75,9 @@ class UserDetailView(DetailView):
     model = User
     template_name = "django_scantron/user_detail.html"
     context_object_name = "user"
-    slug_field = 'slug'
-    slug_url_kwarg = 'slug'
-    pk_url_kwarg = 'pk'
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+    pk_url_kwarg = "pk"
 
     def __init__(self, **kwargs):
         return super(UserDetailView, self).__init__(**kwargs)
@@ -101,7 +114,20 @@ class UserDetailView(DetailView):
 class UserCreateView(CreateView):
     model = User
     form_class = UserForm
-    fields = ['password', 'last_login', 'is_superuser', 'username', 'first_name', 'last_name', 'email', 'is_staff', 'is_active', 'date_joined', 'groups', 'user_permissions']
+    fields = [
+        "password",
+        "last_login",
+        "is_superuser",
+        "username",
+        "first_name",
+        "last_name",
+        "email",
+        "is_staff",
+        "is_active",
+        "date_joined",
+        "groups",
+        "user_permissions",
+    ]
     template_name = "django_scantron/user_create.html"
     success_url = reverse_lazy("user_list")
 
@@ -154,12 +180,25 @@ class UserCreateView(CreateView):
 class UserUpdateView(UpdateView):
     model = User
     form_class = UserForm
-    fields = ['password', 'last_login', 'is_superuser', 'username', 'first_name', 'last_name', 'email', 'is_staff', 'is_active', 'date_joined', 'groups', 'user_permissions']
+    fields = [
+        "password",
+        "last_login",
+        "is_superuser",
+        "username",
+        "first_name",
+        "last_name",
+        "email",
+        "is_staff",
+        "is_active",
+        "date_joined",
+        "groups",
+        "user_permissions",
+    ]
     template_name = "django_scantron/user_update.html"
     initial = {}
-    slug_field = 'slug'
-    slug_url_kwarg = 'slug'
-    pk_url_kwarg = 'pk'
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+    pk_url_kwarg = "pk"
     context_object_name = "user"
 
     def __init__(self, **kwargs):
@@ -223,9 +262,9 @@ class UserUpdateView(UpdateView):
 class UserDeleteView(DeleteView):
     model = User
     template_name = "django_scantron/user_delete.html"
-    slug_field = 'slug'
-    slug_url_kwarg = 'slug'
-    pk_url_kwarg = 'pk'
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+    pk_url_kwarg = "pk"
     context_object_name = "user"
 
     def __init__(self, **kwargs):

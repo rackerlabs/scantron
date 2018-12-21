@@ -20,12 +20,12 @@ def retrieve_scan_file(request, id):
     elif scan_binary == "masscan":
         file_extension = "json"
 
-    scan_file = "{}.{}".format(result_file_base_name, file_extension)
+    scan_file = f"{result_file_base_name}.{file_extension}"
 
     # Serve file using nginx X-Accel-Redirect.
     # https://wellfire.co/learn/nginx-django-x-accel-redirects/
     response = HttpResponse()
     response["Content-Type"] = "text/plain"
-    response["Content-Disposition"] = "inline; filename={}".format(scan_file)
-    response["X-Accel-Redirect"] = "/protected/complete/{}".format(scan_file)
+    response["Content-Disposition"] = f"inline; filename={scan_file}"
+    response["X-Accel-Redirect"] = f"/protected/complete/{scan_file}"
     return response

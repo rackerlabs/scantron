@@ -3,10 +3,9 @@ from django_scantron.models import Scan
 
 
 class ScanForm(forms.ModelForm):
-
     class Meta:
         model = Scan
-        fields = ['site', 'scan_name', 'start_time', 'recurrences']
+        fields = ["site", "scan_name", "start_time", "recurrences"]
         exclude = []
         widgets = None
         localized_fields = None

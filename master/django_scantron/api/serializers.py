@@ -4,26 +4,17 @@ from django_scantron.models import Agent, NmapCommand, Scan, ScheduledScan, Site
 
 # Serializers define the API representations.
 
-class AgentSerializer(serializers.ModelSerializer):
 
+class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
-        fields = (
-            'scan_agent',
-            'description',
-            'api_token',
-        )  # Must have trailing ','
+        fields = ("scan_agent", "description", "api_token")  # Must have trailing ','
 
 
 class NmapCommandSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = NmapCommand
-        fields = (
-            'scan_binary',
-            'nmap_scan_name',
-            'nmap_command',
-        )  # Must have trailing ','
+        fields = ("scan_binary", "nmap_scan_name", "nmap_command")  # Must have trailing ','
 
 
 class SiteSerializer(serializers.ModelSerializer):
@@ -33,12 +24,12 @@ class SiteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Site
         fields = (
-            'id',
-            'site_name',
-            'description',
-            'targets_file',
-            'nmap_command',
-            'scan_agent',
+            "id",
+            "site_name",
+            "description",
+            "targets_file",
+            "nmap_command",
+            "scan_agent",
         )  # Must have trailing ','
 
 
@@ -49,40 +40,33 @@ class ScanGETSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Scan
-        fields = (
-            'id',
-            'site',
-            'scan_name',
-            'start_time',
-        )  # Must have trailing ','
+        fields = ("id", "site", "scan_name", "start_time")  # Must have trailing ','
 
 
 class ScanPOSTSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Scan
         fields = (
-            'id',
-            'site',
-            'scan_name',
-            'start_time',
+            "id",
+            "site",
+            "scan_name",
+            "start_time",
             # 'recurrences',
         )  # Must have trailing ','
 
 
 class ScheduledScanSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ScheduledScan
         fields = (
-            'id',
-            'site_name',
-            'scan_agent',
-            'start_time',
-            'scan_binary',
-            'nmap_command',
-            'targets_file',
-            'scan_status',
-            'completed_time',
-            'result_file_base_name',
+            "id",
+            "site_name",
+            "scan_agent",
+            "start_time",
+            "scan_binary",
+            "nmap_command",
+            "targets_file",
+            "scan_status",
+            "completed_time",
+            "result_file_base_name",
         )  # Must have trailing ','

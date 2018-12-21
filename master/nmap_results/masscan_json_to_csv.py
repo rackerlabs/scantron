@@ -130,8 +130,8 @@ def main():
                         # We care about all open ports found, not just ones with a banner.
                         results_list.append(result_dict)
 
-                except:
-                    print("Issue with parsing scan: {}".format(result))
+                except Exception as e:
+                    print(f"Issue with parsing scan: {result}.  Exception: {e}")
                     sys.exit(0)
 
         # The file has been completely parsed...create csv files in "for_splunk" directory.
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     # json_file = args.json_file
 
     # if not os.path.exists(json_file):
-    #     print("File does not exist: {}".format(json_file))
+    #     print(f"File does not exist: {json_file}")
     #     sys.exit(1)
 
     # main(**vars(args))

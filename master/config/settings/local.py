@@ -18,9 +18,9 @@ DEBUG = True
 
 # Mail settings
 # ------------------------------------------------------------------------------
-EMAIL_HOST = '127.0.0.1'
+EMAIL_HOST = "127.0.0.1"
 EMAIL_PORT = 1025
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_USE_TLS = True
 
 # django-debug-toolbar
@@ -29,7 +29,7 @@ EMAIL_USE_TLS = True
 # INSTALLED_APPS += ['debug_toolbar', ]  # noqa
 
 
-INTERNAL_IPS = ['127.0.0.1', ]
+INTERNAL_IPS = ["127.0.0.1"]
 
 # Your local stuff: Below this line define 3rd party library settings
 # ------------------------------------------------------------------------------

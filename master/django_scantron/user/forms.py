@@ -3,10 +3,9 @@ from django_scantron.models import User
 
 
 class UserForm(forms.ModelForm):
-
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'is_active', 'is_superuser']
+        fields = ["first_name", "last_name", "username", "email", "is_active", "is_superuser"]
         exclude = []
         widgets = None
         localized_fields = None

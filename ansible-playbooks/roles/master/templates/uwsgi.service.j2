@@ -5,12 +5,12 @@ After=syslog.target
 [Service]
 
 # Ensure scantron_secrets.json is readable by www-data user.
-ExecStartPre=/bin/sh -c 'chmod 744 {{ scantron_dir }}/scantron_secrets.json'
+ExecStartPre=/bin/sh -c "chmod 744 {{ scantron_dir }}/scantron_secrets.json"
 
 ExecStart=/usr/local/bin/uwsgi --ini {{ scantron_dir }}/scantron_uwsgi.ini
 
 # After service starts, ensure scantron_secrets.json is NOT readable by www-data user.
-ExecStartPost=/bin/sh -c 'chmod 700 {{ scantron_dir }}/scantron_secrets.json'
+ExecStartPost=/bin/sh -c "chmod 700 {{ scantron_dir }}/scantron_secrets.json"
 
 Restart=always
 KillSignal=SIGQUIT

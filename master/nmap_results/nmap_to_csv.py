@@ -127,7 +127,7 @@ def main():
             base_scan_file_name = os.path.basename(scan).split(".xml")[0]
 
             # Find all the .nmap, .xml, and .gnmap files for the base_scan_file_name.
-            base_scan_files = glob.glob(os.path.join(complete_dir, "{}*".format(base_scan_file_name)))
+            base_scan_files = glob.glob(os.path.join(complete_dir, f"{base_scan_file_name}*"))
 
             # csv files have been created, move all nmap scan file types from "completed" to "processed" folder.
             # extract file name and rebuild full path for destination
