@@ -10,13 +10,13 @@ from django_scantron.scan.forms import ScanForm
 
 
 class ScanListView(LoginRequiredMixin, ListView):
-    login_url = '/login/'
+    login_url = "/login/"
     model = Scan
     template_name = "django_scantron/scan_list.html"
     # paginate_by = 20
     context_object_name = "scan_list"
     allow_empty = True
-    page_kwarg = 'page'
+    page_kwarg = "page"
     paginate_orphans = 0
 
     def __init__(self, **kwargs):
@@ -58,13 +58,13 @@ class ScanListView(LoginRequiredMixin, ListView):
 
 
 class ScanDetailView(LoginRequiredMixin, DetailView):
-    login_url = '/login/'
+    login_url = "/login/"
     model = Scan
     template_name = "django_scantron/scan_detail.html"
     context_object_name = "scan"
-    slug_field = 'slug'
-    slug_url_kwarg = 'slug'
-    pk_url_kwarg = 'pk'
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+    pk_url_kwarg = "pk"
 
     def __init__(self, **kwargs):
         return super(ScanDetailView, self).__init__(**kwargs)
@@ -99,10 +99,10 @@ class ScanDetailView(LoginRequiredMixin, DetailView):
 
 
 class ScanCreateView(LoginRequiredMixin, CreateView):
-    login_url = '/login/'
+    login_url = "/login/"
     model = Scan
     form_class = ScanForm
-    fields = ['site_name', 'nmap_command', 'scan_type', 'target_file', 'scan_agent', 'start_time']
+    fields = ["site_name", "nmap_command", "scan_type", "target_file", "scan_agent", "start_time"]
     template_name = "django_scantron/scan_create.html"
     success_url = reverse_lazy("scan_list")
 
@@ -153,15 +153,15 @@ class ScanCreateView(LoginRequiredMixin, CreateView):
 
 
 class ScanUpdateView(LoginRequiredMixin, UpdateView):
-    login_url = '/login/'
+    login_url = "/login/"
     model = Scan
     form_class = ScanForm
-    fields = ['site_name', 'nmap_command', 'scan_type', 'target_file', 'scan_agent', 'start_time']
+    fields = ["site_name", "nmap_command", "scan_type", "target_file", "scan_agent", "start_time"]
     template_name = "django_scantron/scan_update.html"
     initial = {}
-    slug_field = 'slug'
-    slug_url_kwarg = 'slug'
-    pk_url_kwarg = 'pk'
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+    pk_url_kwarg = "pk"
     context_object_name = "scan"
 
     def __init__(self, **kwargs):
@@ -223,12 +223,12 @@ class ScanUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class ScanDeleteView(LoginRequiredMixin, DeleteView):
-    login_url = '/login/'
+    login_url = "/login/"
     model = Scan
     template_name = "django_scantron/scan_delete.html"
-    slug_field = 'slug'
-    slug_url_kwarg = 'slug'
-    pk_url_kwarg = 'pk'
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+    pk_url_kwarg = "pk"
     context_object_name = "scan"
 
     def __init__(self, **kwargs):

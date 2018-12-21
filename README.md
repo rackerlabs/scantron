@@ -475,6 +475,12 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
     `/home/scantron/master/for_splunk` - csv files for Spulnk ingestion
 
+## Database Model Graph
+
+Generated using `django-extensions`'s graph_models.
+
+![database_graph_model](./scantron_model_graph.png)
+
 ## Robot Image
 
 Robot lovingly delivered by Robohash.org (<https://robohash.org>)

@@ -49,7 +49,7 @@ def main():
         ROOT_LOGGER.debug("No scans exist")
         return
 
-    ROOT_LOGGER.debug("Found {} scans.".format(len(scans)))
+    ROOT_LOGGER.debug(f"Found {len(scans)} scans.")
 
     # Loop through each scan and extract any recurrences for today.
     for scan in scans:
@@ -61,15 +61,7 @@ def main():
         nmap_command = scan.site.nmap_command.nmap_command
         targets_file = scan.site.targets_file
 
-        # ROOT_LOGGER.debug(
-        #     "Found scan: {}, {}, {}, {}, {}".format(
-        #         site_name,
-        #         targets_file,
-        #         nmap_command,
-        #         scan_agent,
-        #         scan_binary,
-        #     )
-        # )
+        # ROOT_LOGGER.debug(f"Found scan: {site_name}, {targets_file}, {nmap_command}, {scan_agent}, {scan_binary}")
 
         # Retrieve scan occurences.
         scan_occurence = scan.recurrences.before(now_datetime, dtstart=now_datetime, inc=False)
@@ -83,7 +75,7 @@ def main():
         timestamp = datetime.datetime.strftime(start_time, "%Y%m%d_%H%M")
 
         # Build results file.  "__" is used by master/nmap_results/nmap_to_csv.py to .split() site_name and scan_agent.
-        result_file_base_name = "{}__{}__{}".format(clean_text(site_name), clean_text(scan_agent), timestamp)
+        result_file_base_name = f"{clean_text(site_name)}__{clean_text(scan_agent)}__{timestamp}"
 
         try:
             # Add entry to ScheduledScan model.
@@ -99,20 +91,11 @@ def main():
 
             if created:
                 ROOT_LOGGER.debug(
-                    "Adding to scheduled scans: {}, {}, {}, {}, {}, {}, {}, {}".format(
-                        site_name,
-                        scan_agent,
-                        scan_occurence.date(),
-                        start_time,
-                        scan_binary,
-                        nmap_command,
-                        targets_file,
-                        result_file_base_name,
-                    )
+                    f"Adding to scheduled scans: {site_name}, {scan_agent}, {scan_occurence.date()}, {start_time}, {scan_binary}, {nmap_command}, {targets_file}, {result_file_base_name}"
                 )
 
-        except:
-            ROOT_LOGGER.error("Error with site name: {}".format(site_name))
+        except Exception as e:
+            ROOT_LOGGER.error("Error with site name: {site_name}.  Exception: {e}")
 
 
 if __name__ == "__main__":

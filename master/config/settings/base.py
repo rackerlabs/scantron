@@ -22,7 +22,7 @@ APPS_DIR = ROOT_DIR.path("django_scantron")  # scantron/master/django_scantron
 # scantron_secrets.json sits in the root of the scantron folder.
 with open(os.path.join(str(ROOT_DIR), "scantron_secrets.json")) as fh:
     secrets_environment = os.environ["DJANGO_SETTINGS_MODULE"].split(".")[-1]
-    print("[*] Loading [ {} ] scantron_secrets.json".format(secrets_environment))
+    print(f"[*] Loading [ {secrets_environment} ] scantron_secrets.json")
     secrets = json.loads(fh.read())
 
 
@@ -37,7 +37,7 @@ def get_secret(setting, secrets=secrets):
             return secrets["production"][setting]
 
     except KeyError:
-        error_msg = "Set the {} environment variable".format(setting)
+        error_msg = f"Set the {setting} environment variable"
         raise ImproperlyConfigured(error_msg)
 
 

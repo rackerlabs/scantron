@@ -20,8 +20,10 @@ from django.contrib import admin
 from django_scantron.login.urls import urlpatterns as login_urls
 from django_scantron.logout.urls import urlpatterns as logout_urls
 from django_scantron.results.urls import urlpatterns as results_urls
+
 # from django_scantron.scan.urls import urlpatterns as scan_urls
 from django_scantron.scheduled_scan.urls import urlpatterns as scheduled_scan_urls
+
 # from django_scantron.user.urls import urlpatterns as user_urls
 
 # Import the separate API URLs.
@@ -36,11 +38,11 @@ ur += scheduled_scan_urls
 # ur += user_urls
 
 
-if not hasattr(settings, 'URL_PREFIX'):
-    settings.URL_PREFIX = ''
+if not hasattr(settings, "URL_PREFIX"):
+    settings.URL_PREFIX = ""
 
 urlpatterns = [
-    url(r'^scantron-admin/', admin.site.urls),  # Provide minimal obfuscation for admin panel.
-    url(r'^%s' % settings.URL_PREFIX, include(ur)),
-    url(r'^api/', include(api_urls)),
+    url(r"^scantron-admin/", admin.site.urls),  # Provide minimal obfuscation for admin panel.
+    url(r"^%s" % settings.URL_PREFIX, include(ur)),
+    url(r"^api/", include(api_urls)),
 ]
