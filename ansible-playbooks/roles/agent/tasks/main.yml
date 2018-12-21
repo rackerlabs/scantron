@@ -99,6 +99,14 @@
     group: root
     state: link
 
+- name: Copying custom logrotate configuration file to /etc/logrotate.d/
+  copy:
+    src: "files/etc/logrotate.d/scantron-agent"
+    dest: "/etc/logrotate.d/scantron-agent"
+    owner: root
+    group: root
+    mode: 0644  # Must be 0644 or 0444
+
 - name: chmod files to root only
   file:
     path: "{{ agent_dir }}"
