@@ -1,0 +1,12 @@
+{
+    "scan_agent": "agent-{{ range(1, 999999) | random}}",
+    "api_token": "{{ lookup('file', '../../../group_vars/static_api_key') }}",
+    "master_address": "https://127.0.0.1",
+    "master_port": 4430,
+    "callback_interval_in_seconds": 60,
+    "number_of_threads": 1,
+    "target_files_dir": "./target_files",
+    "nmap_results_dir": "./nmap_results",
+    "log_verbosity": 20,
+    "http_useragent": "user-agent"
+}
