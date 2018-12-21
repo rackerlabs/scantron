@@ -4,17 +4,17 @@ from django_scantron.models import Agent, NmapCommand, Scan, ScheduledScan, Site
 
 # Serializers define the API representations.
 
-
+# fmt: off
 class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
-        fields = ("scan_agent", "description", "api_token")  # Must have trailing ','
+        fields = ("scan_agent", "description", "api_token",)  # Must have trailing ','
 
 
 class NmapCommandSerializer(serializers.ModelSerializer):
     class Meta:
         model = NmapCommand
-        fields = ("scan_binary", "nmap_scan_name", "nmap_command")  # Must have trailing ','
+        fields = ("scan_binary", "nmap_scan_name", "nmap_command",)  # Must have trailing ','
 
 
 class SiteSerializer(serializers.ModelSerializer):
@@ -40,7 +40,7 @@ class ScanGETSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Scan
-        fields = ("id", "site", "scan_name", "start_time")  # Must have trailing ','
+        fields = ("id", "site", "scan_name", "start_time",)  # Must have trailing ','
 
 
 class ScanPOSTSerializer(serializers.ModelSerializer):
@@ -70,3 +70,5 @@ class ScheduledScanSerializer(serializers.ModelSerializer):
             "completed_time",
             "result_file_base_name",
         )  # Must have trailing ','
+
+# fmt: on
