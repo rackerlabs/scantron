@@ -131,9 +131,9 @@ For the "SECRET_KEY", per Django's [documentation](<https://docs.djangoproject.c
 The `scantron` user password is not really leveraged and is populated by providing a salted hash of a random password generated using Python's `passlib` library.  If you want to change the password, you will have to generate a hash for the desired password and update the `temp_user_pass` variable in `scantron/ansible-playbooks/roles/add_users/vars/main.yml`.
 
 ```python
-pip install passlib  # or pip3
+pip3 install passlib
 
-python -c "from passlib.hash import sha512_crypt; import getpass; print(sha512_crypt.encrypt(getpass.getpass()))"  # or python3
+python3 -c "from passlib.hash import sha512_crypt; import getpass; print(sha512_crypt.encrypt(getpass.getpass()))"
 ```
 
 #### Execute Master Ansible Playbook
@@ -148,20 +148,6 @@ ansible-playbook master.yml -u ubuntu --become --private-key=<agent SSH key>
 
 # root user.
 ansible-playbook master.yml -u root --private-key=<agent SSH key>
-```
-
-Ensure the uwsgi.service starts after a reboot:
-
-```bash
-systemctl status uwsgi
-```
-
-The Ansible playbook creates a symbolic link for the uWSGI service configuration file (`/home/scantron/master/uwsgi.service` --> `/lib/systemd/system/uwsgi.service`)
-
-but an actual file may be necessary:
-
-```bash
-cp /home/scantron/master/uwsgi.service /lib/systemd/system/uwsgi.service
 ```
 
 ### Agent Installtion
@@ -444,7 +430,7 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
 3. Add targets on Master
 
-    The files need to be owned by root since that is the user on the agents that will be accessing the files.
+    The files need to be owned by root since that is the user on the agents that will be accessing the files through the NFS share.
 
     ```bash
     sudo su
@@ -492,8 +478,3 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 ## Robot Image
 
 Robot lovingly delivered by Robohash.org (<https://robohash.org>)
-
-## TODO
-
-* Improve scan scheduler
-* Gucci up the front end instead of relying on Django Admin
