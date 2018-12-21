@@ -1,0 +1,9 @@
+/home/scantron/master/logs/uwsgi.log {
+    copytruncate
+    rotate 14
+    size=256M
+    compress
+    delaycompress
+    missingok
+    notifempty
+}

@@ -1,0 +1,10 @@
+/root/agent/logs/agent.log {
+    create 700 root root
+    copytruncate
+    rotate 14
+    size=64M
+    compress
+    delaycompress
+    missingok
+    notifempty
+}
