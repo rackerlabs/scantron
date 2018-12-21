@@ -2,6 +2,11 @@
 
 ![logo](./master/django_scantron/static/scantron/img/scantron_300x300.jpg)
 
+<p align="left">
+<a href=""><img alt="Python 3.6" src="https://img.shields.io/badge/python-3.6-green.svg"></a>
+<a href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+</p>
+
 ## Overview
 
 Scantron is a distributed nmap scanner comprised of two components.  The first is a master node that consists of a web front end used for scheduling scans and storing nmap scan targets and results.  The second component is an agent that pulls scan jobs from master and conducts the actual nmap scanning.  A majority of the application's logic is purposely placed on master to make the agent(s) as "dumb" as possible.  All nmap target files and nmap results reside on master and are shared through a network file share (NFS) leveraging SSH tunnels.  The agents call back to master periodically using a REST API to check for scan tasks and provide scan status updates.
@@ -480,6 +485,12 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 Generated using `django-extensions`'s graph_models.
 
 ![database_graph_model](./scantron_model_graph.png)
+
+## Contributing
+
+If you would like to contribute, please adhere to the Python code black formatter rules specifying a line length of 120.
+
+More information about black can be found here (<https://github.com/ambv/black>)
 
 ## Robot Image
 
