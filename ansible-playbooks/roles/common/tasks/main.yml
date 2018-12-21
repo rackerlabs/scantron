@@ -35,7 +35,7 @@
 
 - name: Update SSHD configuration file.
   template:
-    src: sshd_config.j2
+    src: templates/sshd_config.j2
     dest: /etc/ssh/sshd_config
     backup: yes
     owner: root
@@ -50,18 +50,23 @@
 
 - name: Updating root's .bash_aliases file
   copy:
-    src: .bash_aliases
+    src: files/.bash_aliases
     dest: /root
 
 - name: Updating root's .vimrc file
   copy:
-    src: .vimrc
+    src: files/.vimrc
     dest: /root
 
 - name: Updating root's .dircolors file
   copy:
-    src: .dircolors
+    src: files/.dircolors
     dest: /root
+
+- name: Updating /usr/lib/proxychains3/proxyresolv with 8.8.8.8 DNS.
+  copy:
+    src: files/usr/lib/proxychains3/proxyresolv
+    dest: /usr/lib/proxychains3/proxyresolv
 
 - name: Disable IPv6 in ufw.
   lineinfile:
