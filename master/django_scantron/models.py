@@ -53,8 +53,8 @@ class NmapCommand(models.Model):
 
     # fmt: off
     SCAN_BINARY = (
-            ("masscan", "masscan"),
-            ("nmap", "nmap")
+        ("masscan", "masscan"),
+        ("nmap", "nmap"),
     )
     # fmt: on
 
