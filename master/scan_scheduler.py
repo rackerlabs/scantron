@@ -64,7 +64,14 @@ def main():
         # ROOT_LOGGER.debug(f"Found scan: {site_name}, {targets_file}, {nmap_command}, {scan_agent}, {scan_binary}")
 
         # Retrieve scan occurences.
-        scan_occurence = scan.recurrences.before(now_datetime, dtstart=now_datetime, inc=False)
+        # scan_occurence = scan.recurrences.before(now_datetime, dtstart=now_datetime, inc=False)
+
+        # Convoluted way of determining if a scan occurrence is today.
+        now = datetime.datetime.now()
+        beginning_of_today = now.replace(hour=0).replace(minute=0).replace(second=0).replace(microsecond=0)
+        end_of_today = now.replace(hour=23).replace(minute=59).replace(second=59).replace(microsecond=0)
+        scan_occurence = scan.recurrences.between(beginning_of_today, end_of_today)[0]
+
         if not scan_occurence:
             continue
 
