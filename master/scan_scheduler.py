@@ -70,13 +70,22 @@ def main():
         now = datetime.datetime.now()
         beginning_of_today = now.replace(hour=0).replace(minute=0).replace(second=0).replace(microsecond=0)
         end_of_today = now.replace(hour=23).replace(minute=59).replace(second=59).replace(microsecond=0)
-        scan_occurence = scan.recurrences.between(beginning_of_today, end_of_today)[0]
+        scan_occurence = scan.recurrences.between(beginning_of_today, end_of_today)
 
         if not scan_occurence:
             continue
+        else:
+            scan_occurence = scan_occurence[0]
 
         # Build start_time.
         start_time = datetime.datetime.combine(scan_occurence.date(), scan.start_time)
+
+        # If the start time was earlier in the day, just bail, don't want to rerun the scan.
+        # This will always be true...maybe add buffer of 5 minutes?  If schedule freq was every minute
+        # would still run into issues.
+        if start_time < now:
+            ROOT_LOGGER.debug(f"Start time was earlier in the day: start_time({start_time}) < now ({now})")
+            continue
 
         # Convert start_time datetime object to string for result_file_base_name.
         timestamp = datetime.datetime.strftime(start_time, "%Y%m%d_%H%M")
