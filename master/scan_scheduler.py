@@ -72,6 +72,7 @@ def main():
         end_of_today = now.replace(hour=23).replace(minute=59).replace(second=59).replace(microsecond=0)
         scan_occurence = scan.recurrences.between(beginning_of_today, end_of_today)
 
+        # If a scan is not supposed to occur today, then bail, otherwise extract the datetime.
         if not scan_occurence:
             continue
         else:
@@ -79,6 +80,10 @@ def main():
 
         # Build start_time.
         start_time = datetime.datetime.combine(scan_occurence.date(), scan.start_time)
+
+        # Check and see if a scan has been scheduled for today's date and start time.
+        # Need to add site_id to models
+        django_connector.ScheduledScan.objects.filter(start_time=start_time).filter(site_id=site_id)
 
         # If the start time was earlier in the day, just bail, don't want to rerun the scan.
         # This will always be true...maybe add buffer of 5 minutes?  If schedule freq was every minute
@@ -111,7 +116,7 @@ def main():
                 )
 
         except Exception as e:
-            ROOT_LOGGER.error("Error with site name: {site_name}.  Exception: {e}")
+            ROOT_LOGGER.error(f"Error with site name: {site_name}.  Exception: {e}")
 
 
 if __name__ == "__main__":
