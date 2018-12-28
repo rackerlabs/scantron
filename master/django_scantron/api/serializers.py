@@ -33,7 +33,7 @@ class SiteSerializer(serializers.ModelSerializer):
         )  # Must have trailing ','
 
 
-class ScanGETSerializer(serializers.ModelSerializer):
+class ScanSerializer(serializers.ModelSerializer):
     # nested relationship
     # http://www.django-rest-framework.org/api-guide/relations/#nested-relationships
     site = SiteSerializer(many=False)
@@ -41,18 +41,6 @@ class ScanGETSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scan
         fields = ("id", "site", "scan_name", "start_time",)  # Must have trailing ','
-
-
-class ScanPOSTSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Scan
-        fields = (
-            "id",
-            "site",
-            "scan_name",
-            "start_time",
-            # 'recurrences',
-        )  # Must have trailing ','
 
 
 class ScheduledScanSerializer(serializers.ModelSerializer):
