@@ -9,7 +9,7 @@
 
 ## Overview
 
-Scantron is a distributed nmap scanner comprised of two components.  The first is a master node that consists of a web front end used for scheduling scans and storing nmap scan targets and results.  The second component is an agent that pulls scan jobs from master and conducts the actual nmap scanning.  A majority of the application's logic is purposely placed on master to make the agent(s) as "dumb" as possible.  All nmap target files and nmap results reside on master and are shared through a network file share (NFS) leveraging SSH tunnels.  The agents call back to master periodically using a REST API to check for scan tasks and provide scan status updates.
+Scantron is a distributed nmap scanner comprised of two components.  The first is a Master node that consists of a web front end used for scheduling scans and storing nmap scan targets and results.  The second component is an agent that pulls scan jobs from Master and conducts the actual nmap scanning.  A majority of the application's logic is purposely placed on Master to make the agent(s) as "dumb" as possible.  All nmap target files and nmap results reside on Master and are shared through a network file share (NFS) leveraging SSH tunnels.  The agents call back to Master periodically using a REST API to check for scan tasks and provide scan status updates.
 
 ![scheduled_scans](./img/scheduled_scans.png)
 
@@ -22,7 +22,7 @@ Scantron is coded for Python3.6+ exclusively and leverages Django for the web fr
 
 ![results](./img/results.png)
 
-Scantron relies heavily on utilizing SSH port forwards (-R / -L) as an umbilical cord to the agents.  Either an SSH connection from `master --> agent` or `agent --> master` is acceptable and may be required depending on different firewall rules, but tweaking the port forwards and autossh commands will be necessary.  If you are unfamiliar with these concepts, there are some great overviews and tutorials out there:
+Scantron relies heavily on utilizing SSH port forwards (-R / -L) as an umbilical cord to the agents.  Either an SSH connection from `Master --> agent` or `agent --> Master` is acceptable and may be required depending on different firewall rules, but tweaking the port forwards and autossh commands will be necessary.  If you are unfamiliar with these concepts, there are some great overviews and tutorials out there:
 
 * <https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding>
 * <https://www.systutorials.com/39648/port-forwarding-using-ssh-tunnel/>
@@ -196,7 +196,7 @@ Users / agents are added through the webapp, so once a user / agent is added, an
 
 ### Update /etc/rc.local with agent IPs for autossh
 
-This is done automatically for one agent through Ansible.  You may have to add additional lines and update SSH keys for each agent if they are different.  These commands are for master connecting to the agents.  
+This is done automatically for one agent through Ansible.  You may have to add additional lines and update SSH keys for each agent if they are different.  These commands are for Master connecting to the agents.  
 
 In this example:
 
@@ -212,7 +212,7 @@ su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -
 su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -p 22 -R 4430:127.0.0.1:443 -R 2049:127.0.0.1:2049 -i /home/scantron/master/autossh.key autossh@192.168.1.101'
 ```
 
-If master cannot SSH to an agent, then the autossh command will be run on the agent and the port forwards will be local (`-L`) instead of remote (`-R`).
+If Master cannot SSH to an agent, then the autossh command will be run on the agent and the port forwards will be local (`-L`) instead of remote (`-R`).
 
 ```bash
 # Master <-- Agent 1
@@ -223,9 +223,9 @@ su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -
 
 ### Agent's agent_config.json
 
-agent_config.json is a configuration file used by agents to provide basic settings and bootstrap communication with master.  Each agent can have a different configuration file.  
+agent_config.json is a configuration file used by agents to provide basic settings and bootstrap communication with Master.  Each agent can have a different configuration file.  
 
-    The "api_token" will have to be modified on all the agents after deploying master!
+    The "api_token" will have to be modified on all the agents after deploying Master!
 
 Agent settings:
 
@@ -233,9 +233,9 @@ Agent settings:
 
 **api_token:** Used to authenticate agents.  Recommend different API Tokens per agent, but the same one could be used.
 
-**master_address:** Web address of master.  Could be 127.0.0.1 if agent traffic is tunneled to master through an SSH port forward.
+**master_address:** Web address of Master.  Could be 127.0.0.1 if agent traffic is tunneled to Master through an SSH port forward.
 
-**master_port:** Web port master is listening on.
+**master_port:** Web port Master is listening on.
 
 **callback_interval_in_seconds:** Number of seconds agents wait before calling back for scan jobs.
 
@@ -305,7 +305,7 @@ screen -r agent1  # Resume named screen session, if using screen.
 
 ### Agent Troubleshooting
 
-Verify SSH connection from master with reverse port redirect is up on each agent.  Any traffic hitting 127.0.0.1:4430 will be tunneled back to Master.  This port is for communicating with the API.  Any traffic hitting 127.0.0.1:2049 will connect back to the NFS share on Master.
+Verify SSH connection from Master with reverse port redirect is up on each agent.  Any traffic hitting 127.0.0.1:4430 will be tunneled back to Master.  This port is for communicating with the API.  Any traffic hitting 127.0.0.1:2049 will connect back to the NFS share on Master.
 
 ```bash
 tcp    0    0 127.0.0.1:4430    0.0.0.0:*    LISTEN    1399/sshd: autossh
@@ -337,12 +337,12 @@ You can also log into the webapp using the agent name and password and browse to
 ### Master `target_files` Folder
 
 * Place files with target IPs/hosts (fed to nmap `-iL` switch) in `master/target_files/`
-* `target_files` is an NFS share on master that the agent reads from through an SSH tunnel.
+* `target_files` is an NFS share on Master that the agent reads from through an SSH tunnel.
 
 ### Master `nmap_results` folder
 
 * nmap scan results from agents go here.
-* `master/nmap_results/` is an NFS share on master that the agent writes to through an SSH tunnel.
+* `master/nmap_results/` is an NFS share on Master that the agent writes to through an SSH tunnel.
 
 ### Master Troubleshooting
 
@@ -442,22 +442,27 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
     cd /home/scantron/master/target_files
     echo 192.168.100 > dmz_assets.txt
     echo 192.168.101 >> dmz_assets.txt
+    chown root:root dmz_assets.txt
     ```
 
-4. Create a site
+4. Create target file object
+
+    ![create_target_file](./img/create_target_file.png)
+
+5. Create a site
 
     ![create_site](./img/create_site.png)
 
-5. Create scan
+6. Create scan
     * Select start time
     * Add start date
-    * Add recurrence rules
+    * Add recurrence rules (if applicable)
 
     The `/home/scantron/master/scan_scheduler.sh` cronjob checks every minute to determine if any scans need to be queued.  If scans are found, it schedules them to be picked up by the agents.
 
     ![create_scan](./img/create_scan.png)
 
-6. View pending scans
+7. View pending scans
 
     ```bash
     cd /home/scantron/master/nmap_results/pending
@@ -466,7 +471,7 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
     Completed scans are moved to the `/home/scantron/master/nmap_results/completed` directory.
 
-7. Process scans
+8. Process scans
 
     Scan files are moved between a few folders.
 
