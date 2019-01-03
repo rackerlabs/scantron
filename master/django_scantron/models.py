@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User  # noqa
-from django.core.validators import RegexValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -159,14 +159,9 @@ class ScheduledScan(models.Model):
         ],
         verbose_name="Site Name",
     )
-    site_name_id = models.CharField(
-        unique=False,
-        max_length=255,
+    site_name_id = models.IntegerField(
         validators=[
-            RegexValidator(
-                regex="^[0-9]*$",
-                message="Site name ID can only contain numeric characters",
-            )
+            MinValueValidator(1, message="Site name ID must be greater than 0",)
         ],
         verbose_name="Site name ID",
     )
@@ -181,40 +176,25 @@ class ScheduledScan(models.Model):
         ],
         verbose_name="Agent Name",
     )
-    scan_agent_id = models.CharField(
-        unique=False,
-        max_length=255,
+    scan_agent_id = models.IntegerField(
         validators=[
-            RegexValidator(
-                regex="^[0-9]*$",
-                message="Scan agent ID can only contain numeric characters",
-            )
+            MinValueValidator(1, message="Scan agent ID must be greater than 0",)
         ],
         verbose_name="Scan agent ID",
     )
     start_time = models.DateTimeField(verbose_name="Scheduled scan start date and time")
     scan_binary = models.CharField(max_length=7, default="nmap", verbose_name="Scan binary")
     nmap_command = models.CharField(unique=False, max_length=1024, verbose_name="nmap command")
-    nmap_command_id = models.CharField(
-        unique=False,
-        max_length=255,
+    nmap_command_id = models.IntegerField(
         validators=[
-            RegexValidator(
-                regex="^[0-9]*$",
-                message="nmap command ID can only contain numeric characters",
-            )
+            MinValueValidator(1, message="nmap command ID must be greater than 0",)
         ],
         verbose_name="nmap command ID",
     )
     target_file = models.CharField(unique=False, max_length=255, verbose_name="Targets file on disk")
-    target_file_id = models.CharField(
-        unique=False,
-        max_length=255,
+    target_file_id = models.IntegerField(
         validators=[
-            RegexValidator(
-                regex="^[0-9]*$",
-                message="Target file ID can only contain numeric characters",
-            )
+            MinValueValidator(1, message="Target file ID must be greater than 0",)
         ],
         verbose_name="Target file ID",
     )
