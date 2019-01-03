@@ -102,12 +102,12 @@ class Agent:
 
                         # Verify files exist by trying to access.
                         target_files_dir = self.config_data["target_files_dir"]
-                        targets_file = os.path.join(target_files_dir, scan_job["targets_file"])
+                        target_file = os.path.join(target_files_dir, scan_job["target_file"])
 
-                        if not os.path.exists(targets_file):
+                        if not os.path.exists(target_file):
                             modules.logger.ROOT_LOGGER.error(
                                 "File does not exist on master: {} Ensure NFS service is running and SSH tunnel exists".format(
-                                    targets_file
+                                    target_file
                                 )
                             )
                             # Update scan_status.

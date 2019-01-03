@@ -20,6 +20,7 @@ def get_timestamp():
 
     now = datetime.datetime.now()
     timestamp = datetime.datetime.strftime(now, "%Y%m%d_%H%M%S")
+
     return timestamp
 
 
@@ -34,6 +35,7 @@ def clean_text(uncleaned_text):
         .replace("__", "_")
         .replace("/", "_")
     )
+
     return cleaned_text
 
 
@@ -56,18 +58,23 @@ def main():
 
         # Populate variables from existing database relationships.
         site_name = scan.site.site_name
+        site_name_id = scan.site.id
         scan_agent = scan.site.scan_agent.scan_agent
+        scan_agent_id = scan.site.scan_agent_id
         scan_binary = scan.site.nmap_command.scan_binary
         nmap_command = scan.site.nmap_command.nmap_command
-        targets_file = scan.site.targets_file
+        nmap_command_id = scan.site.nmap_command.id
+        target_file = scan.site.target_file.target_file_name
+        target_file_id = scan.site.target_file.id
 
-        # ROOT_LOGGER.debug(f"Found scan: {site_name}, {targets_file}, {nmap_command}, {scan_agent}, {scan_binary}")
+        # ROOT_LOGGER.debug(f"Found scan: {site_name}, {target_file}, {nmap_command}, {scan_agent}, {scan_binary}")
 
         # Retrieve scan occurences.
         # scan_occurence = scan.recurrences.before(now_datetime, dtstart=now_datetime, inc=False)
 
         # Convoluted way of determining if a scan occurrence is today.
         now = datetime.datetime.now()
+        # now += datetime.timedelta(days=7)  # For testing.
         beginning_of_today = now.replace(hour=0).replace(minute=0).replace(second=0).replace(microsecond=0)
         end_of_today = now.replace(hour=23).replace(minute=59).replace(second=59).replace(microsecond=0)
         scan_occurence = scan.recurrences.between(beginning_of_today, end_of_today)
@@ -82,15 +89,29 @@ def main():
         start_time = datetime.datetime.combine(scan_occurence.date(), scan.start_time)
 
         # Check and see if a scan has been scheduled for today's date and start time.
-        # Need to add site_id to models
-        django_connector.ScheduledScan.objects.filter(start_time=start_time).filter(site_id=site_id)
+        # Utilize *_id so that the human-readable names can be changed without triggering
+        # a new scan.  The site_name_id, scan_agent_id, and nmap_command_id, and
+        # target_file_id are not exposed in the ScheduledScan (agent's) API endpoint.
+
+        # fmt: off
+        scan_object = django_connector.ScheduledScan.objects. \
+            filter(start_time=start_time). \
+            filter(site_name_id=site_name_id). \
+            filter(scan_agent_id=scan_agent_id). \
+            filter(nmap_command_id=nmap_command_id). \
+            filter(target_file_id=target_file_id)
+        # fmt: on
+
+        # Scan has already been created.
+        if scan_object:
+            continue
 
         # If the start time was earlier in the day, just bail, don't want to rerun the scan.
         # This will always be true...maybe add buffer of 5 minutes?  If schedule freq was every minute
         # would still run into issues.
-        if start_time < now:
-            ROOT_LOGGER.debug(f"Start time was earlier in the day: start_time({start_time}) < now ({now})")
-            continue
+        # if start_time < now:
+        #     ROOT_LOGGER.debug(f"Start time was earlier in the day: start_time({start_time}) < now ({now})")
+        #     continue
 
         # Convert start_time datetime object to string for result_file_base_name.
         timestamp = datetime.datetime.strftime(start_time, "%Y%m%d_%H%M")
@@ -102,17 +123,22 @@ def main():
             # Add entry to ScheduledScan model.
             obj, created = django_connector.ScheduledScan.objects.get_or_create(
                 site_name=site_name,
+                site_name_id=site_name_id,
                 scan_agent=scan_agent,
+                scan_agent_id=scan_agent_id,
                 start_time=start_time,
                 scan_binary=scan_binary,
                 nmap_command=nmap_command,
-                targets_file=targets_file,
+                nmap_command_id=nmap_command_id,
+                target_file=target_file,
+                target_file_id=target_file_id,
                 result_file_base_name=result_file_base_name,
+                scan_status="pending",
             )
 
             if created:
                 ROOT_LOGGER.debug(
-                    f"Adding to scheduled scans: {site_name}, {scan_agent}, {scan_occurence.date()}, {start_time}, {scan_binary}, {nmap_command}, {targets_file}, {result_file_base_name}"
+                    f"Adding to scheduled scans: {site_name}, {scan_agent}, {scan_occurence.date()}, {start_time}, {scan_binary}, {nmap_command}, {target_file}, {result_file_base_name}"
                 )
 
         except Exception as e:

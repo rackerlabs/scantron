@@ -326,6 +326,8 @@
   with_items:
     - nmap_to_csv.sh
     - nmap_to_csv.py
+    - masscan_json_to_csv.sh
+    - masscan_json_to_csv.py
 
 - name: chown-ing master files to root in "/home/{{ non_root_user }}/master"
   file:
@@ -356,14 +358,25 @@
 
 - name: Add crontab entry for nmap_to_csv.sh
   cron:
-    name: Convert scan files for Splunk ingestion every 5 minutes.
-    minute: "*/5"
+    name: Convert nmap scan files for Splunk ingestion every minute.
+    minute: "*"
     hour: "*"
     day: "*"
     month: "*"
     weekday: "*"
     job: "{{ scantron_dir }}/nmap_results/nmap_to_csv.sh"
-    user: scantron
+    user: root
+
+- name: Add crontab entry for masscan_json_to_csv.sh
+  cron:
+    name: Convert masscan json scan files for Splunk ingestion every minute.
+    minute: "*"
+    hour: "*"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: "{{ scantron_dir }}/nmap_results/masscan_json_to_csv.sh"
+    user: root
 
 - name: Copying custom logrotate configuration file to /etc/logrotate.d/
   copy:

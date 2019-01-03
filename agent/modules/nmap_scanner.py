@@ -29,7 +29,7 @@ def scan_site(scan_job_dict):
         nmap_results_dir = config_data["nmap_results_dir"]
 
         target_files_dir = config_data["target_files_dir"]
-        targets_file = os.path.join(target_files_dir, scan_job["targets_file"])
+        target_file = os.path.join(target_files_dir, scan_job["target_file"])
 
         # Setup folder structure.
         pending_files_dir = os.path.join(nmap_results_dir, "pending")
@@ -82,7 +82,7 @@ def scan_site(scan_job_dict):
                 # Build the masscan command.
                 # Can only have 1 file output type.
                 file_options = "-iL {} -oJ {} --http-user-agent {}".format(
-                    targets_file, json_file, config_data["http_useragent"]
+                    target_file, json_file, config_data["http_useragent"]
                 )
 
                 # nmap_command is used for both nmap and masscan commands.
@@ -104,7 +104,7 @@ def scan_site(scan_job_dict):
             else:
                 # Build the nmap command.
                 file_options = "-iL {} -oG {} -oN {} -oX {} --script-args http.useragent='{}'".format(
-                    targets_file, gnmap_file, nmap_file, xml_file, config_data["http_useragent"]
+                    target_file, gnmap_file, nmap_file, xml_file, config_data["http_useragent"]
                 )
                 command = "nmap {} {}".format(nmap_command, file_options)
 

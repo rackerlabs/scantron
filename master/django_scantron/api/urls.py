@@ -12,6 +12,7 @@ router.register(r"nmap_commands", views.NmapCommandViewSet, base_name="nmap_comm
 router.register(r"scans", views.ScanViewSet, base_name="scans")
 router.register(r"scheduled_scans", views.ScheduledScanViewSet, base_name="scheduled_scans")
 router.register(r"sites", views.SiteViewSet, base_name="sites")
+router.register(r"target_files", views.TargetFileViewSet, base_name="target_files")
 
 schema_view = get_swagger_view(title="Swagger API")
 
