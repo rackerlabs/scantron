@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User  # noqa
-from django.core.validators import RegexValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -71,6 +71,19 @@ class NmapCommand(models.Model):
         verbose_name_plural = "nmap Commands"
 
 
+class TargetFile(models.Model):
+    """Model for a target files"""
+
+    id = models.AutoField(primary_key=True, verbose_name="Target file ID")
+    target_file_name = models.CharField(unique=True, max_length=255, verbose_name="Target file name")
+
+    def __str__(self):
+        return str(self.target_file_name)
+
+    class Meta:
+        verbose_name_plural = "Target Files"
+
+
 class Site(models.Model):
     """Model for a Site.  Must be defined prior to Scan model."""
 
@@ -87,7 +100,7 @@ class Site(models.Model):
         verbose_name="Site Name",
     )
     description = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Description")
-    targets_file = models.CharField(unique=False, max_length=255, verbose_name="Targets file on disk")
+    target_file = models.ForeignKey(TargetFile, on_delete=models.CASCADE, verbose_name="Target file on disk")
     nmap_command = models.ForeignKey(NmapCommand, on_delete=models.CASCADE, verbose_name="nmap command")
     scan_agent = models.ForeignKey(Agent, on_delete=models.CASCADE, verbose_name="Scan Agent")
 
@@ -104,8 +117,8 @@ class Scan(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Scan ID")
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
     scan_name = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Scan Name")
-    start_time = models.TimeField(verbose_name="First scheduled scan start time")
-    recurrences = RecurrenceField(verbose_name="Recurrences")
+    start_time = models.TimeField(verbose_name="Scan start time")
+    recurrences = RecurrenceField(include_dtstart=False, verbose_name="Recurrences")
 
     def __str__(self):
         return str(self.id)
@@ -146,6 +159,12 @@ class ScheduledScan(models.Model):
         ],
         verbose_name="Site Name",
     )
+    site_name_id = models.IntegerField(
+        validators=[
+            MinValueValidator(1, message="Site name ID must be greater than 0",)
+        ],
+        verbose_name="Site name ID",
+    )
     scan_agent = models.CharField(
         unique=False,
         max_length=255,
@@ -157,11 +176,28 @@ class ScheduledScan(models.Model):
         ],
         verbose_name="Agent Name",
     )
+    scan_agent_id = models.IntegerField(
+        validators=[
+            MinValueValidator(1, message="Scan agent ID must be greater than 0",)
+        ],
+        verbose_name="Scan agent ID",
+    )
     start_time = models.DateTimeField(verbose_name="Scheduled scan start date and time")
     scan_binary = models.CharField(max_length=7, default="nmap", verbose_name="Scan binary")
-
     nmap_command = models.CharField(unique=False, max_length=1024, verbose_name="nmap command")
-    targets_file = models.CharField(unique=False, max_length=255, verbose_name="Targets file on disk")
+    nmap_command_id = models.IntegerField(
+        validators=[
+            MinValueValidator(1, message="nmap command ID must be greater than 0",)
+        ],
+        verbose_name="nmap command ID",
+    )
+    target_file = models.CharField(unique=False, max_length=255, verbose_name="Targets file on disk")
+    target_file_id = models.IntegerField(
+        validators=[
+            MinValueValidator(1, message="Target file ID must be greater than 0",)
+        ],
+        verbose_name="Target file ID",
+    )
     scan_status = models.CharField(
         max_length=9, choices=SCAN_STATUS_CHOICES, default="pending", verbose_name="Scan status"
     )

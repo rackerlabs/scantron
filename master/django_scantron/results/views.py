@@ -28,4 +28,5 @@ def retrieve_scan_file(request, id):
     response["Content-Type"] = "text/plain"
     response["Content-Disposition"] = f"inline; filename={scan_file}"
     response["X-Accel-Redirect"] = f"/protected/complete/{scan_file}"
+
     return response

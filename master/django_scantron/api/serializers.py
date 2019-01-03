@@ -1,20 +1,34 @@
 from rest_framework import serializers
-from django_scantron.models import Agent, NmapCommand, Scan, ScheduledScan, Site
 
+# fmt: off
+from django_scantron.models import (
+    Agent,
+    NmapCommand,
+    Scan,
+    ScheduledScan,
+    Site,
+    TargetFile,
+)
 
 # Serializers define the API representations.
 
-# fmt: off
+
 class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
-        fields = ("scan_agent", "description", "api_token",)  # Must have trailing ','
+        fields = ("scan_agent", "description", "api_token",)
 
 
 class NmapCommandSerializer(serializers.ModelSerializer):
     class Meta:
         model = NmapCommand
-        fields = ("scan_binary", "nmap_scan_name", "nmap_command",)  # Must have trailing ','
+        fields = ("scan_binary", "nmap_scan_name", "nmap_command",)
+
+
+class TargetFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TargetFile
+        fields = ("target_file_name",)
 
 
 class SiteSerializer(serializers.ModelSerializer):
@@ -30,7 +44,7 @@ class SiteSerializer(serializers.ModelSerializer):
             "targets_file",
             "nmap_command",
             "scan_agent",
-        )  # Must have trailing ','
+        )
 
 
 class ScanSerializer(serializers.ModelSerializer):
@@ -40,7 +54,7 @@ class ScanSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Scan
-        fields = ("id", "site", "scan_name", "start_time",)  # Must have trailing ','
+        fields = ("id", "site", "scan_name", "start_time",)
 
 
 class ScheduledScanSerializer(serializers.ModelSerializer):
@@ -53,10 +67,10 @@ class ScheduledScanSerializer(serializers.ModelSerializer):
             "start_time",
             "scan_binary",
             "nmap_command",
-            "targets_file",
+            "target_file",
             "scan_status",
             "completed_time",
             "result_file_base_name",
-        )  # Must have trailing ','
+        )
 
 # fmt: on

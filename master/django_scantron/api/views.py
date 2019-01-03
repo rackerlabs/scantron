@@ -8,8 +8,19 @@ from django_scantron.api.serializers import (
     ScanSerializer,
     ScheduledScanSerializer,
     SiteSerializer,
+    TargetFileSerializer,
 )
-from django_scantron.models import Agent, NmapCommand, Scan, ScheduledScan, Site
+
+# fmt: off
+from django_scantron.models import (
+    Agent,
+    NmapCommand,
+    Scan,
+    ScheduledScan,
+    Site,
+    TargetFile,
+)
+# fmt: on
 
 
 def get_current_time():
@@ -59,6 +70,26 @@ class NmapCommandViewSet(DefaultsMixin, viewsets.ModelViewSet):
         # Don't filter results for super users.
         if user.is_superuser:
             queryset = NmapCommand.objects.all()
+
+        # Return empty queryset.
+        else:
+            queryset = []
+
+        return queryset
+
+
+class TargetFileViewSet(DefaultsMixin, viewsets.ModelViewSet):
+    """API CRUD operations for TargetFile Model."""
+
+    model = TargetFile
+    serializer_class = TargetFileSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+
+        # Don't filter results for super users.
+        if user.is_superuser:
+            queryset = TargetFile.objects.all()
 
         # Return empty queryset.
         else:
