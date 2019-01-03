@@ -100,7 +100,7 @@ class Site(models.Model):
         verbose_name="Site Name",
     )
     description = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Description")
-    target_file = models.ForeignKey(TargetFile, on_delete=models.CASCADE, verbose_name="target file")
+    target_file = models.ForeignKey(TargetFile, on_delete=models.CASCADE, verbose_name="Target file on disk")
     nmap_command = models.ForeignKey(NmapCommand, on_delete=models.CASCADE, verbose_name="nmap command")
     scan_agent = models.ForeignKey(Agent, on_delete=models.CASCADE, verbose_name="Scan Agent")
 
