@@ -40,12 +40,9 @@ def clean_text(uncleaned_text):
 
 
 def main():
-    # Return the current local date and time: datetime.datetime(2018, 2, 27, 12, 31, 40, 554840)
-    # https://docs.python.org/3.5/library/datetime.html#datetime.datetime.now
-    now_datetime = datetime.datetime.now()  # + datetime.timedelta(hours=24)
 
     # Retrieve all scans.
-    scans = django_connector.Scan.objects.all()  # TODO filter based off start time < now_datetime
+    scans = django_connector.Scan.objects.all()
 
     if not scans:
         ROOT_LOGGER.debug("No scans exist")
@@ -69,15 +66,15 @@ def main():
 
         # ROOT_LOGGER.debug(f"Found scan: {site_name}, {target_file}, {nmap_command}, {scan_agent}, {scan_binary}")
 
-        # Retrieve scan occurences.
-        # scan_occurence = scan.recurrences.before(now_datetime, dtstart=now_datetime, inc=False)
-
         # Convoluted way of determining if a scan occurrence is today.
-        now = datetime.datetime.now()
-        # now += datetime.timedelta(days=7)  # For testing.
-        beginning_of_today = now.replace(hour=0).replace(minute=0).replace(second=0).replace(microsecond=0)
-        end_of_today = now.replace(hour=23).replace(minute=59).replace(second=59).replace(microsecond=0)
-        scan_occurence = scan.recurrences.between(beginning_of_today, end_of_today)
+        # Have fun understanding the documentation for django-recurrence.
+        # https://django-recurrence.readthedocs.io/en/latest/usage/recurrence_field.html#getting-occurrences-between-two-dates
+        # https://github.com/django-recurrence/django-recurrence/issues/50
+        now_datetime = datetime.datetime.now()
+        # now_datetime += datetime.timedelta(days=7)  # For testing.
+        beginning_of_today = now_datetime.replace(hour=0).replace(minute=0).replace(second=0).replace(microsecond=0)
+        end_of_today = now_datetime.replace(hour=23).replace(minute=59).replace(second=59).replace(microsecond=0)
+        scan_occurence = scan.recurrences.between(beginning_of_today, end_of_today, inc=True)
 
         # If a scan is not supposed to occur today, then bail, otherwise extract the datetime.
         if not scan_occurence:
@@ -105,13 +102,6 @@ def main():
         # Scan has already been created.
         if scan_object:
             continue
-
-        # If the start time was earlier in the day, just bail, don't want to rerun the scan.
-        # This will always be true...maybe add buffer of 5 minutes?  If schedule freq was every minute
-        # would still run into issues.
-        # if start_time < now:
-        #     ROOT_LOGGER.debug(f"Start time was earlier in the day: start_time({start_time}) < now ({now})")
-        #     continue
 
         # Convert start_time datetime object to string for result_file_base_name.
         timestamp = datetime.datetime.strftime(start_time, "%Y%m%d_%H%M")
