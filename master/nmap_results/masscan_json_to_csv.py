@@ -80,6 +80,10 @@ def main():
     # Then move them to the "processed" directory.
     for scan in json_scans:
 
+        if os.path.getsize(scan) == 0:
+            print(f"File is 0 bytes: {scan}")
+            continue
+
         results_list = []
 
         # "scan" variable is constructed as "result_file_base_name" in master/scan_scheduler.py

@@ -42,9 +42,17 @@
                     <td>{{ scan.scan_status }}</td>
                     <td>{{ scan.completed_time|date:"Y-m-j H:i:s" }}</td>
                     {% if scan.scan_binary == "nmap" %}
-                        <td><a href={% url "retrieve_scan_file" scan.id %}>{{ scan.result_file_base_name }}.nmap</a></td>
+                        {% if scan.scan_status == "completed" %}
+                            <td><a href={% url "retrieve_scan_file" scan.id %}>{{ scan.result_file_base_name }}.nmap</a></td>
+                        {% else %}
+                            <td>{{ scan.result_file_base_name }}.nmap</td>
+                        {% endif %}
                     {% elif scan.scan_binary == "masscan" %}
-                        <td><a href={% url "retrieve_scan_file" scan.id %}>{{ scan.result_file_base_name }}.json</a></td>
+                        {% if scan.scan_status == "completed" %}
+                            <td><a href={% url "retrieve_scan_file" scan.id %}>{{ scan.result_file_base_name }}.json</a></td>
+                        {% else %}
+                            <td>{{ scan.result_file_base_name }}.json</td>
+                        {% endif %}
                     {% else %}
                         <td>Unknown scan_binary</td>
                     {% endif %}
