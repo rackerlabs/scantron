@@ -68,6 +68,10 @@
     mode: 0700
   when: utilize_static_api_token_across_agents
 
+- name: Copy random_agent_number into group_vars/<agent_exteral_ip>.txt
+  local_action: copy content="agent-{{ random_agent_number }}" dest="group_vars/{{ agent_exteral_ip }}.txt"
+  when: utilize_static_api_token_across_agents
+
 - name: Create "{{ venv_dir }}" virtualenv directory.
   command: "virtualenv -p /usr/bin/python3.6 {{ venv_dir }}"
   ignore_errors: yes  # For reruns only.
