@@ -89,6 +89,12 @@ Installation requires a general knowledge of Python, pip, and Ansible.  Every at
 
 ### Cloud Provider Caveats
 
+#### NAT'd instances
+
+If the Master server is actually a RFC1918 IP and not the public IP (because of NAT), the NAT'd RFC1918 IP (e.g., 10.1.1.2) will have to be added to the `ALLOWED_HOSTS` in `ansible-playbooks/roles/master/templates/production.py.j2`
+
+This is common in AWS and GCP environments.
+
 #### IBM Cloud
 
 Per <https://github.com/0xtavian>:  For the Ansible workload to work on IBM Cloud, edit the file `/boot/grub/menu.lst` by changing
