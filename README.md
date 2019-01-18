@@ -446,9 +446,9 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
     ```bash
     sudo su
     cd /home/scantron/master/target_files
-    echo 192.168.100 > dmz_assets.txt
-    echo 192.168.101 >> dmz_assets.txt
-    chown root:root dmz_assets.txt
+    echo 192.168.100 > targets.txt
+    echo 192.168.101 >> targets.txt
+    chown root:root targets.txt
     ```
 
 4. Create target file object
