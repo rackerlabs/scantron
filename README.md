@@ -28,9 +28,19 @@ Scantron relies heavily on utilizing SSH port forwards (-R / -L) as an umbilical
 * <https://www.systutorials.com/39648/port-forwarding-using-ssh-tunnel/>
 * <https://www.everythingcli.org/ssh-tunnelling-for-fun-and-profit-autossh/>
 
+## Use cases
+
+Scantron is not engineered to be quickly deployed to a server to scan for a few minutes, then torn down and destroyed.  It's better suited for having a set of static scanners (e.g., "internal-scanner", "external-scanner") with a relatively static set of assets to scan.
+
 ## Architecture Diagram
 
 ![scantron_architecture_overview](./img/scantron_architecture_overview.png)
+
+## Hardware Requirements
+
+* Agent: If you plan on compiling masscan on an agent, you'll need at least 1024 MB of memory.  It fails to build with only 512 MB.  If you do not want to build masscan, set `install_masscan_on_agent` to `False` in `ansible-playbooks/group_vars/all`
+
+* Master: 512 MB of memory was the smallest amount successfully tested.
 
 ## Ansible Deployment Server and Initial Setup
 
