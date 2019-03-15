@@ -14,7 +14,7 @@ install_packages:
   - python-virtualenv
   - postgresql-10
   - postgresql-contrib
-  - python3-psycopg2  # python3-psycopg2 requried for Ansible.
+  - python3-psycopg2  # python3-psycopg2 required for Ansible.
 
 # secrets file
 scantron_secrets: "{{ lookup('file', '../../../master/scantron_secrets.json') | from_json }}"

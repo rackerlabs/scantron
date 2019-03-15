@@ -10,7 +10,6 @@ install_packages:
   - python3-pip
   - python-virtualenv
   - screen
-  - ufw
 
 masscan_install_packages:
   - git

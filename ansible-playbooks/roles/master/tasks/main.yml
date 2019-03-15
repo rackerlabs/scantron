@@ -4,9 +4,8 @@
 
 - name: Install specified packages.
   apt:
-    pkg: "{{ item }}"
+    pkg: "{{ install_packages }}"
     state: latest
-  with_items: "{{ install_packages }}"
 
 - name: Create autossh user.
   user:

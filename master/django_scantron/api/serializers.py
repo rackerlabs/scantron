@@ -41,7 +41,7 @@ class SiteSerializer(serializers.ModelSerializer):
             "id",
             "site_name",
             "description",
-            "targets_file",
+            "target_file",
             "nmap_command",
             "scan_agent",
         )
