@@ -4,15 +4,13 @@
 
 - name: Install specified packages.
   apt:
-    pkg: "{{ item }}"
+    pkg: "{{ install_packages }}"
     state: latest
-  with_items: "{{ install_packages }}"
 
 - name: Install masscan packages.
   apt:
-    pkg: "{{ item }}"
+    pkg: "{{ masscan_install_packages }}"
     state: latest
-  with_items: "{{ masscan_install_packages }}"
   when: install_masscan_on_agent
 
 - name: Clone masscan Github repo.

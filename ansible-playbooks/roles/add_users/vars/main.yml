@@ -5,7 +5,7 @@
 # This password hash was generated from a random password and must be changed by the system owner if it wants to be leveraged.
 temp_user_pass: $6$rounds=656000$H3IRcHKl8T/HVhPp$4DnuDbBUJqoftFsP64mg2inPEUnHIdaHXR8ewfO3gM4mZF0pP3b3RzKXkF5Dj7m48.CYq/v6rQkAYBaKUZcL81
 
-sudoers_nopasswd: false  # true= additional_user doesn't require sudo password
+sudoers_nopasswd: false  # true = additional_user doesn't require sudo password
 
 users:
   - scantron

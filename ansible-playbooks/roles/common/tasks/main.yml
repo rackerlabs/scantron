@@ -13,16 +13,8 @@
 
 - name: Install specified apt packages.
   apt:
-    pkg: "{{ item }}"
+    pkg: "{{ install_packages }}"
     state: latest
-  with_items: "{{ install_packages }}"
-
-- name: Enable ufw.
-  ufw:
-    state: enabled
-    policy: deny
-    logging: low
-  when: enable_ufw_firewall
 
 # Must allow SSH first, then enable UFW to prevent blocking remote SSH access
 - name: Setup ufw SSH.
@@ -33,20 +25,29 @@
     comment: ssh
   when: enable_ufw_firewall
 
-- name: Update SSHD configuration file.
-  template:
-    src: templates/sshd_config.j2
-    dest: /etc/ssh/sshd_config
-    backup: yes
-    owner: root
-    group: root
-    mode: 0644
+- name: Enable ufw.
+  ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+    logging: low
+  when: enable_ufw_firewall
 
-- name: Restart SSH and ensure SSH is enabled at boot.
-  service:
-    name: ssh
-    state: restarted
-    enabled: yes
+# TODO - make this optional.  Ignore for now.
+# - name: Update SSHD configuration file.
+#   template:
+#     src: templates/sshd_config.j2
+#     dest: /etc/ssh/sshd_config
+#     backup: yes
+#     owner: root
+#     group: root
+#     mode: 0644
+
+# - name: Restart SSH and ensure SSH is enabled at boot.
+#   service:
+#     name: ssh
+#     state: restarted
+#     enabled: yes
 
 - name: Updating root's .bash_aliases file
   copy:

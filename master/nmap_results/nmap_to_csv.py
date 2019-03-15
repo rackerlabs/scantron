@@ -112,11 +112,11 @@ def main():
                         data = service.service_dict
                         event.app_version = ""
                         if "product" in data:
-                            event.app_version += f"{data['product']} "
+                            event.app_version += f"{data['product']}"
                         if "version" in data:
-                            event.app_version += f"{data['version']} "
+                            event.app_version += f"{data['version']}"
                         if "extrainfo" in data:
-                            event.app_version += f"{data['extrainfo']} "
+                            event.app_version += f"{data['extrainfo']}"
 
                         events.append(event)
 
