@@ -25,7 +25,7 @@ schema_view = get_schema_view(
         license=openapi.License(name="Apache License, Version 2.0"),
     ),
     public=False,
-    permission_classes=(permissions.IsAuthenticated),
+    permission_classes=(permissions.IsAuthenticated,),  # comma needed inside parenthesis.
 )
 
 urlpatterns = [
