@@ -501,6 +501,20 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
     `/home/scantron/master/for_splunk` - csv files for Spulnk ingestion
 
+## API Documentation
+
+There are 3 ways to explore and play around with the API.  The first is the Django REST Framework view:
+
+![api_django_rest_framework](./img/api_django_rest_framework.png)
+
+You can also dig through the API documentation using ReDoc:
+
+![api_redoc](./img/api_redoc.png)
+
+Lastly, you can interact with the API using Swagger:
+
+![api_swagger](./img/api_swagger.png)
+
 ## Database Model Graph
 
 Generated using `django-extensions`'s graph_models.

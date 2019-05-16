@@ -19,11 +19,11 @@ django-filter==2.0.0
 # Django recurrences for periodic tasks
 django-recurrence==1.6.0
 
-# Django REST Framework Swagger
-django-rest-swagger==2.2.0
-
 # Django REST Framework
 djangorestframework==3.8.2
+
+# Yet another Swagger generator
+drf-yasg
 
 # ipython
 ipython==6.4.0

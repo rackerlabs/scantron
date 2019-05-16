@@ -152,18 +152,35 @@
             </a>
         </li>
         {% endif %}
-        <li>
-            <a target="_blank" href="/api">
-                <i class="fa fa-cogs"></i>
-                <span>Django REST Framework API</span>
+        <li class="treeview">
+            <a href="#">
+                <i class="fa fa-pie-chart"></i>
+                <span>API</span>
+                <span class="pull-right-container">
+                    <i class="fa fa-angle-right pull-right"></i>
+                </span>
             </a>
-        </li>
-        <li>
-            <a target="_blank" href="/api/docs">
-                <i class="fa fa-map"></i>
-                <span>Swagger API Docs</span>
-            </a>
-        </li>
+            <ul class="treeview-menu">
+                <li>
+                  <a target="_blank" href="/api">
+                      <i class="fa fa-map"></i>
+                      <span>Django REST Framework</span>
+                  </a>
+                </li>
+                <li>
+                    <a target="_blank" href="/api/redoc">
+                        <i class="fa fa-map"></i>
+                        <span>ReDoc Documentation</span>
+                    </a>
+                  </li>
+                <li>
+                  <a target="_blank" href="/api/swagger">
+                      <i class="fa fa-map"></i>
+                      <span>Swagger Sandbox</span>
+                  </a>
+                </li>
+            </ul>
+      </li>
         {% if request.user.is_superuser %}
         <li>
             <a target="_blank" href="{% url 'admin:index' %}">
