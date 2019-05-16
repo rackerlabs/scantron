@@ -57,13 +57,13 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    "crispy_forms",  # Form layouts
-    "django_extensions",  # Django extensions
-    "django_filters",  # Search filters for Django REST Framework
-    "recurrence",  # Used to configure periodic scans
-    "rest_framework",  # Django REST Framework
-    "rest_framework.authtoken",  # Enable token authentication for Django REST Framework
-    "rest_framework_swagger",  # API documentation and support framework
+    "crispy_forms",  # Form layouts.
+    "django_extensions",  # Django extensions.
+    "django_filters",  # Search filters for Django REST Framework.
+    "recurrence",  # Used to configure periodic scans.
+    "rest_framework",  # Django REST Framework.
+    "rest_framework.authtoken",  # Enable token authentication for Django REST Framework.
+    "drf_yasg",  # Django Rest Framework Swagger and ReDoc support.
     # 'django_baker'  # Django baker is used to create CRUD files for each model.
 ]
 
