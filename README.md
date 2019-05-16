@@ -511,7 +511,7 @@ You can also dig through the API documentation using ReDoc:
 
 ![api_redoc](./img/api_redoc.png)
 
-Lastly, you can test and play around with interacting with the API using Swagger:
+Lastly, you can interact with the API using Swagger:
 
 ![api_swagger](./img/api_swagger.png)
 
