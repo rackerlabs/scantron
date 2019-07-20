@@ -2,7 +2,7 @@
 argon2-cffi==18.1.0
 
 # Django
-Django==1.11.20
+Django==1.11.22
 
 # Forms
 django-crispy-forms==1.7.2
@@ -20,13 +20,16 @@ django-filter==2.0.0
 django-recurrence==1.6.0
 
 # Django REST Framework
-djangorestframework==3.8.2
+djangorestframework==3.9.2
 
 # Yet another Swagger generator
-drf-yasg
+drf-yasg==1.16.1
 
 # ipython
 ipython==6.4.0
+
+# packaging required for drf-yasg, adding this to be safe
+packaging
 
 # Python-PostgreSQL Database Adapter
 psycopg2-binary==2.7.5
