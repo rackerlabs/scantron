@@ -16,7 +16,7 @@ master_fqdn: "{{ groups.master[0] }}"  # master_fqdn: scantron.yourdomain.com.
 agent_exteral_ip: "{{ groups.agent[0] }}"  # Read from hosts file.
 agent_interal_ip: "{{ groups.agent[0] }}"  # Change if dual-NIC'd.
 
-# masscan - installation requires a minimum amount of memory.
+# masscan - installation requires a minimum amount of 1 GB of memory.
 install_masscan_on_agent: True
 
 # If you want to set one standard API token for all agents
