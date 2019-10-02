@@ -213,7 +213,7 @@
   shell: echo "from django.contrib.auth.models import User; User.objects.create_user('{{ django_user }}', '{{ django_user_email }}', '{{ scantron_secrets['django_user_password']  }}')" | {{ venv_python }} {{ scantron_dir }}/manage.py shell
   args:
     chdir: "{{ scantron_dir }}"
-  ignore_errors: yes  # Only applicable if playbook has alread been run.  Use 'python manage.py change changepassword scantron'
+  ignore_errors: yes  # Use 'python manage.py changepassword scantron'
 
 
 # uWSGI
