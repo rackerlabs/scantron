@@ -157,6 +157,14 @@ pip3 install passlib
 python3 -c "from passlib.hash import sha512_crypt; import getpass; print(sha512_crypt.encrypt(getpass.getpass()))"
 ```
 
+#### Change scantron user password with manage.py (optional)
+
+Change into the master directory `scantron/master` and run the following to change the scantron user password
+
+```
+python3 manage.py changepassword scantron
+```
+
 #### Execute Master Ansible Playbook
 
 Ensure you have a SSH key (or username/password) to access the Master box, specified by `--private-key` in the Ansible command.  User must also have password-less sudo privileges.
