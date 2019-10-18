@@ -159,7 +159,7 @@ python3 -c "from passlib.hash import sha512_crypt; import getpass; print(sha512_
 
 #### Change scantron user password with manage.py (optional)
 
-Change into the master directory `scantron/master` and run the following to change the scantron user password
+cd into the master directory `scantron/master` and run the following to change the `scantron` (or whatever user needs their password changed) user password.
 
 ```
 python3 manage.py changepassword scantron
