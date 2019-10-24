@@ -61,11 +61,10 @@ class NmapCommand(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="nmap command ID")
     scan_binary = models.CharField(max_length=7, choices=SCAN_BINARY, default="nmap", verbose_name="Scan binary")
     nmap_scan_name = models.CharField(unique=True, max_length=255, verbose_name="Scan Name")
-    nmap_command = models.TextField(unique=False, verbose_name="nmap command")
+    nmap_command = models.TextField(unique=False, verbose_name="Scan command")
 
     def __str__(self):
-        return f"{self.scan_binary}||{self.nmap_scan_name}||{self.nmap_command}"
-        # return str(self.nmap_command)
+        return f"{self.scan_binary}||{self.nmap_scan_name}"
 
     class Meta:
         verbose_name_plural = "nmap Commands"
@@ -101,7 +100,7 @@ class Site(models.Model):
     )
     description = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Description")
     target_file = models.ForeignKey(TargetFile, on_delete=models.CASCADE, verbose_name="Target file on disk")
-    nmap_command = models.ForeignKey(NmapCommand, on_delete=models.CASCADE, verbose_name="nmap command")
+    nmap_command = models.ForeignKey(NmapCommand, on_delete=models.CASCADE, verbose_name="Scan binary and name")
     scan_agent = models.ForeignKey(Agent, on_delete=models.CASCADE, verbose_name="Scan Agent")
 
     def __str__(self):
