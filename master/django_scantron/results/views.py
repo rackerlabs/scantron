@@ -3,7 +3,14 @@ from django.http import HttpResponse
 
 from django_scantron.models import ScheduledScan
 
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
+
+@api_view(http_method_names=["GET"])
+@authentication_classes((SessionAuthentication, TokenAuthentication,))
+@permission_classes((IsAuthenticated,))
 @login_required(login_url="login")
 def retrieve_scan_file(request, id):
     # Lookup result_file_base_name based of scan ID.
