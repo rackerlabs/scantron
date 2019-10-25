@@ -12,6 +12,18 @@ from . import utils
 from . import logger
 
 
+def build_masscan_command(nmap_command, target_file, json_file, http_useragent):
+    """Builds the masscan command."""
+
+    # Can only have 1 file output type.
+    file_options = f"-iL {target_file} -oJ {json_file} --http-user-agent {http_useragent}"
+
+    # nmap_command is used for both nmap and masscan commands.
+    masscan_command = f"masscan {nmap_command} {file_options}"
+
+    return masscan_command
+
+
 def scan_site(scan_job_dict):
     """Start nmap scans."""
 
@@ -71,22 +83,17 @@ def scan_site(scan_job_dict):
 
                 else:
                     logger.ROOT_LOGGER.info(
-                        "paused.conf file's output-filename '{}' does not match this scan request output filename '{}'".format(
-                            paused_file_output_filename, json_file
-                        )
+                        f"paused.conf file's output-filename '{paused_file_output_filename}' does not match this scan"
+                        f"request output filename '{json_file}'.  Starting a new masscan scan."
                     )
-                    return
+
+                    # Build the masscan command.
+                    command = build_masscan_command(nmap_command, target_file, json_file, config_data["http_useragent"])
 
             # New scan.
             else:
                 # Build the masscan command.
-                # Can only have 1 file output type.
-                file_options = "-iL {} -oJ {} --http-user-agent {}".format(
-                    target_file, json_file, config_data["http_useragent"]
-                )
-
-                # nmap_command is used for both nmap and masscan commands.
-                command = "masscan {} {}".format(nmap_command, file_options)
+                command = build_masscan_command(nmap_command, target_file, json_file, config_data["http_useragent"])
 
         elif scan_binary == "nmap":
             # Three different nmap scan result file types.
