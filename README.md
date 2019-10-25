@@ -78,12 +78,14 @@ ssh-keygen -b 4096 -t rsa -f autossh -q -N ""
 Move public key to the respective location for Ansible.
 
 ```bash
+cp autossh.pub ansible-playbooks/roles/master/files/autossh.pub
 mv autossh.pub ansible-playbooks/roles/agent/files/autossh.pub
 ```
 
 Move and rename private key to the respective location for Ansible.
 
 ```bash
+cp autossh agent/autossh.key
 mv autossh master/autossh.key
 ```
 

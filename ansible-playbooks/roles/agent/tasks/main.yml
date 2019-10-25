@@ -43,10 +43,19 @@
     name: autossh
     shell: /bin/bash
 
-- name: Push autossh.pub authorized_keys to remote server.
+- name: Push autossh.pub to authorized_keys on remote server.
   authorized_key:
     user: autossh
     key: "{{ lookup('file', 'files/autossh.pub') }}"
+
+- name: Upload /etc/rc.local
+  template:
+    src: templates/etc/rc.local.j2
+    dest: /etc/rc.local
+    backup: yes
+    owner: root
+    group: root
+    mode: 0755
 
 - name: rsync agent files to server.
   synchronize:
@@ -55,6 +64,15 @@
   # Only required if re-running Ansible on an agent that already has comms with master.
   # Ansible will get angry since it can't chown /root/agent/nmap_results and /root/agent/target_files
   ignore_errors: yes
+
+- name: Change owner of autossh.key to autossh.
+  file:
+    path: "{{ agent_dir }}/autossh.key"
+    owner: autossh
+    group: autossh
+
+- name: Move autossh.key to /home/autossh since it can't be accessed in the /root directory.
+  command: mv "{{ agent_dir }}/autossh.key" /home/autossh/autossh.key
 
 - name: Generate random agent name.
   set_fact:

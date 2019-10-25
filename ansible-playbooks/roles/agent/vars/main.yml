@@ -1,8 +1,9 @@
 ---
 enable_ufw_firewall: true
-reboot_box: true
+reboot_box: false
 
 install_packages:
+  - autossh
   - curl
   - nfs-common
   - nmap
