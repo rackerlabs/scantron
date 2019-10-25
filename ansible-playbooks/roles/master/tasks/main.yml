@@ -12,6 +12,10 @@
     name: autossh
     shell: /usr/sbin/nologin
 
+- name: Push autossh.pub to authorized_keys on remote server.
+  authorized_key:
+    user: autossh
+    key: "{{ lookup('file', 'files/autossh.pub') }}"
 
 # nginx
 #######
