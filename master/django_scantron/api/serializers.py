@@ -30,7 +30,7 @@ class SiteSerializer(serializers.ModelSerializer):
     nmap_command = serializers.StringRelatedField(many=False)
     scan_agent = serializers.StringRelatedField(many=False)
 
-    # Separate validation need for DRF; doesn't use model's clean() function anymore.
+    # Separate validation needed for DRF; doesn't use model's clean() function anymore.
     # https://www.django-rest-framework.org/community/3.0-announcement/#differences-between-modelserializer-validation-and-modelform
     def validate(self, attrs):
         """Checks for any invalid IPs, IP subnets, or FQDNs in targets field."""
