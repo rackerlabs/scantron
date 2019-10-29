@@ -1,12 +1,15 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User  # noqa
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from recurrence.fields import RecurrenceField
 from rest_framework.authtoken.models import Token
+
+import extract_ips
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -70,19 +73,6 @@ class NmapCommand(models.Model):
         verbose_name_plural = "nmap Commands"
 
 
-class TargetFile(models.Model):
-    """Model for a target files"""
-
-    id = models.AutoField(primary_key=True, verbose_name="Target file ID")
-    target_file_name = models.CharField(unique=True, max_length=255, verbose_name="Target file name")
-
-    def __str__(self):
-        return str(self.target_file_name)
-
-    class Meta:
-        verbose_name_plural = "Target Files"
-
-
 class Site(models.Model):
     """Model for a Site.  Must be defined prior to Scan model."""
 
@@ -99,9 +89,31 @@ class Site(models.Model):
         verbose_name="Site Name",
     )
     description = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Description")
-    target_file = models.ForeignKey(TargetFile, on_delete=models.CASCADE, verbose_name="Target file on disk")
+    targets = models.CharField(
+        unique=True,
+        max_length=1_048_576,  # 2^20 = 1048576
+        validators=[
+            RegexValidator(
+                regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
+                message="Targets can only contain alphanumeric characters, ., :, and spaces",
+            )
+        ],
+        verbose_name="Targets",
+    )
     nmap_command = models.ForeignKey(NmapCommand, on_delete=models.CASCADE, verbose_name="Scan binary and name")
     scan_agent = models.ForeignKey(Agent, on_delete=models.CASCADE, verbose_name="Scan Agent")
+
+    def clean(self):
+        """Checks for any invalid IPs, IP subnets, or FQDNs in targets field."""
+
+        target_extractor = extract_ips.TargetExtractor(targets_string=self.targets, private_ips_allowed=True)
+        targets_dict = target_extractor.targets_dict
+
+        if targets_dict["invalid_targets"]:
+            invalid_targets = ",".join(target_extractor.targets_dict["invalid_targets"])
+            raise ValidationError(f"Invalid targets provided: {invalid_targets}")
+
+        self.targets = targets_dict["as_nmap"]
 
     def __str__(self):
         return str(self.site_name)
@@ -181,7 +193,7 @@ class ScheduledScan(models.Model):
         ],
         verbose_name="Scan agent ID",
     )
-    start_time = models.DateTimeField(verbose_name="Scheduled scan start date and time")
+    start_datetime = models.DateTimeField(verbose_name="Scheduled scan start date and time")
     scan_binary = models.CharField(max_length=7, default="nmap", verbose_name="Scan binary")
     nmap_command = models.CharField(unique=False, max_length=1024, verbose_name="nmap command")
     nmap_command_id = models.IntegerField(
@@ -190,12 +202,16 @@ class ScheduledScan(models.Model):
         ],
         verbose_name="nmap command ID",
     )
-    target_file = models.CharField(unique=False, max_length=255, verbose_name="Targets file on disk")
-    target_file_id = models.IntegerField(
+    targets = models.CharField(
+        unique=False,
+        max_length=1_048_576,  # 2^20 = 1048576
         validators=[
-            MinValueValidator(1, message="Target file ID must be greater than 0",)
+            RegexValidator(
+                regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
+                message="Targets can only contain alphanumeric characters, ., :, and spaces",
+            )
         ],
-        verbose_name="Target file ID",
+        verbose_name="Targets",
     )
     scan_status = models.CharField(
         max_length=9, choices=SCAN_STATUS_CHOICES, default="pending", verbose_name="Scan status"

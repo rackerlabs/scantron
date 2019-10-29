@@ -1,5 +1,7 @@
 import datetime
+import pytz
 
+from django.conf import settings
 from rest_framework import viewsets
 
 from django_scantron.api.serializers import (
@@ -8,7 +10,6 @@ from django_scantron.api.serializers import (
     ScanSerializer,
     ScheduledScanSerializer,
     SiteSerializer,
-    TargetFileSerializer,
 )
 
 # fmt: off
@@ -18,7 +19,6 @@ from django_scantron.models import (
     Scan,
     ScheduledScan,
     Site,
-    TargetFile,
 )
 # fmt: on
 
@@ -26,8 +26,11 @@ from django_scantron.models import (
 def get_current_time():
     """Retrieve a Django compliant pre-formated datetimestamp."""
 
-    now_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return now_datetime
+    datetime_tz_naive = datetime.datetime.now()
+    django_timezone = settings.TIME_ZONE
+    datetime_tz = pytz.timezone(django_timezone).localize(datetime_tz_naive)
+
+    return datetime_tz
 
 
 class DefaultsMixin(object):
@@ -70,26 +73,6 @@ class NmapCommandViewSet(DefaultsMixin, viewsets.ModelViewSet):
         # Don't filter results for super users.
         if user.is_superuser:
             queryset = NmapCommand.objects.all()
-
-        # Return empty queryset.
-        else:
-            queryset = []
-
-        return queryset
-
-
-class TargetFileViewSet(DefaultsMixin, viewsets.ModelViewSet):
-    """API CRUD operations for TargetFile Model."""
-
-    model = TargetFile
-    serializer_class = TargetFileSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-
-        # Don't filter results for super users.
-        if user.is_superuser:
-            queryset = TargetFile.objects.all()
 
         # Return empty queryset.
         else:
@@ -158,12 +141,12 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
         if user.is_superuser:
             queryset = ScheduledScan.objects.all()
 
-        # Filter results based off user, 'Pending' scan status, and start_time for HTTP GET requests.
+        # Filter results based off user, "Pending" scan status, and start_datetime for HTTP GET requests.
         elif http_method == "GET":
             queryset = (
                 ScheduledScan.objects.filter(scan_agent=user)
                 .filter(scan_status="pending")
-                .filter(start_time__lt=now_datetime)
+                .filter(start_datetime__lt=now_datetime)
             )
 
         # Allow agents to update scan information.

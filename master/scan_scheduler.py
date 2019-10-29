@@ -3,8 +3,10 @@
 # Standard Python libraries.
 import datetime
 import logging
+import pytz
 
 # Third party Python libraries.
+from django.conf import settings
 
 # Custom Python libraries.
 import django_connector
@@ -13,15 +15,6 @@ import django_connector
 # Setup logging.
 LOG_FORMATTER = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
 ROOT_LOGGER = logging.getLogger()
-
-
-def get_timestamp():
-    """Returns formated timestamp."""
-
-    now = datetime.datetime.now()
-    timestamp = datetime.datetime.strftime(now, "%Y%m%d_%H%M%S")
-
-    return timestamp
 
 
 def clean_text(uncleaned_text):
@@ -53,19 +46,6 @@ def main():
     # Loop through each scan and extract any recurrences for today.
     for scan in scans:
 
-        # Populate variables from existing database relationships.
-        site_name = scan.site.site_name
-        site_name_id = scan.site.id
-        scan_agent = scan.site.scan_agent.scan_agent
-        scan_agent_id = scan.site.scan_agent_id
-        scan_binary = scan.site.nmap_command.scan_binary
-        nmap_command = scan.site.nmap_command.nmap_command
-        nmap_command_id = scan.site.nmap_command.id
-        target_file = scan.site.target_file.target_file_name
-        target_file_id = scan.site.target_file.id
-
-        # ROOT_LOGGER.debug(f"Found scan: {site_name}, {target_file}, {nmap_command}, {scan_agent}, {scan_binary}")
-
         # Convoluted way of determining if a scan occurrence is today.
         # Have fun understanding the documentation for django-recurrence.
         # https://django-recurrence.readthedocs.io/en/latest/usage/recurrence_field.html#getting-occurrences-between-two-dates
@@ -82,29 +62,37 @@ def main():
         else:
             scan_occurence = scan_occurence[0]
 
-        # Build start_time.
-        start_time = datetime.datetime.combine(scan_occurence.date(), scan.start_time)
+        # A scan is supposed to occur today, populate the remaining variables from existing database relationships.
+        site_name = scan.site.site_name
+        site_name_id = scan.site.id
+        scan_agent = scan.site.scan_agent.scan_agent
+        scan_agent_id = scan.site.scan_agent_id
+        scan_binary = scan.site.nmap_command.scan_binary
+        nmap_command = scan.site.nmap_command.nmap_command
+        nmap_command_id = scan.site.nmap_command.id
+        targets = scan.site.targets
 
-        # Check and see if a scan has been scheduled for today's date and start time.
-        # Utilize *_id so that the human-readable names can be changed without triggering
-        # a new scan.  The site_name_id, scan_agent_id, and nmap_command_id, and
-        # target_file_id are not exposed in the ScheduledScan (agent's) API endpoint.
+        # Build start_datetime based off Django's TIME_ZONE setting.
+        # https://www.saltycrane.com/blog/2009/05/converting-time-zones-datetime-objects-python/#add-timezone-localize
+        start_datetime_tz_naive = datetime.datetime.combine(scan_occurence.date(), scan.start_time)
+        start_datetime = pytz.timezone(settings.TIME_ZONE).localize(start_datetime_tz_naive)
 
-        # fmt: off
-        scan_object = django_connector.ScheduledScan.objects. \
-            filter(start_time=start_time). \
-            filter(site_name_id=site_name_id). \
-            filter(scan_agent_id=scan_agent_id). \
-            filter(nmap_command_id=nmap_command_id). \
-            filter(target_file_id=target_file_id)
-        # fmt: on
+        # Check and see if a scan has been scheduled for today's date and start time.  Utilize *_id so that the
+        # human-readable names can be changed without triggering a new scan.  The site_name_id, scan_agent_id, and
+        # nmap_command_id, are not exposed in the ScheduledScan (agent's) API endpoint.
+        scan_object = (
+            django_connector.ScheduledScan.objects.filter(start_datetime=start_datetime)
+            .filter(site_name_id=site_name_id)
+            .filter(scan_agent_id=scan_agent_id)
+            .filter(nmap_command_id=nmap_command_id)
+        )
 
-        # Scan has already been created.
+        # Scan has already been created, let's bail.
         if scan_object:
             continue
 
-        # Convert start_time datetime object to string for result_file_base_name.
-        timestamp = datetime.datetime.strftime(start_time, "%Y%m%d_%H%M")
+        # Convert start_datetime datetime object to string for result_file_base_name.
+        timestamp = datetime.datetime.strftime(start_datetime, "%Y%m%d_%H%M")
 
         # Build results file.  "__" is used by master/nmap_results/nmap_to_csv.py to .split() site_name and scan_agent.
         result_file_base_name = f"{clean_text(site_name)}__{clean_text(scan_agent)}__{timestamp}"
@@ -116,19 +104,19 @@ def main():
                 site_name_id=site_name_id,
                 scan_agent=scan_agent,
                 scan_agent_id=scan_agent_id,
-                start_time=start_time,
+                start_datetime=start_datetime,
                 scan_binary=scan_binary,
                 nmap_command=nmap_command,
                 nmap_command_id=nmap_command_id,
-                target_file=target_file,
-                target_file_id=target_file_id,
+                targets=targets,
                 result_file_base_name=result_file_base_name,
                 scan_status="pending",
             )
 
             if created:
                 ROOT_LOGGER.debug(
-                    f"Adding to scheduled scans: {site_name}, {scan_agent}, {scan_occurence.date()}, {start_time}, {scan_binary}, {nmap_command}, {target_file}, {result_file_base_name}"
+                    f"Adding to scheduled scans: {site_name}, {scan_agent}, {scan_occurence.date()}, {start_datetime},"
+                    f"{scan_binary}, {nmap_command}, {result_file_base_name}"
                 )
 
         except Exception as e:
