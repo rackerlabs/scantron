@@ -176,6 +176,12 @@ class ScheduledScan(models.Model):
         ],
         verbose_name="Site name ID",
     )
+    scan_id = models.IntegerField(
+        validators=[
+            MinValueValidator(1, message="Scan ID must be greater than 0",)
+        ],
+        verbose_name="Scan ID",
+    )
     scan_agent = models.CharField(
         unique=False,
         max_length=255,

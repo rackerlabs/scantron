@@ -31,6 +31,7 @@ class ScheduledScanAdmin(admin.ModelAdmin):
         "id",
         "site_name",
         "site_name_id",
+        "scan_id",
         "scan_agent",
         "scan_agent_id",
         "start_datetime",
