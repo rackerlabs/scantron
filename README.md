@@ -191,7 +191,7 @@ Edit any variables in these files before running playbook:
 Ensure you have a SSH key (or username/password) to access the agent box, specified by `--private-key` in the Ansible
 command.  The user **must** also have password-less sudo privileges.  If you are creating the boxes on AWS, then the
 user is `ubuntu` for Ubuntu distros and the user already has password-less sudo capabilities.  If you need to add
-passwordless-sudo capability to a user, create a `/etc/sudoder.d/<USERNAME>` file, where `<USERNAME>` is the actual
+password-less sudo capability to a user, create a `/etc/sudoder.d/<USERNAME>` file, where `<USERNAME>` is the actual
 user, and populate it with:
 
 ```bash
