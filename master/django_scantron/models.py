@@ -95,7 +95,7 @@ class Site(models.Model):
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
-                message="Targets can only contain alphanumeric characters, ., :, and spaces",
+                message="Targets can only contain alphanumeric characters, /, ., :, and spaces",
             )
         ],
         verbose_name="Targets",
@@ -214,7 +214,7 @@ class ScheduledScan(models.Model):
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
-                message="Targets can only contain alphanumeric characters, ., :, and spaces",
+                message="Targets can only contain alphanumeric characters, /, ., :, and spaces",
             )
         ],
         verbose_name="Targets",

@@ -474,7 +474,7 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
 ## Workflow
 
-1. Create user/agent
+1. Create user/agent.  By default, Ansible creates `agent1`.
 
     ![create_user_agent](./img/create_user_agent.png)
 
