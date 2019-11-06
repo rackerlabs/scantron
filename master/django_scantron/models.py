@@ -9,7 +9,7 @@ from django.dispatch import receiver
 from recurrence.fields import RecurrenceField
 from rest_framework.authtoken.models import Token
 
-import extract_ips
+import extract_targets
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -106,7 +106,7 @@ class Site(models.Model):
     def clean(self):
         """Checks for any invalid IPs, IP subnets, or FQDNs in targets field."""
 
-        target_extractor = extract_ips.TargetExtractor(targets_string=self.targets, private_ips_allowed=True)
+        target_extractor = extract_targets.TargetExtractor(targets_string=self.targets, private_ips_allowed=True)
         targets_dict = target_extractor.targets_dict
 
         if targets_dict["invalid_targets"]:

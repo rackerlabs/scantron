@@ -9,7 +9,7 @@ from django_scantron.models import (
     Site,
 )
 
-import extract_ips
+import extract_targets
 
 # Serializers define the API representations.
 
@@ -37,7 +37,7 @@ class SiteSerializer(serializers.ModelSerializer):
 
         targets = attrs["targets"]
 
-        target_extractor = extract_ips.TargetExtractor(targets_string=targets, private_ips_allowed=True)
+        target_extractor = extract_targets.TargetExtractor(targets_string=targets, private_ips_allowed=True)
         targets_dict = target_extractor.targets_dict
 
         if targets_dict["invalid_targets"]:

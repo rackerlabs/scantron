@@ -486,7 +486,7 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
     * IPs, IP subnets, and FQDNs are allowed.
     * IP ranges (`192.168.1.0-10`) are not currently supported.
-    * The targets are validated using `master/extract_ips.py`, which can also be used as a stand alone script.
+    * The targets are validated using `master/extract_targets.py`, which can also be used as a stand alone script.
 
     ![create_site](./img/create_site.png)
 
