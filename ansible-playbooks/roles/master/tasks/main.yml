@@ -208,8 +208,7 @@
     chdir: "{{ scantron_dir }}"
 
 - name: Create initial "{{ django_super_user }}" superuser.
-  # Type of quotes matter here to avoid interpreting characters like ! in a BASH shell.
-  shell: echo 'from django.contrib.auth.models import User; User.objects.create_superuser("{{ django_super_user }}", "{{ django_super_user_email }}", "{{ scantron_secrets['django_super_user_password'] }}")' | {{ venv_python }} {{ scantron_dir }}/manage.py shell
+  shell: echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ django_super_user }}', '{{ django_super_user_email }}', '{{ scantron_secrets["django_super_user_password"] }}')" | {{ venv_python }} {{ scantron_dir }}/manage.py shell
   args:
     chdir: "{{ scantron_dir }}"
   ignore_errors: yes  # Only applicable if playbook has already been run.  Use 'python manage.py change changepassword admin'.
