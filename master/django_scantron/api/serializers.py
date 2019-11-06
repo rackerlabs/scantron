@@ -7,8 +7,9 @@ from django_scantron.models import (
     Scan,
     ScheduledScan,
     Site,
-    TargetFile,
 )
+
+import extract_targets
 
 # Serializers define the API representations.
 
@@ -25,15 +26,25 @@ class NmapCommandSerializer(serializers.ModelSerializer):
         fields = ("scan_binary", "nmap_scan_name", "nmap_command",)
 
 
-class TargetFileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TargetFile
-        fields = ("target_file_name",)
-
-
 class SiteSerializer(serializers.ModelSerializer):
     nmap_command = serializers.StringRelatedField(many=False)
     scan_agent = serializers.StringRelatedField(many=False)
+
+    # Separate validation needed for DRF; doesn't use model's clean() function anymore.
+    # https://www.django-rest-framework.org/community/3.0-announcement/#differences-between-modelserializer-validation-and-modelform
+    def validate(self, attrs):
+        """Checks for any invalid IPs, IP subnets, or FQDNs in targets field."""
+
+        targets = attrs["targets"]
+
+        target_extractor = extract_targets.TargetExtractor(targets_string=targets, private_ips_allowed=True)
+        targets_dict = target_extractor.targets_dict
+
+        if targets_dict["invalid_targets"]:
+            invalid_targets = ",".join(targets_dict["invalid_targets"])
+            raise serializers.ValidationError(f"Invalid targets provided: {invalid_targets}")
+
+        return attrs
 
     class Meta:
         model = Site
@@ -41,7 +52,7 @@ class SiteSerializer(serializers.ModelSerializer):
             "id",
             "site_name",
             "description",
-            "target_file",
+            "targets",
             "nmap_command",
             "scan_agent",
         )
@@ -64,10 +75,10 @@ class ScheduledScanSerializer(serializers.ModelSerializer):
             "id",
             "site_name",
             "scan_agent",
-            "start_time",
+            "start_datetime",
             "scan_binary",
             "nmap_command",
-            "target_file",
+            "targets",
             "scan_status",
             "completed_time",
             "result_file_base_name",

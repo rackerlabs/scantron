@@ -25,6 +25,9 @@ djangorestframework==3.9.2
 # Yet another Swagger generator
 drf-yasg==1.16.1
 
+# fqdn
+fqdn==1.1.0
+
 # ipython
 ipython==6.4.0
 

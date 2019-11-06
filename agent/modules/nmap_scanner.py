@@ -41,7 +41,16 @@ def scan_site(scan_job_dict):
         nmap_results_dir = config_data["nmap_results_dir"]
 
         target_files_dir = config_data["target_files_dir"]
-        target_file = os.path.join(target_files_dir, scan_job["target_file"])
+        target_file = os.path.join(target_files_dir, f"{result_file_base_name}.targets")
+
+        # Write targets to a file.
+        # "Passing a huge list of hosts is often awkward on the command line...Each entry must be separated by one or
+        # more spaces, tabs, or newlines."
+        # https://nmap.org/book/man-target-specification.html
+        targets = scan_job["targets"]  # Extract string of targets.
+
+        with open(target_file, "w") as fh:
+            fh.write(f"{targets}")
 
         # Setup folder structure.
         pending_files_dir = os.path.join(nmap_results_dir, "pending")

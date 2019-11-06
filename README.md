@@ -9,11 +9,19 @@
 
 ## Overview
 
-Scantron is a distributed nmap scanner comprised of two components.  The first is a Master node that consists of a web front end used for scheduling scans and storing nmap scan targets and results.  The second component is an agent that pulls scan jobs from Master and conducts the actual nmap scanning.  A majority of the application's logic is purposely placed on Master to make the agent(s) as "dumb" as possible.  All nmap target files and nmap results reside on Master and are shared through a network file share (NFS) leveraging SSH tunnels.  The agents call back to Master periodically using a REST API to check for scan tasks and provide scan status updates.
+Scantron is a distributed nmap scanner comprised of two components.  The first is a Master node that consists of a web
+front end used for scheduling scans and storing nmap scan targets and results.  The second component is an agent that
+pulls scan jobs from Master and conducts the actual nmap scanning.  A majority of the application's logic is purposely
+placed on Master to make the agent(s) as "dumb" as possible.  All nmap target files and nmap results reside on Master
+and are shared through a network file share (NFS) leveraging SSH tunnels.  The agents call back to Master periodically
+using a REST API to check for scan tasks and provide scan status updates.
 
 ![scheduled_scans](./img/scheduled_scans.png)
 
-Scantron is coded for Python3.6+ exclusively and leverages Django for the web front-end, Django REST Framework as the API endpoint, PostgreSQL as the database, and comes complete with Ubuntu-focused Ansible playbooks for smooth deployments.  Scantron has been tested on Ubuntu 18.04 and may be compatible with other operating systems.  Scantron's inspiration comes from:
+Scantron is coded for Python3.6+ exclusively and leverages Django for the web front-end, Django REST Framework as the
+API endpoint, PostgreSQL as the database, and comes complete with Ubuntu-focused Ansible playbooks for smooth
+deployments.  Scantron has been tested on Ubuntu 18.04 and may be compatible with other operating systems.  Scantron's
+inspiration comes from:
 
 * [dnmap](https://sourceforge.net/projects/dnmap/)
 * [Minions](https://github.com/sixdub/Minions)
@@ -22,7 +30,10 @@ Scantron is coded for Python3.6+ exclusively and leverages Django for the web fr
 
 ![results](./img/results.png)
 
-Scantron relies heavily on utilizing SSH port forwards (-R / -L) as an umbilical cord to the agents.  Either an SSH connection from `Master --> agent` or `agent --> Master` is acceptable and may be required depending on different firewall rules, but tweaking the port forwards and autossh commands will be necessary.  If you are unfamiliar with these concepts, there are some great overviews and tutorials out there:
+Scantron relies heavily on utilizing SSH port forwards (-R / -L) as an umbilical cord to the agents.  Either an SSH
+connection from `Master --> agent` or `agent --> Master` is acceptable and may be required depending on different
+firewall rules, but tweaking the port forwards and autossh commands will be necessary.  If you are unfamiliar with these
+concepts, there are some great overviews and tutorials out there:
 
 * <https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding>
 * <https://www.systutorials.com/39648/port-forwarding-using-ssh-tunnel/>
@@ -30,7 +41,9 @@ Scantron relies heavily on utilizing SSH port forwards (-R / -L) as an umbilical
 
 ## Use cases
 
-Scantron is not engineered to be quickly deployed to a server to scan for a few minutes, then torn down and destroyed.  It's better suited for having a set of static scanners (e.g., "internal-scanner", "external-scanner") with a relatively static set of assets to scan.
+Scantron is not engineered to be quickly deployed to a server to scan for a few minutes, then torn down and destroyed.  
+It's better suited for having a set of static scanners (e.g., "internal-scanner", "external-scanner") with a relatively
+static set of assets to scan.
 
 ## Architecture Diagram
 
@@ -38,7 +51,9 @@ Scantron is not engineered to be quickly deployed to a server to scan for a few 
 
 ## Hardware Requirements
 
-* Agent: If you plan on compiling masscan on an agent, you'll need at least 1024 MB of memory.  It fails to build with only 512 MB.  If you do not want to build masscan, set `install_masscan_on_agent` to `False` in `ansible-playbooks/group_vars/all`
+* Agent: If you plan on compiling masscan on an agent, you'll need at least 1024 MB of memory.  It fails to build with
+* only 512 MB.  If you do not want to build masscan, set `install_masscan_on_agent` to `False` in
+`ansible-playbooks/group_vars/all`
 
 * Master: 512 MB of memory was the smallest amount successfully tested.
 
@@ -55,61 +70,25 @@ cd scantron
 ./initial_setup.sh  # Run as non-root user.
 ```
 
-This is what `initial_setup.sh` does.
-
-Provide pastable to install python3-pip if it already isn't
-
-```bash
-sudo apt update && sudo apt install python3-pip -y
-```
-
-Install Ansible using pip.
-
-```bash
-pip3 install ansible\>=2.4.0.0
-```
-
-Generate a passphrase-less SSH key pair for the autossh user.
-
-```bash
-ssh-keygen -b 4096 -t rsa -f autossh -q -N ""
-```
-
-Move public key to the respective location for Ansible.
-
-```bash
-cp autossh.pub ansible-playbooks/roles/master/files/autossh.pub
-mv autossh.pub ansible-playbooks/roles/agent/files/autossh.pub
-```
-
-Move and rename private key to the respective location for Ansible.
-
-```bash
-cp autossh agent/autossh.key
-mv autossh master/autossh.key
-```
-
-Create empty scantron_secrets.json from scantron_secrets.json.empty.
-
-```bash
-cp master/scantron_secrets.json.empty master/scantron_secrets.json
-```
-
 ## Installation
 
-Installation requires a general knowledge of Python, pip, and Ansible.  Every attempt to make the deployment as simple as possible has been made.
+Installation requires a general knowledge of Python, pip, and Ansible.  Every attempt to make the deployment as simple
+as possible has been made.
 
 ### Cloud Provider Caveats
 
 #### NAT'd instances
 
-If the Master server is actually a RFC1918 IP and not the public IP (because of NAT), the NAT'd RFC1918 IP (e.g., 10.1.1.2) will have to be added to the `ALLOWED_HOSTS` in `ansible-playbooks/roles/master/templates/production.py.j2`
+If the Master server is actually a RFC1918 IP and not the public IP (because of NAT), the NAT'd RFC1918 IP
+(e.g., 10.1.1.2) will have to be added to the `ALLOWED_HOSTS` in
+`ansible-playbooks/roles/master/templates/production.py.j2`
 
 This is common in AWS and GCP environments.
 
 #### IBM Cloud
 
-Per <https://github.com/0xtavian>:  For the Ansible workload to work on IBM Cloud, edit the file `/boot/grub/menu.lst` by changing
+Per <https://github.com/0xtavian>:  For the Ansible workload to work on IBM Cloud, edit the file `/boot/grub/menu.lst`
+by changing
 
 ```bash
 # groot=LABEL...
@@ -129,29 +108,44 @@ Edit the hosts in this file:
 
 ### Master Installation
 
+The recommendation is to deploy Master first.  
+
 #### Update Master Ansible Variables
 
 Edit any variables in these files before running playbook:
 
 * `ansible-playbooks/group_vars/all`
   
-If you plan on utilizing the same API key across all agents (not recommended, but easier for automated deployments), change `utilize_static_api_token_across_agents` to `True`.  This prevents you from having to log into each agent and update `agent_config.json` with the corresponding API key.  The `group_vars/static_api_key` will be created by the Master ansible playbook.  The Ansible agent playbook will autofill the `agent_config.json.j2` template with the API key found in `group_vars/static_api_key`.
+If you plan on utilizing the same API key across all agents (not recommended, but easier for automated deployments),
+change `utilize_static_api_token_across_agents` to `True`.  This prevents you from having to log into each agent and
+update `agent_config.json` with the corresponding API key.  The `group_vars/static_api_key` will be created by the
+Master ansible playbook.  The Ansible agent playbook will autofill the `agent_config.json.j2` template with the API key
+found in `group_vars/static_api_key`.
 
-**WARNING**: The `agent_config.json.j2` will generate a random `scan_agent` (e.g., `agent-847623`), so if you deploy more than 1 agent, you won't run into complications with agent name collisions.  You will, however, need to add create the user on Master, since Master returns scheduled jobs to the agent based off the agent's name!
+**WARNING**: The `agent_config.json.j2` will generate a random `scan_agent` (e.g., `agent-847623`), so if you deploy
+more than 1 agent, you won't run into complications with agent name collisions.  You will, however, need to add create
+the user on Master, since Master returns scheduled jobs to the agent based off the agent's name!
 
-#### Update Master Ansible Variables
+Rename `master/scantron_secrets.json.empty` to `master/scantron_secrets.json` (should be done for you by
+`initial_setup.sh`)
 
-The recommendation is to deploy Master first.  Rename `master/scantron_secrets.json.empty` to `master/scantron_secrets.json` (should be done for you by `initial_setup.sh`)
+#### Update Master Secrets Variables
 
-Populate all the values `master/scantron_secrets.json`, except the `local` key, unless you know what you are doing to test Django.  Only the `production` values are used.
+Update all the values `master/scantron_secrets.json` if you do not like ones generated using `initial_setup.sh`.  Only
+the `production` values are used.
 
-All Scantron Django passwords have a minimum password length of 12.
+* All Scantron Django passwords have a minimum password length of 12.
 
-For the "SECRET_KEY", per Django's [documentation](<https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/#secret-key>):    The secret key must be a large random value and it must be kept secret.
+* For the "SECRET_KEY", per Django's
+[documentation](<https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/#secret-key>): The secret key must be
+a large random value and it must be kept secret.
 
 #### Change scantron user password (optional)
 
-The `scantron` user password is not really leveraged and is populated by providing a salted hash of a random password generated using Python's `passlib` library.  If you want to change the password, you will have to generate a hash for the desired password and update the `temp_user_pass` variable in `scantron/ansible-playbooks/roles/add_users/vars/main.yml`.
+The `scantron` user password is not really leveraged and is populated by providing a salted hash of a random password
+generated using Python's `passlib` library.  If you want to change the password, you will have to generate a hash for
+the desired password and update the `temp_user_pass` variable in
+`scantron/ansible-playbooks/roles/add_users/vars/main.yml`.
 
 ```python
 pip3 install passlib
@@ -161,15 +155,17 @@ python3 -c "from passlib.hash import sha512_crypt; import getpass; print(sha512_
 
 #### Change scantron user password with manage.py (optional)
 
-cd into the master directory `scantron/master` and run the following to change the `scantron` (or whatever user needs their password changed) user password.
+cd into the master directory `scantron/master` and run the following to change the `scantron` (or whatever user needs
+their password changed) user password.
 
-```
+```bash
 python3 manage.py changepassword scantron
 ```
 
 #### Execute Master Ansible Playbook
 
-Ensure you have a SSH key (or username/password) to access the Master box, specified by `--private-key` in the Ansible command.  User must also have password-less sudo privileges.
+Ensure you have a SSH key (or username/password) to access the Master box, specified by `--private-key` in the Ansible
+command.  User must also have password-less sudo privileges.
 
 ```bash
 cd ansible-playbooks
@@ -192,7 +188,11 @@ Edit any variables in these files before running playbook:
 
 #### Ensure proper user permissions
 
-Ensure you have a SSH key (or username/password) to access the agent box, specified by `--private-key` in the Ansible command.  The user **must** also have password-less sudo privileges.  If you are creating the boxes on AWS, then the user is `ubuntu` for Ubuntu distros and the user already has password-less sudo capabilities.  If you need to add passwordless-sudo capability to a user, create a `/etc/sudoder.d/<USERNAME>` file, where `<USERNAME>` is the actual user, and populate it with:
+Ensure you have a SSH key (or username/password) to access the agent box, specified by `--private-key` in the Ansible
+command.  The user **must** also have password-less sudo privileges.  If you are creating the boxes on AWS, then the
+user is `ubuntu` for Ubuntu distros and the user already has password-less sudo capabilities.  If you need to add
+password-less sudo capability to a user, create a `/etc/sudoder.d/<USERNAME>` file, where `<USERNAME>` is the actual
+user, and populate it with:
 
 ```bash
 <USERNAME> ALL=(ALL) NOPASSWD: ALL
@@ -218,11 +218,15 @@ A Scantron agent is synonymous with a user.
 
     Agents <--> Users
 
-Users / agents are added through the webapp, so once a user / agent is added, an API token is automatically generated for that user / agent.  The user's / agent's password is not necessary for Scantron to function since all user / agent authentication is done using the API token.  The username and password can be used to login to the webapp to test API functionality.  More API testing information can be found in the **Test Agent API** section of this README.
+Users / agents are added through the webapp, so once a user / agent is added, an API token is automatically generated
+for that user / agent.  The user's / agent's password is not necessary for Scantron to function since all user / agent
+authentication is done using the API token.  The username and password can be used to login to the webapp to test API
+functionality.  More API testing information can be found in the **Test Agent API** section of this README.
 
 ### Update /etc/rc.local with agent IPs for autossh
 
-This is done automatically for one agent through Ansible.  You may have to add additional lines and update SSH keys for each agent if they are different.  These commands are for Master connecting to the agents.  
+This is done automatically for one agent through Ansible.  You may have to add additional lines and update SSH keys for
+each agent if they are different.  These commands are for Master connecting to the agents.  
 
 In this example:
 
@@ -249,23 +253,27 @@ su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -
 
 ### Agent's agent_config.json
 
-agent_config.json is a configuration file used by agents to provide basic settings and bootstrap communication with Master.  Each agent can have a different configuration file.  
+agent_config.json is a configuration file used by agents to provide basic settings and bootstrap communication with
+Master.  Each agent can have a different configuration file.  
 
     The "api_token" will have to be modified on all the agents after deploying Master!
 
 Agent settings:
 
-**scan_agent:** Name of the agent.  This name is also used in the agent's HTTP `User-Agent` string to help identify agents calling back in the nginx web logs.
+**scan_agent:** Name of the agent.  This name is also used in the agent's HTTP `User-Agent` string to help identify
+agents calling back in the nginx web logs.
 
 **api_token:** Used to authenticate agents.  Recommend different API Tokens per agent, but the same one could be used.
 
-**master_address:** Web address of Master.  Could be 127.0.0.1 if agent traffic is tunneled to Master through an SSH port forward.
+**master_address:** Web address of Master.  Could be 127.0.0.1 if agent traffic is tunneled to Master through an SSH
+port forward.
 
 **master_port:** Web port Master is listening on.
 
 **callback_interval_in_seconds:** Number of seconds agents wait before calling back for scan jobs.
 
-**number_of_threads:** Experimental!  Number of threads used to execute scan jobs if multiple jobs may be required at the same time.  Keep at 1 to avoid a doubling scanning race condition.
+**number_of_threads:** Experimental!  Number of threads used to execute scan jobs if multiple jobs may be required at
+the same time.  Keep at 1 to avoid a doubling scanning race condition.
 
 **target_files_dir:** Name of actual agent `target_files` directory on the agent box.
 
@@ -282,11 +290,13 @@ Agent settings:
 # DEBUG     10
 ```
 
-**http_useragent:** HTTP User-Agent used instead of nmap's default `Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)`.
+**http_useragent:** HTTP User-Agent used instead of nmap's default
+`Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)`.
 
 ### Agent Execution
 
-Update all the agents' agent_config.json files with their respective `api_token` for the agent by logging in as `admin` and browsing to `https://<HOST>/scantron-admin/authtoken/token` to see the corresponding API token for each user / agent.
+Update all the agents' agent_config.json files with their respective `api_token` for the agent by logging in as `admin`
+and browsing to `https://<HOST>/scantron-admin/authtoken/token` to see the corresponding API token for each user / agent.
 
 #### Option 1: Run agent as a service
 
@@ -331,7 +341,9 @@ screen -r agent1  # Resume named screen session, if using screen.
 
 ### Agent Troubleshooting
 
-Verify SSH connection from Master with reverse port redirect is up on each agent.  Any traffic hitting 127.0.0.1:4430 will be tunneled back to Master.  This port is for communicating with the API.  Any traffic hitting 127.0.0.1:2049 will connect back to the NFS share on Master.
+Verify SSH connection from Master with reverse port redirect is up on each agent.  Any traffic hitting 127.0.0.1:4430
+will be tunneled back to Master.  This port is for communicating with the API.  Any traffic hitting 127.0.0.1:2049 will
+connect back to the NFS share on Master.
 
 ```bash
 tcp    0    0 127.0.0.1:4430    0.0.0.0:*    LISTEN    1399/sshd: autossh
@@ -346,7 +358,9 @@ crontab -l -u root
 
 ### Test Agent API
 
-If you need to test the API without running the agent, ensure there is a 'pending' scan set to start earlier than the current date and time.  The server only returns scan jobs that have a 'pending' status and start datetime earlier than the current datetime.
+If you need to test the API without running the agent, ensure there is a 'pending' scan set to start earlier than the
+current date and time.  The server only returns scan jobs that have a 'pending' status and start datetime earlier than
+the current datetime.
 
 ```bash
 # Not using SSH tunnels.
@@ -356,7 +370,8 @@ curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://192.168.1.99:
 curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://127.0.0.1:4430/api/scheduled_scans/?format=json
 ```
 
-You can also log into the webapp using the agent name and password and browse to `/api/?format=json` to view any scan jobs.  The username and agent name are the same from the webapp's point of view.
+You can also log into the webapp using the agent name and password and browse to `/api/?format=json` to view any scan
+jobs.  The username and agent name are the same from the webapp's point of view.
 
 ## Master
 
@@ -386,15 +401,20 @@ uwsgi logs: `/home/scantron/master/logs`
 
 ### Known issues with Master NFS share
 
-If you need to reboot a box, do it with the provided `clean_reboot.sh` script that will stop all relevant services.  Without stopping the `nfs-kernel-server` service gracefully, sometimes the OS will hang and get angry.
+If you need to reboot a box, do it with the provided `clean_reboot.sh` script that will stop all relevant services.
+Without stopping the `nfs-kernel-server` service gracefully, sometimes the OS will hang and get angry.
 
 ## Miscellaneous
 
 ### Updating nmap version
 
-Ubuntu's nmap version pulled using `apt` is fairly out-of-date and the recommendation for Scantron's agents is to pull the latest version.
+Ubuntu's nmap version pulled using `apt` is fairly out-of-date and the recommendation for Scantron's agents is to pull
+the latest version.
 
-For RPM-based Distributions, the latest `.rpm` packages can be found here <https://nmap.org/dist/?C=M&O=D>.  However, for Debian-based distributions, you must utilize `alien` to convert the `.rpm` to a `.deb` file <https://nmap.org/book/inst-linux.html> or compile from source.  Recommend going down the `alien` route before compiling from source.
+For RPM-based Distributions, the latest `.rpm` packages can be found here <https://nmap.org/dist/?C=M&O=D>.  However,
+for Debian-based distributions, you must utilize `alien` to convert the `.rpm` to a `.deb` file
+<https://nmap.org/book/inst-linux.html> or compile from source.  Recommend going down the `alien` route before compiling
+from source.
 
 #### alien
 
@@ -412,7 +432,9 @@ dpkg --install nmap_*.deb
 
 #### Compile nmap from source
 
-Another option is to compile nmap from source.  This is dynamically compiled and must be done on the box where nmap is going to be run from.  Note that past experience had a compiled nmap version returning a different banner than the provided apt version...so your mileage may vary.
+Another option is to compile nmap from source.  This is dynamically compiled and must be done on the box where nmap is
+going to be run from.  Note that past experience had a compiled nmap version returning a different banner than the
+provided apt version...so your mileage may vary.
 
 ```bash
 VERSION=7.70-1  # CHANGE THIS TO LATEST VERSION
@@ -420,7 +442,8 @@ VERSION=7.70-1  # CHANGE THIS TO LATEST VERSION
 wget https://nmap.org/dist/nmap-$VERSION.tar.bz2
 bzip2 -cd nmap-$VERSION.tar.bz2 | tar xvf -
 cd nmap-$VERSION
-./configure --without-ncat --without-ndiff --without-nmap-update --without-nping --without-subversion --without-zenmap --with-libdnet=included --with-libpcap=included --with-libpcre=included
+./configure --without-ncat --without-ndiff --without-nmap-update --without-nping --without-subversion \
+--without-zenmap --with-libdnet=included --with-libpcap=included --with-libpcre=included
 make
 ./nmap -V
 ```
@@ -451,7 +474,7 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
 ## Workflow
 
-1. Create user/agent
+1. Create user/agent.  By default, Ansible creates `agent1`.
 
     ![create_user_agent](./img/create_user_agent.png)
 
@@ -459,36 +482,25 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
     ![create_nmap_command](./img/create_nmap_command.png)
 
-3. Add targets on Master
+3. Create a site
 
-    The files need to be owned by root since that is the user on the agents that will be accessing the files through the NFS share.
-
-    ```bash
-    sudo su
-    cd /home/scantron/master/target_files
-    echo 192.168.100 > targets.txt
-    echo 192.168.101 >> targets.txt
-    chown root:root targets.txt
-    ```
-
-4. Create target file object
-
-    ![create_target_file](./img/create_target_file.png)
-
-5. Create a site
+    * IPs, IP subnets, and FQDNs are allowed.
+    * IP ranges (`192.168.1.0-10`) are not currently supported.
+    * The targets are validated using `master/extract_targets.py`, which can also be used as a stand alone script.
 
     ![create_site](./img/create_site.png)
 
-6. Create scan
+4. Create scan
     * Select start time
     * Add start date
     * Add recurrence rules (if applicable)
 
-    The `/home/scantron/master/scan_scheduler.sh` cronjob checks every minute to determine if any scans need to be queued.  If scans are found, it schedules them to be picked up by the agents.
+    The `/home/scantron/master/scan_scheduler.sh` cronjob checks every minute to determine if any scans need to be
+    queued.  If scans are found, it schedules them to be picked up by the agents.
 
     ![create_scan](./img/create_scan.png)
 
-7. View pending scans
+5. View pending scans
 
     ```bash
     cd /home/scantron/master/nmap_results/pending
@@ -497,15 +509,18 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
     Completed scans are moved to the `/home/scantron/master/nmap_results/completed` directory.
 
-8. Process scans
+6. Process scans
 
     Scan files are moved between a few folders.
 
-    `/home/scantron/master/nmap_results/pending` - Pending scan files from agents are stored here before being moved to nmap_results/complete
+    `/home/scantron/master/nmap_results/pending` - Pending scan files from agents are stored here before being moved to
+    nmap_results/complete
 
-    `/home/scantron/master/nmap_results/complete` - Completed scan files from agents are stored here before being processed by nmap_to_csv.py
+    `/home/scantron/master/nmap_results/complete` - Completed scan files from agents are stored here before being
+    processed by nmap_to_csv.py
 
-    The `scantron` user executes a cron job (`nmap_to_csv.sh` which calls `nmap_to_csv.py`) every 5 minutes that will process the `.xml` scan results found in the `complete` directory and move them to the `processed` directory.
+    The `scantron` user executes a cron job (`nmap_to_csv.sh` which calls `nmap_to_csv.py`) every 5 minutes that will
+    process the `.xml` scan results found in the `complete` directory and move them to the `processed` directory.
 
     `/home/scantron/master/nmap_results/processed` - nmap scan files already processed by nmap_to_csv.py reside here.
 

@@ -100,28 +100,13 @@ class Agent:
                         scan_job_dict["scan_job"] = scan_job
                         scan_job_dict["config_data"] = self.config_data
 
-                        # Verify files exist by trying to access.
-                        target_files_dir = self.config_data["target_files_dir"]
-                        target_file = os.path.join(target_files_dir, scan_job["target_file"])
-
-                        if not os.path.exists(target_file):
-                            modules.logger.ROOT_LOGGER.error(
-                                "File does not exist on master: {} Ensure NFS service is running and SSH tunnel exists".format(
-                                    target_file
-                                )
-                            )
-                            # Update scan_status.
-                            update_info = {"scan_status": "error"}
-                            modules.api.update_scan_information(self.config_data, scan_job, update_info)
-                            continue
-
                         # Place scan_job_dict on queue.
                         self.queue.put(scan_job_dict)
 
                         # Allow the jobs to execute before changing status.
                         time.sleep(5)
 
-                        # Update scan_status from 'pending' to 'started'.
+                        # Update scan_status from "pending" to "started".
                         update_info = {"scan_status": "started"}
                         modules.api.update_scan_information(self.config_data, scan_job, update_info)
 
