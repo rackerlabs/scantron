@@ -142,24 +142,15 @@ a large random value and it must be kept secret.
 
 #### Change scantron user password (optional)
 
-The `scantron` user password is not really leveraged and is populated by providing a salted hash of a random password
-generated using Python's `passlib` library.  If you want to change the password, you will have to generate a hash for
-the desired password and update the `temp_user_pass` variable in
+The `scantron` operating system user password is not really leveraged and is populated by providing a salted hash of a
+random password generated using Python's `passlib` library.  If you want to change the password, you will have to
+generate a hash for the desired password and update the `temp_user_pass` variable in
 `scantron/ansible-playbooks/roles/add_users/vars/main.yml`.
 
 ```python
 pip3 install passlib
 
 python3 -c "from passlib.hash import sha512_crypt; import getpass; print(sha512_crypt.encrypt(getpass.getpass()))"
-```
-
-#### Change scantron user password with manage.py (optional)
-
-cd into the master directory `scantron/master` and run the following to change the `scantron` (or whatever user needs
-their password changed) user password.
-
-```bash
-python3 manage.py changepassword scantron
 ```
 
 #### Execute Master Ansible Playbook
@@ -175,6 +166,15 @@ ansible-playbook master.yml -u ubuntu --become --private-key=<agent SSH key>
 
 # root user.
 ansible-playbook master.yml -u root --private-key=<agent SSH key>
+```
+
+#### Change Django user passwords with manage.py (optional)
+
+cd into the master directory `scantron/master` and run the following to change the `admin` (or whatever user needs
+their password changed) user password.
+
+```bash
+python3 manage.py changepassword admin
 ```
 
 ### Agent Installtion
@@ -216,7 +216,9 @@ ansible-playbook agent.yml -u root --private-key=<agent SSH key>
 
 A Scantron agent is synonymous with a user.
 
-    Agents <--> Users
+```none
+Agents <--> Users
+```
 
 Users / agents are added through the webapp, so once a user / agent is added, an API token is automatically generated
 for that user / agent.  The user's / agent's password is not necessary for Scantron to function since all user / agent
@@ -256,7 +258,9 @@ su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -
 agent_config.json is a configuration file used by agents to provide basic settings and bootstrap communication with
 Master.  Each agent can have a different configuration file.  
 
-    The "api_token" will have to be modified on all the agents after deploying Master!
+```none
+The "api_token" will have to be modified on all the agents after deploying Master!
+```
 
 Agent settings:
 
