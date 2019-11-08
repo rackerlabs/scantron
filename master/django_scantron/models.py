@@ -90,7 +90,7 @@ class Site(models.Model):
     )
     description = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Description")
     targets = models.CharField(
-        unique=True,
+        unique=False,
         max_length=1_048_576,  # 2^20 = 1048576
         validators=[
             RegexValidator(
