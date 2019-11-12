@@ -86,7 +86,7 @@ class TargetExtractor:
     #     return ip_range
 
     def is_ipv4_address(self, ip):
-        """Takes an IP address returns True/False if it is a valid IPv4 address."""
+        """Takes an IP address and returns True/False if it is a valid IPv4 address."""
 
         ip = str(ip)
 
@@ -101,7 +101,7 @@ class TargetExtractor:
             print(f"{e}")
 
     def is_ipv6_address(self, ip):
-        """Takes an IP address returns True/False if it is a valid IPv6 address."""
+        """Takes an IP address and returns True/False if it is a valid IPv6 address."""
 
         ip = str(ip)
 
