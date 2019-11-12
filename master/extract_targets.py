@@ -1,12 +1,10 @@
-"""Extracts IPv4 addresses and FQDNs from a string or file."""
+"""Extracts FQDNs, IPv4, and IPv6 addresses from a string or file."""
 
 # Standard Python libraries.
 import argparse
 import ipaddress
 import os
 import pprint
-
-# import re
 import sys
 
 # Third party Python libraries.
@@ -17,10 +15,11 @@ import fqdn
 
 
 class TargetExtractor:
-    def __init__(self, targets_string=None, targets_file=None, private_ips_allowed=False):
+    def __init__(self, targets_string=None, targets_file=None, private_ips_allowed=False, sort_targets=False):
         self.targets_string = str(targets_string).strip()
         self.targets_file = targets_file
         self.private_ips_allowed = private_ips_allowed
+        self.sort_targets = sort_targets
 
         # Read targets from file as string.
         if self.targets_file:
@@ -30,7 +29,7 @@ class TargetExtractor:
         self.targets_dict = self.extract_targets(self.targets_string)
 
     def is_ip_address(self, ip):
-        """Takes an IP address returns true or false if it is a valid IPv4 or IPv6 address."""
+        """Takes an IP address returns True/False if it is a valid IPv4 or IPv6 address."""
 
         ip = str(ip)
 
@@ -42,7 +41,7 @@ class TargetExtractor:
             return False
 
     def is_ip_network(self, address, strict=False):
-        """Takes an address returns true or false if it is a valid network."""
+        """Takes an address returns True/False if it is a valid network."""
 
         address = str(address)
 
@@ -87,7 +86,7 @@ class TargetExtractor:
     #     return ip_range
 
     def is_ipv4_address(self, ip):
-        """Takes an IP address returns true or false if it is a valid IPv4."""
+        """Takes an IP address and returns True/False if it is a valid IPv4 address."""
 
         ip = str(ip)
 
@@ -95,7 +94,22 @@ class TargetExtractor:
             if ipaddress.ip_address(ip).version == 4:
                 return True
 
-            elif ipaddress.ip_address(ip).version == 6:
+            else:
+                return False
+
+        except ValueError as e:
+            print(f"{e}")
+
+    def is_ipv6_address(self, ip):
+        """Takes an IP address and returns True/False if it is a valid IPv6 address."""
+
+        ip = str(ip)
+
+        try:
+            if ipaddress.ip_address(ip).version == 6:
+                return True
+
+            else:
                 return False
 
         except ValueError as e:
@@ -117,19 +131,19 @@ class TargetExtractor:
                 "as_list": [],
                 "as_csv": "",
                 "as_nmap": "",
-                "total": 0
+                "total": 0,
             },
             "ip_networks": {
                 "as_list": [],
                 "as_csv": "",
                 "as_nmap": "",
-                "total": 0
+                "total": 0,
             },
             "domains": {
                 "as_list": [],
                 "as_csv": "",
                 "as_nmap": "",
-                "total": 0
+                "total": 0,
             },
             "invalid_targets": [],
             "invalid_targets_total": 0,
@@ -146,17 +160,6 @@ class TargetExtractor:
         ip_addresses_list = targets_string.split()
 
         for target in ip_addresses_list:
-
-            # print(ip)
-
-            # Only allow certain characters: . : and 0-9
-            # Allows IPv6, even though they are not allowed later in the code.  Allowed in case IPv6 addresses
-            # are allowed in the future.
-            # match = re.match(r"[0-9a-f\.\:]", ip, re.IGNORECASE)
-
-            # if not match:
-            #     print(f"Invalid character detected in IP: {ip}")
-            #     continue
 
             # Convert to a ipaddress object if it is an IP address.
             if self.is_ip_address(target):
@@ -185,20 +188,17 @@ class TargetExtractor:
                     self.update_disallowed_target(master_targets_dict, ip_address)
                     continue
 
-                # Metadata URLs.
-                # elif str(ip_address) in ["169.254.169.254",]:
-                #     print(f"IP address is a cloud metadata IP: {ip_address}")
-
                 # Double check and make sure IP is a public (global) IP if private IPs are not allowed.
                 if not ip_address.is_global and not self.private_ips_allowed:
                     print(f"IP address is not a public IP: {ip_address}")
                     continue
 
                 if self.is_ipv4_address(ip_address):
-                    # print(ip_address)
+                    master_targets_dict["ip_addresses"]["as_list"].append(ip_address)
+                elif self.is_ipv6_address(ip_address):
                     master_targets_dict["ip_addresses"]["as_list"].append(ip_address)
                 else:
-                    print(f"IPv6 IP addresses are not allowed: {ip_address}")
+                    print(f"Unknown IP address type: {ip_address}")
 
             # Check if it is an IP network.
             elif self.is_ip_network(target):
@@ -216,28 +216,41 @@ class TargetExtractor:
 
         print("=" * 10)
 
-        for i in ["ip_addresses", "ip_networks", "domains"]:
-
-            master_targets_dict[i]["as_list"].sort()
+        for target_type in ["ip_addresses", "ip_networks", "domains"]:
 
             temp_list = []
 
-            for j in master_targets_dict[i]["as_list"]:
-                temp_list.append(str(j))
+            # Standardize object type to string.
+            for target in master_targets_dict[target_type]["as_list"]:
+                temp_list.append(str(target))
 
+            # Sort within each individual target type: "ip_addresses", "ip_networks", or "domains"
+            if self.sort_targets:
+                try:
+                    temp_list.sort()
+                except Exception as e:
+                    print(f"Exception sorting targets in '{target_type}': {e}")
+
+            master_targets_dict[target_type]["as_list"] = temp_list
+            master_targets_dict[target_type]["as_csv"] = ",".join(temp_list)
+            master_targets_dict[target_type]["as_nmap"] = " ".join(temp_list)
+
+            master_targets_dict[target_type]["total"] = len(temp_list)
+
+            # Extend array with target_type's list.  If requested, will sort later.
             master_targets_dict["as_list"].extend(temp_list)
-            master_targets_dict[i]["as_csv"] = ",".join(temp_list)
-            master_targets_dict[i]["as_nmap"] = " ".join(temp_list)
 
-            master_targets_dict[i]["total"] = len(temp_list)
             master_targets_dict["total"] += len(temp_list)
 
-        temp_list = []
-        for k in master_targets_dict["as_list"]:
-            temp_list.append(str(k))
+        # Sort for combined "as_list" targets.
+        if self.sort_targets:
+            try:
+                master_targets_dict["as_list"].sort()
+            except Exception as e:
+                print(f"Exception sorting targets: {e}")
 
-        master_targets_dict["as_csv"] = ",".join(temp_list)
-        master_targets_dict["as_nmap"] = " ".join(temp_list)
+        master_targets_dict["as_csv"] = ",".join(master_targets_dict["as_list"])
+        master_targets_dict["as_nmap"] = " ".join(master_targets_dict["as_list"])
 
         return master_targets_dict
 
@@ -255,7 +268,13 @@ if __name__ == "__main__":
         default=False,
         help="Private RFC1918 IPs allowed (192.168.1.1)",
     )
-    group.add_argument("-t", dest="targets_string", action="store", help="String of targets '8.8.8.8 4.4.4.4'")
+    parser.add_argument("-s", dest="sort_targets", action="store_true", default=False, help="Sort targets")
+    group.add_argument(
+        "-t",
+        dest="targets_string",
+        action="store",
+        help="String of targets '8.8.8.8 4.4.4.4 scanme.nmap.org ::ffff:c0a8:101'",
+    )
 
     args = parser.parse_args()
 

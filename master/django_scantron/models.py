@@ -106,7 +106,9 @@ class Site(models.Model):
     def clean(self):
         """Checks for any invalid IPs, IP subnets, or FQDNs in targets field."""
 
-        target_extractor = extract_targets.TargetExtractor(targets_string=self.targets, private_ips_allowed=True)
+        target_extractor = extract_targets.TargetExtractor(
+            targets_string=self.targets, private_ips_allowed=True, sort_targets=True
+        )
         targets_dict = target_extractor.targets_dict
 
         if targets_dict["invalid_targets"]:
@@ -171,16 +173,10 @@ class ScheduledScan(models.Model):
         verbose_name="Site Name",
     )
     site_name_id = models.IntegerField(
-        validators=[
-            MinValueValidator(1, message="Site name ID must be greater than 0",)
-        ],
-        verbose_name="Site name ID",
+        validators=[MinValueValidator(1, message="Site name ID must be greater than 0")], verbose_name="Site name ID"
     )
     scan_id = models.IntegerField(
-        validators=[
-            MinValueValidator(1, message="Scan ID must be greater than 0",)
-        ],
-        verbose_name="Scan ID",
+        validators=[MinValueValidator(1, message="Scan ID must be greater than 0")], verbose_name="Scan ID"
     )
     scan_agent = models.CharField(
         unique=False,
@@ -194,18 +190,13 @@ class ScheduledScan(models.Model):
         verbose_name="Agent Name",
     )
     scan_agent_id = models.IntegerField(
-        validators=[
-            MinValueValidator(1, message="Scan agent ID must be greater than 0",)
-        ],
-        verbose_name="Scan agent ID",
+        validators=[MinValueValidator(1, message="Scan agent ID must be greater than 0")], verbose_name="Scan agent ID"
     )
     start_datetime = models.DateTimeField(verbose_name="Scheduled scan start date and time")
     scan_binary = models.CharField(max_length=7, default="nmap", verbose_name="Scan binary")
     nmap_command = models.CharField(unique=False, max_length=1024, verbose_name="nmap command")
     nmap_command_id = models.IntegerField(
-        validators=[
-            MinValueValidator(1, message="nmap command ID must be greater than 0",)
-        ],
+        validators=[MinValueValidator(1, message="nmap command ID must be greater than 0")],
         verbose_name="nmap command ID",
     )
     targets = models.CharField(
