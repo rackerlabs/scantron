@@ -37,7 +37,7 @@ class SiteSerializer(serializers.ModelSerializer):
 
         targets = attrs["targets"]
 
-        target_extractor = extract_targets.TargetExtractor(targets_string=targets, private_ips_allowed=True)
+        target_extractor = extract_targets.TargetExtractor(targets_string=targets, private_ips_allowed=True, sort_targets=True)
         targets_dict = target_extractor.targets_dict
 
         if targets_dict["invalid_targets"]:
