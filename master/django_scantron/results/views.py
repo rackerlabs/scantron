@@ -16,18 +16,12 @@ def retrieve_scan_file(request, id):
     # Lookup result_file_base_name based of scan ID.
     requested_scan = ScheduledScan.objects.get(id=id)
 
+    # Extract file_type from ?file_type query parameter.
+    file_type = request.GET.get("file_type", "")
+
     result_file_base_name = requested_scan.result_file_base_name
-    scan_binary = requested_scan.scan_binary
 
-    file_extension = ""
-
-    if scan_binary == "nmap":
-        file_extension = "nmap"
-
-    elif scan_binary == "masscan":
-        file_extension = "json"
-
-    scan_file = f"{result_file_base_name}.{file_extension}"
+    scan_file = f"{result_file_base_name}.{file_type}"
 
     # Serve file using nginx X-Accel-Redirect.
     # https://wellfire.co/learn/nginx-django-x-accel-redirects/
