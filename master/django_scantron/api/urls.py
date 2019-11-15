@@ -7,7 +7,7 @@ from django_scantron.api import views
 
 # Create a router and register our viewsets with it.
 # base_name requirement: http://www.django-rest-framework.org/api-guide/routers/#usage
-router = routers.DefaultRouter()
+router = routers.DefaultRouter(trailing_slash=False)
 router.register(r"agents", views.AgentViewSet, base_name="agents")
 router.register(r"nmap_commands", views.NmapCommandViewSet, base_name="nmap_commands")
 router.register(r"scans", views.ScanViewSet, base_name="scans")
