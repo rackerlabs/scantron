@@ -20,7 +20,7 @@ def check_for_scan_jobs(config_data):
     """Check for new scans through the API."""
 
     # Build URL to pull new scan jobs.  Server determines jobs based off agent (user) making request.
-    url = "{}:{}/api/scheduled_scans/?format=json".format(
+    url = "{}:{}/api/scheduled_scans?format=json".format(
         config_data["master_address"], config_data["master_port"]
     )
     logger.ROOT_LOGGER.info("check_for_scans URL: {}".format(url))
@@ -57,7 +57,7 @@ def update_scan_information(config_data, scan_job, update_info):
     """Update scan information using a PATCH API request."""
 
     # Build URL to update scan job.
-    url = "{}:{}/api/scheduled_scans/{}/".format(
+    url = "{}:{}/api/scheduled_scans/{}".format(
         config_data["master_address"], config_data["master_port"], scan_job["id"]
     )
     logger.ROOT_LOGGER.info("update_scan_information URL: {}".format(url))
