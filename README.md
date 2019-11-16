@@ -368,10 +368,10 @@ the current datetime.
 
 ```bash
 # Not using SSH tunnels.
-curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://192.168.1.99:443/api/scheduled_scans/?format=json
+curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://192.168.1.99:443/api/scheduled_scans?format=json
 
 # Using SSH tunnels.
-curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://127.0.0.1:4430/api/scheduled_scans/?format=json
+curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://127.0.0.1:4430/api/scheduled_scans?format=json
 ```
 
 You can also log into the webapp using the agent name and password and browse to `/api/?format=json` to view any scan
