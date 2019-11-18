@@ -73,9 +73,9 @@ def main():
             ROOT_LOGGER.info(f"Found scan_occurrence for today: {scan_occurrence}.")
 
         # Let's extract the remaining variables from existing database relationships.  Note that the Scan model has the
-        # Site model as a foreign key, and in turn, the Site model has foreign keys for the Agent and NmapCommand models
+        # Site model as a foreign key, and in turn, the Site model has foreign keys for the Agent and ScanCommand models
         # (see the scantron_model_graph.png for a visualization).  Therefore, if a field from the Agent or
-        # NmapCommand models is updated, it will update the Site model, and cascade to the Scan model.
+        # ScanCommand models is updated, it will update the Site model, and cascade to the Scan model.
 
         # Scan model.
         scan_id = scan.id  # Can delete in future.
@@ -90,10 +90,10 @@ def main():
         scan_agent_id = scan.site.scan_agent_id  # Can delete in future.
         scan_agent = scan.site.scan_agent.scan_agent
 
-        # NmapCommand model.
-        nmap_command_id = scan.site.nmap_command.id  # Can delete in future.
-        nmap_command = scan.site.nmap_command.nmap_command
-        scan_binary = scan.site.nmap_command.scan_binary
+        # ScanCommand model.
+        scan_command_id = scan.site.scan_command.id  # Can delete in future.
+        scan_command = scan.site.scan_command.scan_command
+        scan_binary = scan.site.scan_command.scan_binary
 
         # The ScheduledScan model acts as the sanitized endpoint for agents to determine scan jobs.  We don't want to
         # expose the other models, so we populate that ScheduledScan mdoel instead.  The actual exposed fields for the
@@ -109,7 +109,7 @@ def main():
         # Convert start_datetime datetime object to string for result_file_base_name.
         timestamp = datetime.datetime.strftime(start_datetime, "%Y%m%d_%H%M")
 
-        # Build result_file_base_name file.  "__" is used by master/nmap_results/nmap_to_csv.py to .split() site_name
+        # Build result_file_base_name file.  "__" is used by master/scan_results/nmap_to_csv.py to .split() site_name
         # and scan_agent.
         result_file_base_name = f"{clean_text(site_name)}__{clean_text(scan_agent)}__{timestamp}"
 
@@ -121,8 +121,8 @@ def main():
             "scan_agent_id": scan_agent_id,  # Can delete in future.
             "start_datetime": start_datetime,
             "scan_binary": scan_binary,
-            "nmap_command": nmap_command,
-            "nmap_command_id": nmap_command_id,  # Can delete in future.
+            "scan_command": scan_command,
+            "scan_command_id": scan_command_id,  # Can delete in future.
             "targets": targets,
             "result_file_base_name": result_file_base_name,
             "scan_status": "pending",

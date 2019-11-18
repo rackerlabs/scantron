@@ -62,7 +62,7 @@
     src: ../../../../agent
     dest: /root
   # Only required if re-running Ansible on an agent that already has comms with master.
-  # Ansible will get angry since it can't chown /root/agent/nmap_results and /root/agent/target_files
+  # Ansible will get angry since it can't chown /root/agent/scan_results and /root/agent/target_files
   ignore_errors: yes
 
 - name: Change owner of autossh.key to autossh.

@@ -9,9 +9,9 @@ class AgentAdmin(admin.ModelAdmin):
     readonly_fields = ("id", "scan_agent", "api_token")
 
 
-class NmapCommandAdmin(admin.ModelAdmin):
+class ScanCommandAdmin(admin.ModelAdmin):
 
-    list_display = ("id", "scan_binary", "nmap_scan_name", "nmap_command")
+    list_display = ("id", "scan_binary", "scan_command_name", "scan_command")
 
 
 class ScanAdmin(admin.ModelAdmin):
@@ -22,7 +22,7 @@ class ScanAdmin(admin.ModelAdmin):
 
 
 class SiteAdmin(admin.ModelAdmin):
-    list_display = ("id", "site_name", "description", "targets", "nmap_command", "scan_agent")
+    list_display = ("id", "site_name", "description", "targets", "scan_command", "scan_agent")
 
 
 class ScheduledScanAdmin(admin.ModelAdmin):
@@ -36,8 +36,8 @@ class ScheduledScanAdmin(admin.ModelAdmin):
         "scan_agent_id",
         "start_datetime",
         "scan_binary",
-        "nmap_command",
-        "nmap_command_id",
+        "scan_command",
+        "scan_command_id",
         "targets",
         "scan_status",
         "completed_time",
@@ -52,7 +52,7 @@ def _register(model, admin_class):
 
 
 _register(models.Agent, AgentAdmin)
-_register(models.NmapCommand, NmapCommandAdmin)
+_register(models.ScanCommand, ScanCommandAdmin)
 _register(models.Scan, ScanAdmin)
 _register(models.ScheduledScan, ScheduledScanAdmin)
 _register(models.Site, SiteAdmin)

@@ -9,7 +9,7 @@ from django_scantron.api import views
 # base_name requirement: http://www.django-rest-framework.org/api-guide/routers/#usage
 router = routers.DefaultRouter(trailing_slash=False)
 router.register(r"agents", views.AgentViewSet, base_name="agents")
-router.register(r"nmap_commands", views.NmapCommandViewSet, base_name="nmap_commands")
+router.register(r"scan_commands", views.ScanCommandViewSet, base_name="scan_commands")
 router.register(r"scans", views.ScanViewSet, base_name="scans")
 router.register(r"scheduled_scans", views.ScheduledScanViewSet, base_name="scheduled_scans")
 router.register(r"sites", views.SiteViewSet, base_name="sites")

@@ -12,14 +12,14 @@ from . import utils
 from . import logger
 
 
-def build_masscan_command(nmap_command, target_file, json_file, http_useragent):
+def build_masscan_command(scan_command, target_file, json_file, http_useragent):
     """Builds the masscan command."""
 
     # Can only have 1 file output type.
     file_options = f"-iL {target_file} -oJ {json_file} --http-user-agent {http_useragent}"
 
-    # nmap_command is used for both nmap and masscan commands.
-    masscan_command = f"masscan {nmap_command} {file_options}"
+    # scan_command is used for both nmap and masscan commands.
+    masscan_command = f"masscan {scan_command} {file_options}"
 
     return masscan_command
 
@@ -35,10 +35,10 @@ def scan_site(scan_job_dict):
         # Assign variables.
         site_name = scan_job["site_name"]
         scan_binary = scan_job["scan_binary"]
-        nmap_command = scan_job["nmap_command"]  # Also used for masscan.
+        scan_command = scan_job["scan_command"]  # Also used for masscan.
         result_file_base_name = scan_job["result_file_base_name"]
 
-        nmap_results_dir = config_data["nmap_results_dir"]
+        scan_results_dir = config_data["scan_results_dir"]
 
         target_files_dir = config_data["target_files_dir"]
         target_file = os.path.join(target_files_dir, f"{result_file_base_name}.targets")
@@ -53,8 +53,8 @@ def scan_site(scan_job_dict):
             fh.write(f"{targets}")
 
         # Setup folder structure.
-        pending_files_dir = os.path.join(nmap_results_dir, "pending")
-        complete_files_dir = os.path.join(nmap_results_dir, "complete")
+        pending_files_dir = os.path.join(scan_results_dir, "pending")
+        complete_files_dir = os.path.join(scan_results_dir, "complete")
 
         if scan_binary == "masscan":
             # Output format.
@@ -97,12 +97,12 @@ def scan_site(scan_job_dict):
                     )
 
                     # Build the masscan command.
-                    command = build_masscan_command(nmap_command, target_file, json_file, config_data["http_useragent"])
+                    command = build_masscan_command(scan_command, target_file, json_file, config_data["http_useragent"])
 
             # New scan.
             else:
                 # Build the masscan command.
-                command = build_masscan_command(nmap_command, target_file, json_file, config_data["http_useragent"])
+                command = build_masscan_command(scan_command, target_file, json_file, config_data["http_useragent"])
 
         elif scan_binary == "nmap":
             # Three different nmap scan result file types.
@@ -122,7 +122,7 @@ def scan_site(scan_job_dict):
                 file_options = "-iL {} -oG {} -oN {} -oX {} --script-args http.useragent='{}'".format(
                     target_file, gnmap_file, nmap_file, xml_file, config_data["http_useragent"]
                 )
-                command = "nmap {} {}".format(nmap_command, file_options)
+                command = "nmap {} {}".format(scan_command, file_options)
 
         else:
             logger.ROOT_LOGGER.error("Invalid scan binary specified: {}".format(scan_binary))

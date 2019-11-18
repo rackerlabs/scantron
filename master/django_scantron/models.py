@@ -51,8 +51,8 @@ class Agent(models.Model):
         verbose_name_plural = "Agents"
 
 
-class NmapCommand(models.Model):
-    """Model for a nmap command"""
+class ScanCommand(models.Model):
+    """Model for a scan command"""
 
     # fmt: off
     SCAN_BINARY = (
@@ -61,16 +61,16 @@ class NmapCommand(models.Model):
     )
     # fmt: on
 
-    id = models.AutoField(primary_key=True, verbose_name="nmap command ID")
+    id = models.AutoField(primary_key=True, verbose_name="scan command ID")
     scan_binary = models.CharField(max_length=7, choices=SCAN_BINARY, default="nmap", verbose_name="Scan binary")
-    nmap_scan_name = models.CharField(unique=True, max_length=255, verbose_name="Scan Name")
-    nmap_command = models.TextField(unique=False, verbose_name="Scan command")
+    scan_command_name = models.CharField(unique=True, max_length=255, verbose_name="Scan command name")
+    scan_command = models.TextField(unique=False, verbose_name="Scan command")
 
     def __str__(self):
-        return f"{self.scan_binary}||{self.nmap_scan_name}"
+        return f"{self.scan_binary}||{self.scan_command_name}"
 
     class Meta:
-        verbose_name_plural = "nmap Commands"
+        verbose_name_plural = "Scan Commands"
 
 
 class Site(models.Model):
@@ -100,7 +100,7 @@ class Site(models.Model):
         ],
         verbose_name="Targets",
     )
-    nmap_command = models.ForeignKey(NmapCommand, on_delete=models.CASCADE, verbose_name="Scan binary and name")
+    scan_command = models.ForeignKey(ScanCommand, on_delete=models.CASCADE, verbose_name="Scan binary and name")
     scan_agent = models.ForeignKey(Agent, on_delete=models.CASCADE, verbose_name="Scan Agent")
 
     def clean(self):
@@ -194,10 +194,10 @@ class ScheduledScan(models.Model):
     )
     start_datetime = models.DateTimeField(verbose_name="Scheduled scan start date and time")
     scan_binary = models.CharField(max_length=7, default="nmap", verbose_name="Scan binary")
-    nmap_command = models.CharField(unique=False, max_length=1024, verbose_name="nmap command")
-    nmap_command_id = models.IntegerField(
-        validators=[MinValueValidator(1, message="nmap command ID must be greater than 0")],
-        verbose_name="nmap command ID",
+    scan_command = models.CharField(unique=False, max_length=1024, verbose_name="Scan command")
+    scan_command_id = models.IntegerField(
+        validators=[MinValueValidator(1, message="Scan command ID must be greater than 0")],
+        verbose_name="Scan command ID",
     )
     targets = models.CharField(
         unique=False,
