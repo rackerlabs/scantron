@@ -6,7 +6,7 @@
     "callback_interval_in_seconds": 60,
     "number_of_threads": 1,
     "target_files_dir": "./target_files",
-    "nmap_results_dir": "./nmap_results",
+    "scan_results_dir": "./scan_results",
     "log_verbosity": 20,
     "http_useragent": "user-agent"
 }

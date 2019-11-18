@@ -69,8 +69,8 @@ def main():
     root_dir = "/home/scantron/master"
 
     # Build directory paths.
-    complete_dir = os.path.join(root_dir, "nmap_results", "complete")
-    processed_dir = os.path.join(root_dir, "nmap_results", "processed")
+    complete_dir = os.path.join(root_dir, "scan_results", "complete")
+    processed_dir = os.path.join(root_dir, "scan_results", "processed")
     for_splunk_dir = os.path.join(root_dir, "for_splunk")
 
     # Grab a list of json files from the "complete" folder.
@@ -102,7 +102,7 @@ def main():
                     for port in result["ports"]:
 
                         # Conforming key values to what Splunk is expecting with
-                        # scantron/master/nmap_results/nmap_to_csv.py
+                        # scantron/master/scan_results/nmap_to_csv.py
                         result_dict = {
                             "starttime": result["timestamp"],
                             "endtime": result["timestamp"],

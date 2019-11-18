@@ -6,7 +6,7 @@ from rest_framework import viewsets
 
 from django_scantron.api.serializers import (
     AgentSerializer,
-    NmapCommandSerializer,
+    ScanCommandSerializer,
     ScanSerializer,
     ScheduledScanSerializer,
     SiteSerializer,
@@ -15,7 +15,7 @@ from django_scantron.api.serializers import (
 # fmt: off
 from django_scantron.models import (
     Agent,
-    NmapCommand,
+    ScanCommand,
     Scan,
     ScheduledScan,
     Site,
@@ -61,18 +61,18 @@ class AgentViewSet(DefaultsMixin, viewsets.ModelViewSet):
         return queryset
 
 
-class NmapCommandViewSet(DefaultsMixin, viewsets.ModelViewSet):
-    """API CRUD operations for NmapCommand Model."""
+class ScanCommandViewSet(DefaultsMixin, viewsets.ModelViewSet):
+    """API CRUD operations for ScanCommand Model."""
 
-    model = NmapCommand
-    serializer_class = NmapCommandSerializer
+    model = ScanCommand
+    serializer_class = ScanCommandSerializer
 
     def get_queryset(self):
         user = self.request.user
 
         # Don't filter results for super users.
         if user.is_superuser:
-            queryset = NmapCommand.objects.all()
+            queryset = ScanCommand.objects.all()
 
         # Return empty queryset.
         else:

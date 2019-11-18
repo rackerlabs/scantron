@@ -102,7 +102,7 @@ class ScanCreateView(LoginRequiredMixin, CreateView):
     login_url = "/login/"
     model = Scan
     form_class = ScanForm
-    fields = ["site_name", "nmap_command", "scan_type", "target_file", "scan_agent", "start_time"]
+    fields = ["site_name", "scan_command", "scan_type", "target_file", "scan_agent", "start_time"]
     template_name = "django_scantron/scan_create.html"
     success_url = reverse_lazy("scan_list")
 
@@ -156,7 +156,7 @@ class ScanUpdateView(LoginRequiredMixin, UpdateView):
     login_url = "/login/"
     model = Scan
     form_class = ScanForm
-    fields = ["site_name", "nmap_command", "scan_type", "target_file", "scan_agent", "start_time"]
+    fields = ["site_name", "scan_command", "scan_type", "target_file", "scan_agent", "start_time"]
     template_name = "django_scantron/scan_update.html"
     initial = {}
     slug_field = "slug"

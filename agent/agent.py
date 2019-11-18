@@ -15,7 +15,7 @@ import time
 # Custom Python libraries.
 import modules.api
 import modules.logger
-import modules.nmap_scanner
+import modules.scanner
 
 
 class Worker(threading.Thread):
@@ -35,8 +35,8 @@ class Worker(threading.Thread):
 
             try:
                 # Kick off scan.
-                nmap_process = multiprocessing.Process(target=modules.nmap_scanner.scan_site, args=(scan_job_dict,))
-                nmap_process.start()
+                scan_process = multiprocessing.Process(target=modules.scanner.scan_site, args=(scan_job_dict,))
+                scan_process.start()
 
             except Exception as e:
                 modules.logger.ROOT_LOGGER.error("Failed to start scan. Exception: {}".format(e))
@@ -127,7 +127,7 @@ class Agent:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Scantron nmap scan agent")
+    parser = argparse.ArgumentParser(description="Scantron scan agent")
     parser.add_argument("-c", dest="config_file", action="store", required=True, help="Configuration file.")
     args = parser.parse_args()
 

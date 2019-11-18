@@ -73,8 +73,8 @@ def main():
     root_dir = "/home/scantron/master"
 
     # Build directory paths.
-    complete_dir = os.path.join(root_dir, "nmap_results", "complete")
-    processed_dir = os.path.join(root_dir, "nmap_results", "processed")
+    complete_dir = os.path.join(root_dir, "scan_results", "complete")
+    processed_dir = os.path.join(root_dir, "scan_results", "processed")
     for_splunk_dir = os.path.join(root_dir, "for_splunk")
 
     # Grab a list of xml files from the "complete" folder.

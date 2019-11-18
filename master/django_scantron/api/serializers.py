@@ -3,7 +3,7 @@ from rest_framework import serializers
 # fmt: off
 from django_scantron.models import (
     Agent,
-    NmapCommand,
+    ScanCommand,
     Scan,
     ScheduledScan,
     Site,
@@ -20,14 +20,14 @@ class AgentSerializer(serializers.ModelSerializer):
         fields = ("scan_agent", "description", "api_token",)
 
 
-class NmapCommandSerializer(serializers.ModelSerializer):
+class ScanCommandSerializer(serializers.ModelSerializer):
     class Meta:
-        model = NmapCommand
-        fields = ("scan_binary", "nmap_scan_name", "nmap_command",)
+        model = ScanCommand
+        fields = ("scan_binary", "scan_command_name", "scan_command",)
 
 
 class SiteSerializer(serializers.ModelSerializer):
-    nmap_command = serializers.StringRelatedField(many=False)
+    scan_command = serializers.StringRelatedField(many=False)
     scan_agent = serializers.StringRelatedField(many=False)
 
     # Separate validation needed for DRF; doesn't use model's clean() function anymore.
@@ -53,7 +53,7 @@ class SiteSerializer(serializers.ModelSerializer):
             "site_name",
             "description",
             "targets",
-            "nmap_command",
+            "scan_command",
             "scan_agent",
         )
 
@@ -77,7 +77,7 @@ class ScheduledScanSerializer(serializers.ModelSerializer):
             "scan_agent",
             "start_datetime",
             "scan_binary",
-            "nmap_command",
+            "scan_command",
             "targets",
             "scan_status",
             "completed_time",

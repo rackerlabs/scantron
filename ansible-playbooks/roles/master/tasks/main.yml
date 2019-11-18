@@ -287,9 +287,9 @@
     group: nogroup
     recurse: yes
 
-- name: Change ownership of nmap_results
+- name: Change ownership of scan_results
   file:
-    path: "/home/{{ non_root_user }}/master/nmap_results"
+    path: "/home/{{ non_root_user }}/master/scan_results"
     owner: nobody
     group: nogroup
     recurse: yes
@@ -321,7 +321,7 @@
 
 - name: Make nmap_to_csv.sh and nmap_to_csv.py executable.
   file:
-    path: "/home/{{ non_root_user }}//master/nmap_results/{{ item }}"
+    path: "/home/{{ non_root_user }}/master/scan_results/{{ item }}"
     owner: root
     group: root
     mode: 0700
@@ -366,7 +366,7 @@
     day: "*"
     month: "*"
     weekday: "*"
-    job: "{{ scantron_dir }}/nmap_results/nmap_to_csv.sh"
+    job: "{{ scantron_dir }}/scan_results/nmap_to_csv.sh"
     user: root
 
 - name: Add crontab entry for masscan_json_to_csv.sh
@@ -377,7 +377,7 @@
     day: "*"
     month: "*"
     weekday: "*"
-    job: "{{ scantron_dir }}/nmap_results/masscan_json_to_csv.sh"
+    job: "{{ scantron_dir }}/scan_results/masscan_json_to_csv.sh"
     user: root
 
 - name: Copying custom logrotate configuration file to /etc/logrotate.d/

@@ -281,7 +281,7 @@ the same time.  Keep at 1 to avoid a doubling scanning race condition.
 
 **target_files_dir:** Name of actual agent `target_files` directory on the agent box.
 
-**nmap_results_dir:** Name of actual agent `nmap_results` directory on the agent box.
+**scan_results_dir:** Name of actual agent `scan_results` directory on the agent box.
 
 **log_verbosity:** Desired log level for logs/agent.log
 
@@ -384,10 +384,10 @@ jobs.  The username and agent name are the same from the webapp's point of view.
 * Place files with target IPs/hosts (fed to nmap `-iL` switch) in `master/target_files/`
 * `target_files` is an NFS share on Master that the agent reads from through an SSH tunnel.
 
-### Master `nmap_results` folder
+### Master `scan_results` folder
 
 * nmap scan results from agents go here.
-* `master/nmap_results/` is an NFS share on Master that the agent writes to through an SSH tunnel.
+* `master/scan_results/` is an NFS share on Master that the agent writes to through an SSH tunnel.
 
 ### Master Troubleshooting
 
@@ -507,26 +507,26 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 5. View pending scans
 
     ```bash
-    cd /home/scantron/master/nmap_results/pending
+    cd /home/scantron/master/scan_results/pending
     ls -lart
     ```
 
-    Completed scans are moved to the `/home/scantron/master/nmap_results/completed` directory.
+    Completed scans are moved to the `/home/scantron/master/scan_results/completed` directory.
 
 6. Process scans
 
     Scan files are moved between a few folders.
 
-    `/home/scantron/master/nmap_results/pending` - Pending scan files from agents are stored here before being moved to
-    nmap_results/complete
+    `/home/scantron/master/scan_results/pending` - Pending scan files from agents are stored here before being moved to
+    scan_results/complete
 
-    `/home/scantron/master/nmap_results/complete` - Completed scan files from agents are stored here before being
+    `/home/scantron/master/scan_results/complete` - Completed scan files from agents are stored here before being
     processed by nmap_to_csv.py
 
     The `scantron` user executes a cron job (`nmap_to_csv.sh` which calls `nmap_to_csv.py`) every 5 minutes that will
     process the `.xml` scan results found in the `complete` directory and move them to the `processed` directory.
 
-    `/home/scantron/master/nmap_results/processed` - nmap scan files already processed by nmap_to_csv.py reside here.
+    `/home/scantron/master/scan_results/processed` - nmap scan files already processed by nmap_to_csv.py reside here.
 
     `/home/scantron/master/for_splunk` - csv files for Spulnk ingestion
 

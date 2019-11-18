@@ -31,7 +31,7 @@ server {
     # https://wellfire.co/learn/nginx-django-x-accel-redirects/
     location /protected/complete {
         internal;
-        alias {{ scantron_dir }}/nmap_results/processed;
+        alias {{ scantron_dir }}/scan_results/processed;
     }
 
     location /static {
