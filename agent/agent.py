@@ -39,7 +39,7 @@ class Worker(threading.Thread):
                 scan_process.start()
 
             except Exception as e:
-                modules.logger.ROOT_LOGGER.error("Failed to start scan. Exception: {}".format(e))
+                modules.logger.ROOT_LOGGER.error(f"Failed to start scan.  Exception: {e}")
 
             agent.queue.task_done()
 
@@ -67,7 +67,7 @@ class Agent:
                 return json_data
 
         else:
-            modules.logger.ROOT_LOGGER.error("{} does not exist or contains no data.".format(config_file))
+            modules.logger.ROOT_LOGGER.error(f"'{config_file}' does not exist or contains no data.")
             sys.exit(0)
 
     def go(self):
@@ -82,9 +82,7 @@ class Agent:
             thread.daemon = True
             thread.start()
 
-        modules.logger.ROOT_LOGGER.info(
-            "Starting scan agent: {}".format(self.config_data["scan_agent"]), exc_info=False
-        )
+        modules.logger.ROOT_LOGGER.info(f"Starting scan agent: {self.config_data['scan_agent']}", exc_info=False)
 
         while True:
             try:
@@ -93,7 +91,7 @@ class Agent:
 
                 if scan_jobs:
                     for scan_job in scan_jobs:
-                        modules.logger.ROOT_LOGGER.info("Executing scan job ID: {}".format(scan_job["id"]))
+                        modules.logger.ROOT_LOGGER.info(f"Executing scan job ID: {scan_job['id']}")
 
                         # Create new dictionary that will contain scan_job and config_data information.
                         scan_job_dict = {}
@@ -114,9 +112,7 @@ class Agent:
 
                 else:
                     modules.logger.ROOT_LOGGER.info(
-                        "No scan jobs found...checking back in {} seconds.".format(
-                            self.config_data["callback_interval_in_seconds"]
-                        )
+                        f"No scan jobs found...checking back in {self.config_data['callback_interval_in_seconds']} seconds."
                     )
                     time.sleep(self.config_data["callback_interval_in_seconds"])
 
@@ -128,7 +124,14 @@ class Agent:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scantron scan agent")
-    parser.add_argument("-c", dest="config_file", action="store", required=True, help="Configuration file.")
+    parser.add_argument(
+        "-c",
+        dest="config_file",
+        action="store",
+        required=False,
+        default="agent_config.json",
+        help="Configuration file.  Defaults to 'agent_config.json'",
+    )
     args = parser.parse_args()
 
     config_file = args.config_file
