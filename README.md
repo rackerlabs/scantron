@@ -52,7 +52,7 @@ static set of assets to scan.
 ## Hardware Requirements
 
 * Agent: If you plan on compiling masscan on an agent, you'll need at least 1024 MB of memory.  It fails to build with
-* only 512 MB.  If you do not want to build masscan, set `install_masscan_on_agent` to `False` in
+only 512 MB.  If you do not want to build masscan, set `install_masscan_on_agent` to `False` in
 `ansible-playbooks/group_vars/all`
 
 * Master: 512 MB of memory was the smallest amount successfully tested.
