@@ -85,6 +85,7 @@ def main():
         site_name_id = scan.site.id  # Can delete in future.
         site_name = scan.site.site_name
         targets = scan.site.targets
+        excluded_targets = scan.site.excluded_targets
 
         # Agent model.
         scan_agent_id = scan.site.scan_agent_id  # Can delete in future.
@@ -124,6 +125,7 @@ def main():
             "scan_command": scan_command,
             "scan_command_id": scan_command_id,  # Can delete in future.
             "targets": targets,
+            "excluded_targets": excluded_targets,
             "result_file_base_name": result_file_base_name,
             "scan_status": "pending",
         }

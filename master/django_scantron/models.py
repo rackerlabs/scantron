@@ -100,12 +100,25 @@ class Site(models.Model):
         ],
         verbose_name="Targets",
     )
+    excluded_targets = models.CharField(
+        unique=False,
+        blank=True,
+        max_length=1_048_576,  # 2^20 = 1048576
+        validators=[
+            RegexValidator(
+                regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
+                message="Excluded targets can only contain alphanumeric characters, /, ., :, and spaces",
+            )
+        ],
+        verbose_name="Excluded targets",
+    )
     scan_command = models.ForeignKey(ScanCommand, on_delete=models.CASCADE, verbose_name="Scan binary and name")
     scan_agent = models.ForeignKey(Agent, on_delete=models.CASCADE, verbose_name="Scan Agent")
 
     def clean(self):
-        """Checks for any invalid IPs, IP subnets, or FQDNs in targets field."""
+        """Checks for any invalid IPs, IP subnets, or FQDNs in the targets and excluded_targets fields."""
 
+        # Targets
         target_extractor = extract_targets.TargetExtractor(
             targets_string=self.targets, private_ips_allowed=True, sort_targets=True
         )
@@ -116,6 +129,18 @@ class Site(models.Model):
             raise ValidationError(f"Invalid targets provided: {invalid_targets}")
 
         self.targets = targets_dict["as_nmap"]
+
+        # Excluded targets
+        target_extractor = extract_targets.TargetExtractor(
+            targets_string=self.excluded_targets, private_ips_allowed=True, sort_targets=True
+        )
+        targets_dict = target_extractor.targets_dict
+
+        if targets_dict["invalid_targets"]:
+            invalid_targets = ",".join(target_extractor.targets_dict["invalid_targets"])
+            raise ValidationError(f"Invalid excluded targets provided: {invalid_targets}")
+
+        self.excluded_targets = targets_dict["as_nmap"]
 
     def __str__(self):
         return str(self.site_name)
@@ -209,6 +234,18 @@ class ScheduledScan(models.Model):
             )
         ],
         verbose_name="Targets",
+    )
+    excluded_targets = models.CharField(
+        unique=False,
+        blank=True,
+        max_length=1_048_576,  # 2^20 = 1048576
+        validators=[
+            RegexValidator(
+                regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
+                message="Excluded targets can only contain alphanumeric characters, /, ., :, and spaces",
+            )
+        ],
+        verbose_name="Excluded targets",
     )
     scan_status = models.CharField(
         max_length=9, choices=SCAN_STATUS_CHOICES, default="pending", verbose_name="Scan status"

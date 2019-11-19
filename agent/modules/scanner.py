@@ -12,11 +12,14 @@ from . import utils
 from . import logger
 
 
-def build_masscan_command(scan_command, target_file, json_file, http_useragent):
+def build_masscan_command(scan_command, target_file, excluded_target_file, json_file, http_useragent):
     """Builds the masscan command."""
 
     # Can only have 1 file output type.
     file_options = f"-iL {target_file} -oJ {json_file} --http-user-agent {http_useragent}"
+
+    if excluded_target_file:
+        file_options += f" --excludefile {excluded_target_file}"
 
     # scan_command is used for both nmap and masscan commands.
     masscan_command = f"masscan {scan_command} {file_options}"
@@ -33,13 +36,14 @@ def scan_site(scan_job_dict):
         config_data = scan_job_dict["config_data"]
 
         # Assign variables.
+        scan_job_id = scan_job["id"]
         site_name = scan_job["site_name"]
         scan_binary = scan_job["scan_binary"]
         scan_command = scan_job["scan_command"]  # Also used for masscan.
         result_file_base_name = scan_job["result_file_base_name"]
 
+        http_useragent = config_data["http_useragent"]
         scan_results_dir = config_data["scan_results_dir"]
-
         target_files_dir = config_data["target_files_dir"]
         target_file = os.path.join(target_files_dir, f"{result_file_base_name}.targets")
 
@@ -52,6 +56,15 @@ def scan_site(scan_job_dict):
         with open(target_file, "w") as fh:
             fh.write(f"{targets}")
 
+        # Write excluded targets to file if specified.
+        excluded_targets = scan_job["excluded_targets"]  # Extract string of targets.
+        excluded_target_file = None
+
+        if excluded_targets:
+            excluded_target_file = os.path.join(target_files_dir, f"{result_file_base_name}.excluded_targets")
+            with open(excluded_target_file, "w") as fh:
+                fh.write(f"{excluded_targets}")
+
         # Setup folder structure.
         pending_files_dir = os.path.join(scan_results_dir, "pending")
         complete_files_dir = os.path.join(scan_results_dir, "complete")
@@ -59,7 +72,7 @@ def scan_site(scan_job_dict):
         if scan_binary == "masscan":
             # Output format.
             # xml_file = os.path.join(pending_files_dir, "{}.xml".format(result_file_base_name))
-            json_file = os.path.join(pending_files_dir, "{}.json".format(result_file_base_name))
+            json_file = os.path.join(pending_files_dir, f"{result_file_base_name}.json")
 
             # Check if the paused.conf file already exists and resume scan.
             # Only 1 paused.conf file exists, and can be overwritten with a different scan.
@@ -72,7 +85,7 @@ def scan_site(scan_job_dict):
 
                     paused_file_lines = fh.readlines()
 
-                logger.ROOT_LOGGER.info("Previous paused.conf scan file found: {}".format(paused_file))
+                logger.ROOT_LOGGER.info(f"Previous paused.conf scan file found: {paused_file}")
 
                 # Need to check if output-filename is the same as json_file.
                 paused_file_output_filename = None
@@ -84,9 +97,8 @@ def scan_site(scan_job_dict):
 
                 if paused_file_output_filename == json_file:
                     logger.ROOT_LOGGER.info(
-                        "paused.conf file's output-filename '{}' matches this scan request output filename '{}'".format(
-                            paused_file_output_filename, json_file
-                        )
+                        f"paused.conf file's output-filename '{paused_file_output_filename}' matches this scan request "
+                        f"output filename '{json_file}'"
                     )
                     command = "masscan --resume paused.conf"
 
@@ -97,38 +109,45 @@ def scan_site(scan_job_dict):
                     )
 
                     # Build the masscan command.
-                    command = build_masscan_command(scan_command, target_file, json_file, config_data["http_useragent"])
+                    command = build_masscan_command(
+                        scan_command, target_file, excluded_target_file, json_file, http_useragent
+                    )
 
             # New scan.
             else:
                 # Build the masscan command.
-                command = build_masscan_command(scan_command, target_file, json_file, config_data["http_useragent"])
+                command = build_masscan_command(
+                    scan_command, target_file, excluded_target_file, json_file, http_useragent
+                )
 
         elif scan_binary == "nmap":
             # Three different nmap scan result file types.
-            gnmap_file = os.path.join(pending_files_dir, "{}.gnmap".format(result_file_base_name))
-            nmap_file = os.path.join(pending_files_dir, "{}.nmap".format(result_file_base_name))
-            xml_file = os.path.join(pending_files_dir, "{}.xml".format(result_file_base_name))
+            gnmap_file = os.path.join(pending_files_dir, f"{result_file_base_name}.gnmap")
+            nmap_file = os.path.join(pending_files_dir, f"{result_file_base_name}.nmap")
+            xml_file = os.path.join(pending_files_dir, f"{result_file_base_name}.xml")
 
             # Check if the file already exists and resume scan.
             if os.path.isfile(gnmap_file):
-                logger.ROOT_LOGGER.info("Previous scan file found '{}'.  Resuming the scan.".format(gnmap_file))
-
-                command = "nmap --resume {}".format(gnmap_file)
+                logger.ROOT_LOGGER.info(f"Previous scan file found '{gnmap_file}'.  Resuming the scan.")
+                command = f"nmap --resume {gnmap_file}"
 
             # New scan.
             else:
                 # Build the nmap command.
-                file_options = "-iL {} -oG {} -oN {} -oX {} --script-args http.useragent='{}'".format(
-                    target_file, gnmap_file, nmap_file, xml_file, config_data["http_useragent"]
+                file_options = (
+                    f"-iL {target_file} -oG {gnmap_file} -oN {nmap_file} -oX {xml_file}"
+                    f" --script-args http.useragent='{http_useragent}'"
                 )
-                command = "nmap {} {}".format(scan_command, file_options)
+                if excluded_target_file:
+                    file_options += f" --excludefile {excluded_target_file}"
+
+                command = f"nmap {scan_command} {file_options}"
 
         else:
-            logger.ROOT_LOGGER.error("Invalid scan binary specified: {}".format(scan_binary))
+            logger.ROOT_LOGGER.error(f"Invalid scan binary specified: {scan_binary}")
 
         # Start the scan.
-        logger.ROOT_LOGGER.info("Starting scan for site '{}' with command: {}".format(site_name, command))
+        logger.ROOT_LOGGER.info(f"Starting scan for site '{site_name}' with command: {command}")
 
         # Start nmap scan.
         process = subprocess.Popen(command.split())
@@ -157,6 +176,6 @@ def scan_site(scan_job_dict):
             api.update_scan_information(config_data, scan_job, update_info)
 
     except Exception as e:
-        logger.ROOT_LOGGER.exception("Error with scan ID {}.  Exception: {}".format(scan_job["id"], e))
+        logger.ROOT_LOGGER.exception(f"Error with scan ID {scan_job_id}.  Exception: {e}")
         update_info = {"scan_status": "error"}
         api.update_scan_information(config_data, scan_job, update_info)
