@@ -22,7 +22,7 @@ class ScanAdmin(admin.ModelAdmin):
 
 
 class SiteAdmin(admin.ModelAdmin):
-    list_display = ("id", "site_name", "description", "targets", "scan_command", "scan_agent")
+    list_display = ("id", "site_name", "description", "targets", "excluded_targets", "scan_command", "scan_agent")
 
 
 class ScheduledScanAdmin(admin.ModelAdmin):
@@ -39,6 +39,7 @@ class ScheduledScanAdmin(admin.ModelAdmin):
         "scan_command",
         "scan_command_id",
         "targets",
+        "excluded_targets",
         "scan_status",
         "completed_time",
         "result_file_base_name",

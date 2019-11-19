@@ -71,7 +71,7 @@ def main():
     # Build directory paths.
     complete_dir = os.path.join(root_dir, "scan_results", "complete")
     processed_dir = os.path.join(root_dir, "scan_results", "processed")
-    for_splunk_dir = os.path.join(root_dir, "for_splunk")
+    bigdata_analytics_dir = os.path.join(root_dir, "for_bigdata_analytics")
 
     # Grab a list of json files from the "complete" folder.
     json_scans = glob.glob(os.path.join(complete_dir, "*.json"))
@@ -89,7 +89,6 @@ def main():
         # "scan" variable is constructed as "result_file_base_name" in master/scan_scheduler.py
         scan_file_name = os.path.basename(scan)
         site_name = scan_file_name.split("__")[0]
-        # scan_agent = scan_file_name.split("__")[1]
 
         with open(scan, "r") as fh:
 
@@ -101,7 +100,7 @@ def main():
                 try:
                     for port in result["ports"]:
 
-                        # Conforming key values to what Splunk is expecting with
+                        # Conforming key values to what big data analytics platform is expecting with
                         # scantron/master/scan_results/nmap_to_csv.py
                         result_dict = {
                             "starttime": result["timestamp"],
@@ -138,12 +137,12 @@ def main():
                     print(f"Issue with parsing scan: {result}.  Exception: {e}")
                     sys.exit(0)
 
-        # The file has been completely parsed...create csv files in "for_splunk" directory.
+        # The file has been completely parsed...create csv files in "for_bigdata_analytics" directory.
         base_scan_file_name = os.path.basename(scan).split(".json")[0]
         masscan_csv_file_name = f"{base_scan_file_name}.csv"
 
-        # Pass results and full file path to "for_splunk" directory.
-        write_results_to_csv_file(results_list, os.path.join(for_splunk_dir, masscan_csv_file_name))
+        # Pass results and full file path to "for_bigdata_analytics" directory.
+        write_results_to_csv_file(results_list, os.path.join(bigdata_analytics_dir, masscan_csv_file_name))
 
         # csv files have been created, move all .json scan file types from "completed" to "processed" folder.
         shutil.move(scan, processed_dir)  # (source, destination)

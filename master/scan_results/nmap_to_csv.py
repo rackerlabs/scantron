@@ -13,7 +13,7 @@ from libnmap.parser import NmapParser
 
 class ScanEvent:
 
-    # Variables that will eventually be fields in Splunk.
+    # Variables that will eventually be fields in big data analytics platform.
     def __init__(self):
         self.start_time = ""
         self.end_time = ""
@@ -45,8 +45,6 @@ class ScanEvent:
 def export_to_csv(events, output):
     output = output.replace(".xml", ".csv")
     if len(events) != 0:
-        # print(output)
-        # print(events)
 
         header_fields = [
             "starttime",
@@ -75,13 +73,12 @@ def main():
     # Build directory paths.
     complete_dir = os.path.join(root_dir, "scan_results", "complete")
     processed_dir = os.path.join(root_dir, "scan_results", "processed")
-    for_splunk_dir = os.path.join(root_dir, "for_splunk")
+    bigdata_analytics_dir = os.path.join(root_dir, "for_bigdata_analytics")
 
     # Grab a list of xml files from the "complete" folder.
     xml_scans = glob.glob(os.path.join(complete_dir, "*.xml"))
 
-    # Loop through all valid xml files and export them to csv files.
-    # Then move them to the "processed" directory.
+    # Loop through all valid xml files and export them to csv files, then move them to the "processed" directory.
     for scan in xml_scans:
 
         try:
@@ -120,8 +117,8 @@ def main():
 
                         events.append(event)
 
-            # The file has been completely parsed...create csv files in 'for_splunk' directory.
-            export_to_csv(events, os.path.join(for_splunk_dir, os.path.basename(scan)))
+            # The file has been completely parsed...create csv files in "for_bigdata_analytics" directory.
+            export_to_csv(events, os.path.join(bigdata_analytics_dir, os.path.basename(scan)))
 
             # Extract the base file name from the .xml scan file name.
             base_scan_file_name = os.path.basename(scan).split(".xml")[0]
@@ -130,7 +127,7 @@ def main():
             base_scan_files = glob.glob(os.path.join(complete_dir, f"{base_scan_file_name}*"))
 
             # csv files have been created, move all nmap scan file types from "completed" to "processed" folder.
-            # extract file name and rebuild full path for destination
+            # Extract file name and rebuild full path for destination.
             for scan_file in base_scan_files:
                 shutil.move(
                     scan_file,  # source

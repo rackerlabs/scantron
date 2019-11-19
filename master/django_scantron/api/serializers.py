@@ -33,8 +33,9 @@ class SiteSerializer(serializers.ModelSerializer):
     # Separate validation needed for DRF; doesn't use model's clean() function anymore.
     # https://www.django-rest-framework.org/community/3.0-announcement/#differences-between-modelserializer-validation-and-modelform
     def validate(self, attrs):
-        """Checks for any invalid IPs, IP subnets, or FQDNs in targets field."""
+        """Checks for any invalid IPs, IP subnets, or FQDNs in the targets or excluded_targets fields."""
 
+        # Targets
         targets = attrs["targets"]
 
         target_extractor = extract_targets.TargetExtractor(targets_string=targets, private_ips_allowed=True, sort_targets=True)
@@ -43,6 +44,16 @@ class SiteSerializer(serializers.ModelSerializer):
         if targets_dict["invalid_targets"]:
             invalid_targets = ",".join(targets_dict["invalid_targets"])
             raise serializers.ValidationError(f"Invalid targets provided: {invalid_targets}")
+
+        # Excluded targets
+        excluded_targets = attrs["excluded_targets"]
+
+        target_extractor = extract_targets.TargetExtractor(targets_string=excluded_targets, private_ips_allowed=True, sort_targets=True)
+        targets_dict = target_extractor.targets_dict
+
+        if targets_dict["invalid_targets"]:
+            invalid_targets = ",".join(targets_dict["invalid_targets"])
+            raise serializers.ValidationError(f"Invalid excluded targets provided: {invalid_targets}")
 
         return attrs
 
@@ -53,6 +64,7 @@ class SiteSerializer(serializers.ModelSerializer):
             "site_name",
             "description",
             "targets",
+            "excluded_targets",
             "scan_command",
             "scan_agent",
         )
@@ -79,6 +91,7 @@ class ScheduledScanSerializer(serializers.ModelSerializer):
             "scan_binary",
             "scan_command",
             "targets",
+            "excluded_targets",
             "scan_status",
             "completed_time",
             "result_file_base_name",
