@@ -490,7 +490,8 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
     * IPs, IP subnets, and FQDNs are allowed.
     * IP ranges (`192.168.1.0-10`) are not currently supported.
-    * The targets are validated using `master/extract_targets.py`, which can also be used as a stand alone script.
+    * The targets and excluded_targets are validated using `master/extract_targets.py`, which can also be used as a
+      stand alone script.
 
     ![create_site](./img/create_site.png)
 
@@ -504,7 +505,7 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
     ![create_scan](./img/create_scan.png)
 
-5. View pending scans
+5. View currently executing scan results
 
     ```bash
     cd /home/scantron/master/scan_results/pending
@@ -528,7 +529,7 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
     `/home/scantron/master/scan_results/processed` - nmap scan files already processed by nmap_to_csv.py reside here.
 
-    `/home/scantron/master/for_splunk` - csv files for Spulnk ingestion
+    `/home/scantron/master/for_bigdata_analytics` - csv files for big data analytics ingestion
 
 ## API Documentation
 

@@ -39,7 +39,7 @@ def scan_site(scan_job_dict):
         scan_job_id = scan_job["id"]
         site_name = scan_job["site_name"]
         scan_binary = scan_job["scan_binary"]
-        scan_command = scan_job["scan_command"]  # Also used for masscan.
+        scan_command = scan_job["scan_command"]
         result_file_base_name = scan_job["result_file_base_name"]
 
         http_useragent = config_data["http_useragent"]

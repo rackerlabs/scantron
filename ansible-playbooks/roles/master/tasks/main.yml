@@ -360,7 +360,7 @@
 
 - name: Add crontab entry for nmap_to_csv.sh
   cron:
-    name: Convert nmap scan files for Splunk ingestion every minute.
+    name: Convert nmap scan files for big data analytics platform ingestion every minute.
     minute: "*"
     hour: "*"
     day: "*"
@@ -371,7 +371,7 @@
 
 - name: Add crontab entry for masscan_json_to_csv.sh
   cron:
-    name: Convert masscan json scan files for Splunk ingestion every minute.
+    name: Convert masscan json scan files for big data analytics platform ingestion every minute.
     minute: "*"
     hour: "*"
     day: "*"
