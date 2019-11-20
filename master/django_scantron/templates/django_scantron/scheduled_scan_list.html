@@ -45,8 +45,10 @@ Scheduled Scans
                     <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=xml">{{ scan.result_file_base_name }}.xml</a>
                 </td>
                 {% else %}
-                <td>{{ scan.result_file_base_name }}.nmap</td>
-                <td>{{ scan.result_file_base_name }}.xml</td>
+                <td>
+                    {{ scan.result_file_base_name }}.nmap<br>
+                    {{ scan.result_file_base_name }}.xml
+                </td>
                 {% endif %}
             {% elif scan.scan_binary == "masscan" %}
                 {% if scan.scan_status == "completed" %}
