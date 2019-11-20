@@ -118,6 +118,7 @@ def main():
             "site_name": site_name,
             "site_name_id": site_name_id,  # Can delete in future.
             "scan_id": scan_id,  # Can delete in future.
+            "start_time": scan_start_time,
             "scan_agent": scan_agent,
             "scan_agent_id": scan_agent_id,  # Can delete in future.
             "start_datetime": start_datetime,

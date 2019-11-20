@@ -20,16 +20,20 @@ def check_for_scan_jobs(config_data):
     """Check for new scans through the API."""
 
     # Build URL to pull new scan jobs.  Server determines jobs based off agent (user) making request.
-    url = "{}:{}/api/scheduled_scans?format=json".format(
-        config_data["master_address"], config_data["master_port"]
-    )
+    master_address = config_data["master_address"]
+    master_port = config_data["master_port"]
+    api_token = config_data["api_token"]
+
+    url = f"{master_address}:{master_port}/api/scheduled_scans"
     logger.ROOT_LOGGER.info("check_for_scans URL: {}".format(url))
 
     # Update User-Agent and add API token.
+    # fmt:off
     headers = {
         "user-agent": config_data["scan_agent"],
-        "Authorization": "Token {}".format(config_data["api_token"]),
+        "Authorization": f"Token {api_token}",
     }
+    # fmt:on
 
     try:
         # Make the HTTP GET request.
@@ -40,53 +44,47 @@ def check_for_scan_jobs(config_data):
             return response.json()
 
         else:
-            logger.ROOT_LOGGER.error(
-                "Could not access {}. HTTP status code: {}".format(
-                    url, response.status_code
-                )
-            )
+            logger.ROOT_LOGGER.error(f"Could not access {url}. HTTP status code: {response.status_code}")
             return None
 
     except Exception as e:
-        logger.ROOT_LOGGER.error(
-            "api.check_for_scans function exception: {}".format(e)
-        )
+        logger.ROOT_LOGGER.error(f"api.check_for_scan_jobs function exception: {e}")
 
 
 def update_scan_information(config_data, scan_job, update_info):
     """Update scan information using a PATCH API request."""
 
-    # Build URL to update scan job.
-    url = "{}:{}/api/scheduled_scans/{}".format(
-        config_data["master_address"], config_data["master_port"], scan_job["id"]
-    )
-    logger.ROOT_LOGGER.info("update_scan_information URL: {}".format(url))
+    master_address = config_data["master_address"]
+    master_port = config_data["master_port"]
+    api_token = config_data["api_token"]
+    scan_agent = config_data["scan_agent"]
+    scan_job_id = scan_job["id"]
 
-    # Update the User-Agent, add API token, and add Content-Type.
+    # Build URL to update scan job.
+    url = f"{master_address}:{master_port}/api/scheduled_scans/{scan_job_id}"
+    logger.ROOT_LOGGER.info(f"update_scan_information URL: {url}")
+
+    # Update the User-Agent, API token, and Content-Type.
+    # fmt:off
     headers = {
-        "user-agent": config_data["scan_agent"],
-        "Authorization": "Token {}".format(config_data["api_token"]),
+        "user-agent": scan_agent,
+        "Authorization": f"Token {api_token}",
         "Content-Type": "application/json",
     }
+    # fmt:on
 
     # Make the HTTP PATCH request.
-    response = requests.patch(
-        url, headers=headers, verify=False, timeout=15, json=update_info
-    )
+    response = requests.patch(url, headers=headers, verify=False, timeout=15, json=update_info)
 
     if response.status_code == 200:
         logger.ROOT_LOGGER.info(
-            "Successfully updated scan information for scan ID {} with data {}".format(
-                scan_job["id"], update_info
-            )
+            f"Successfully updated scan information for scan ID {scan_job_id} with data {update_info}"
         )
         return None
 
     else:
         logger.ROOT_LOGGER.error(
-            "Could not access {} or failed to update scan ID {}. HTTP status code: {}".format(
-                url, scan_job["id"], response.status_code
-            )
+            f"Could not access {url} or failed to update scan ID {scan_job_id}. HTTP status code: {response.status_code}"
         )
-        logger.ROOT_LOGGER.error("Response content: {}".format(response.content))
+        logger.ROOT_LOGGER.error(f"Response content: {response.content}".format())
         return None

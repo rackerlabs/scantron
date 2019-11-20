@@ -368,10 +368,10 @@ the current datetime.
 
 ```bash
 # Not using SSH tunnels.
-curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://192.168.1.99:443/api/scheduled_scans?format=json
+curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://192.168.1.99:443/api/scheduled_scans
 
 # Using SSH tunnels.
-curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://127.0.0.1:4430/api/scheduled_scans?format=json
+curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://127.0.0.1:4430/api/scheduled_scans
 ```
 
 You can also log into the webapp using the agent name and password and browse to `/api/?format=json` to view any scan
@@ -391,17 +391,19 @@ jobs.  The username and agent name are the same from the webapp's point of view.
 
 ### Master Troubleshooting
 
-Ensure SSH tunnels setup in `/etc/rc.local` are up.
+1). Ensure SSH tunnels setup in `/etc/rc.local` are up.
 
 ```bash
 netstat -nat | egrep "192.168.1.100|192.168.1.101"
 ps -ef | egrep autossh
 ```
 
-Check nginx logs for agent name in User-Agent field to determine which agents are calling home.
+2). Django logs can be found here: `/var/log/webapp/django_scantron.log`
+
+3). Check nginx logs for agent name in User-Agent field to determine which agents are calling home.
 nginx logs: `tail -f /var/log/nginx/{access,error}.log`
 
-uwsgi logs: `/home/scantron/master/logs`
+4). uwsgi logs: `/home/scantron/master/logs`
 
 ### Known issues with Master NFS share
 

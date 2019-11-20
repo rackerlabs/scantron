@@ -1,5 +1,20 @@
 from django.contrib import admin
+# from django.contrib.auth.decorators import login_required
+from django.contrib.sessions.models import Session
 from . import models
+
+
+# Taken from django-all-auth: https://django-allauth.readthedocs.io/en/latest/advanced.html#admin
+# "require users to login before going to the Django admin site’s login page"
+# admin.site.login = login_required(admin.site.login)
+
+
+# View sessions in Django Admin.
+class SessionAdmin(admin.ModelAdmin):
+    def _session_data(self, obj):
+        return obj.get_decoded()
+
+    list_display = ["session_key", "_session_data", "expire_date"]
 
 
 class AgentAdmin(admin.ModelAdmin):
@@ -32,6 +47,7 @@ class ScheduledScanAdmin(admin.ModelAdmin):
         "site_name",
         "site_name_id",
         "scan_id",
+        "start_time",
         "scan_agent",
         "scan_agent_id",
         "start_datetime",
@@ -51,6 +67,8 @@ class ScheduledScanAdmin(admin.ModelAdmin):
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
+
+_register(Session, SessionAdmin)
 
 _register(models.Agent, AgentAdmin)
 _register(models.ScanCommand, ScanCommandAdmin)
