@@ -151,6 +151,22 @@
 
 # Django
 ########
+- name: Create /var/log/webapp folder.
+  file:
+    path: /var/log/webapp
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create /var/log/webapp/django_scantron.log file.
+  file:
+    path: /var/log/webapp/django_scantron.log
+    state: touch
+    owner: www-data
+    group: www-data
+    mode: 0660
+
 - name: Update manage.py with local/production environment variable.
   template:
     src: templates/manage.py.j2

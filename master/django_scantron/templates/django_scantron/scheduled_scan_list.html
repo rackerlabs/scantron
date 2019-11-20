@@ -33,7 +33,7 @@ Scheduled Scans
             <td>{{ scan.id }}</td>
             <td>{{ scan.site_name }}</td>
             <td>{{ scan.scan_agent }}</td>
-            <td>{{ scan.start_time|date:"Y-m-j H:i:s" }}</td>
+            <td>{{ scan.start_time|date:"H:i" }}</td>
             <td>{{ scan.scan_binary }}</td>
             <td>{{ scan.scan_binary }} {{ scan.scan_command }}</td>
             <td>{{ scan.scan_status }}</td>
@@ -45,8 +45,10 @@ Scheduled Scans
                     <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=xml">{{ scan.result_file_base_name }}.xml</a>
                 </td>
                 {% else %}
-                <td>{{ scan.result_file_base_name }}.nmap</td>
-                <td>{{ scan.result_file_base_name }}.xml</td>
+                <td>
+                    {{ scan.result_file_base_name }}.nmap<br>
+                    {{ scan.result_file_base_name }}.xml
+                </td>
                 {% endif %}
             {% elif scan.scan_binary == "masscan" %}
                 {% if scan.scan_status == "completed" %}

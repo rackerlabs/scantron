@@ -203,6 +203,7 @@ class ScheduledScan(models.Model):
     scan_id = models.IntegerField(
         validators=[MinValueValidator(1, message="Scan ID must be greater than 0")], verbose_name="Scan ID"
     )
+    start_time = models.TimeField(verbose_name="Scan start time")
     scan_agent = models.CharField(
         unique=False,
         max_length=255,
