@@ -16,3 +16,6 @@ install_packages:
 permit_ssh_root_login: 'prohibit-password'
 sshd_port: 22
 gateway_ports: 'no'  # Allows -R to listen on ports < 1024
+
+# Enable SSH tasks
+update_sshd_config: false
