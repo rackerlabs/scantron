@@ -33,21 +33,21 @@
     logging: low
   when: enable_ufw_firewall
 
-# TODO - make this optional.  Ignore for now.
-# - name: Update SSHD configuration file.
-#   template:
-#     src: templates/sshd_config.j2
-#     dest: /etc/ssh/sshd_config
-#     backup: yes
-#     owner: root
-#     group: root
-#     mode: 0644
+- name: Update SSHD configuration file.
+  template:
+    src: templates/sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: update_sshd_config
 
-# - name: Restart SSH and ensure SSH is enabled at boot.
-#   service:
-#     name: ssh
-#     state: restarted
-#     enabled: yes
+- name: Restart SSH and ensure SSH is enabled at boot.
+  service:
+    name: ssh
+    state: restarted
+    enabled: yes
 
 - name: Updating root's .bash_aliases file
   copy:
