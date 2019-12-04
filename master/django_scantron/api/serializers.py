@@ -36,24 +36,26 @@ class SiteSerializer(serializers.ModelSerializer):
         """Checks for any invalid IPs, IP subnets, or FQDNs in the targets or excluded_targets fields."""
 
         # Targets
-        targets = attrs["targets"]
+        if "targets" in attrs:
+            targets = attrs["targets"]
 
-        target_extractor = extract_targets.TargetExtractor(targets_string=targets, private_ips_allowed=True, sort_targets=True)
-        targets_dict = target_extractor.targets_dict
+            target_extractor = extract_targets.TargetExtractor(targets_string=targets, private_ips_allowed=True, sort_targets=True)
+            targets_dict = target_extractor.targets_dict
 
-        if targets_dict["invalid_targets"]:
-            invalid_targets = ",".join(targets_dict["invalid_targets"])
-            raise serializers.ValidationError(f"Invalid targets provided: {invalid_targets}")
+            if targets_dict["invalid_targets"]:
+                invalid_targets = ",".join(targets_dict["invalid_targets"])
+                raise serializers.ValidationError(f"Invalid targets provided: {invalid_targets}")
 
         # Excluded targets
-        excluded_targets = attrs["excluded_targets"]
+        if "excluded_targets" in attrs:
+            excluded_targets = attrs["excluded_targets"]
 
-        target_extractor = extract_targets.TargetExtractor(targets_string=excluded_targets, private_ips_allowed=True, sort_targets=True)
-        targets_dict = target_extractor.targets_dict
+            target_extractor = extract_targets.TargetExtractor(targets_string=excluded_targets, private_ips_allowed=True, sort_targets=True)
+            targets_dict = target_extractor.targets_dict
 
-        if targets_dict["invalid_targets"]:
-            invalid_targets = ",".join(targets_dict["invalid_targets"])
-            raise serializers.ValidationError(f"Invalid excluded targets provided: {invalid_targets}")
+            if targets_dict["invalid_targets"]:
+                invalid_targets = ",".join(targets_dict["invalid_targets"])
+                raise serializers.ValidationError(f"Invalid excluded targets provided: {invalid_targets}")
 
         return attrs
 
