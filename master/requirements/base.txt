@@ -42,3 +42,6 @@ pygraphviz==1.5
 
 # nmap
 python-libnmap==0.7.0
+
+# XML to JSON
+xmljson==0.2.0
