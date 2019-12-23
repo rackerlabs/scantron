@@ -26,7 +26,7 @@ djangorestframework==3.9.2
 drf-yasg==1.16.1
 
 # fqdn
-fqdn==1.1.0
+fqdn==1.2.0
 
 # ipython
 ipython==6.4.0
