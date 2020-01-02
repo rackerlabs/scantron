@@ -6,8 +6,8 @@ Convert an nmap XML file to a JSON file and return a JSON dictionary object.
 # Standard Python libraries.
 import argparse
 import json
-from xml.etree.cElementTree import parse
 import time
+from xml.etree.cElementTree import parse
 
 # Third party Python libraries.
 import xmljson
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.json_output_file:
-        # Strip .xml file extension, add datetime stamp, append .json.
+        # Strip .xml file extension, add datetimestamp, append .json.
         args.json_output_file = f"{args.xml_input_file.split('.')[0]}_{get_timestamp()}.json"
 
     main(**vars(args))
