@@ -346,6 +346,7 @@
     - nmap_to_csv.py
     - masscan_json_to_csv.sh
     - masscan_json_to_csv.py
+    - xml_to_json_nmap_results.py
 
 - name: chown-ing master files to root in "/home/{{ non_root_user }}/master"
   file:
