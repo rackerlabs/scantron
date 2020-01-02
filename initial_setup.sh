@@ -37,9 +37,9 @@ cp master/scantron_secrets.json.empty master/scantron_secrets.json
 # Generate random Django key.
 # https://www.howtogeek.com/howto/30184/10-ways-to-generate-a-random-password-from-the-command-line/
 echo "[*] Generating random Django Key and database passwords."
-# Locale needs to be set for OSX, else tr responds with "tr: Illegal byte sequence"
+# Locale needs to be set for OSX, else tr responds with "tr: Illegal byte sequence".
 # https://unix.stackexchange.com/questions/45404/why-cant-tr-read-from-dev-urandom-on-osx
-if [[ `uname` == "Darwin" ]] 
+if [[ `uname` == "Darwin" ]]
 then
    DJANGO_KEY=`< /dev/urandom LC_ALL=C tr -dc _A-Z-a-z-0-9 | head -c${1:-64};echo;`
    DATABASE_PASSWORD=`< /dev/urandom LC_ALL=C tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
@@ -48,9 +48,9 @@ else
    DATABASE_PASSWORD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
 fi
 
-# -i requires additional arguments on OSX, else it responds with "sed: 1: "<filename>": invalid command code"
+# -i requires additional arguments on OSX, else it responds with "sed: 1: "<filename>": invalid command code".
 # https://markhneedham.com/blog/2011/01/14/sed-sed-1-invalid-command-code-r-on-mac-os-x/
-if [[ `uname` == "Darwin" ]] 
+if [[ `uname` == "Darwin" ]]
 then
    sed -i "" "s/REPLACE_THIS_DJANGO_KEY/$DJANGO_KEY/g" master/scantron_secrets.json
    sed -i "" "s/REPLACE_THIS_DATABASE_PASSWORD/$DATABASE_PASSWORD/g" master/scantron_secrets.json
