@@ -1,4 +1,4 @@
-from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import LoginView
 from django.conf.urls import url
 
-urlpatterns = [url(r"^login/", auth_views.login, {"template_name": "django_scantron/login.html"}, name="login")]
+urlpatterns = [url(r"^login/", LoginView.as_view(template_name="django_scantron/login.html"), name="login")]

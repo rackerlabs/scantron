@@ -9,6 +9,7 @@ install_packages:
   - ntp
   - proxychains
   - ufw
+  - unzip
 
 # Used in configs/sshd_config.j2
 # The argument must be 'yes', 'prohibit-password', 'without-password',

@@ -1,23 +1,23 @@
 # Password storage
-argon2-cffi==18.1.0
+argon2-cffi==19.2.0
 
 # Django
-Django==1.11.25
+Django==2.2.9
 
 # Forms
-django-crispy-forms==1.7.2
+django-crispy-forms==1.8.1
 
 # Django environ
 django-environ==0.4.5
 
 # Django Extensions
-django-extensions==2.1.4
+django-extensions==2.2.5
 
 # Django filters for API
-django-filter==2.0.0
+django-filter==2.2.0
 
 # Django recurrences for periodic tasks
-django-recurrence==1.6.0
+django-recurrence==1.10.1
 
 # Django REST Framework
 djangorestframework==3.9.2
@@ -29,13 +29,13 @@ drf-yasg==1.16.1
 fqdn==1.2.0
 
 # ipython
-ipython==6.4.0
+ipython
 
 # packaging required for drf-yasg, adding this to be safe
 packaging
 
 # Python-PostgreSQL Database Adapter
-psycopg2-binary==2.7.5
+psycopg2-binary==2.8.4
 
 # Used for django-extensions graph_models
 pygraphviz==1.5

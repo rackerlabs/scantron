@@ -86,6 +86,7 @@
   synchronize:
     src: ../../../../master
     dest: "/home/{{ non_root_user }}"
+  tags: update_code
 
 - name: Create "{{ venv_dir }}" virtualenv directory.
   command: "virtualenv -p /usr/bin/python3.6 {{ venv_dir }}"
@@ -96,6 +97,7 @@
     requirements: "{{ scantron_dir }}/requirements/{{ application_environment }}.txt"
     virtualenv: "{{ venv_dir }}"
     virtualenv_python: "{{ venv_python }}"
+  tags: update_code
 
 - name: Change ownership of "{{ scantron_dir }}" folder.
   file:
@@ -103,6 +105,7 @@
     owner: "{{ non_root_user }}"
     group: "{{ non_root_user }}"
     recurse: yes
+  tags: update_code
 
 
 # PostgreSQL
@@ -175,6 +178,7 @@
     owner: "{{ non_root_user }}"
     group: "{{ non_root_user }}"
     mode: 0644
+  tags: update_code
 
 - name: Update production.py with local/production environment variable.
   template:
@@ -185,6 +189,7 @@
     group: "{{ non_root_user }}"
     mode: 0644
   when: application_environment == "production"
+  tags: update_code
 
 - name: Update django_connector.py with local/production environment variable.
   template:
@@ -194,21 +199,25 @@
     owner: "{{ non_root_user }}"
     group: "{{ non_root_user }}"
     mode: 0644
+  tags: update_code
 
 - name: Executing "{{ venv_python }} {{ scantron_dir }}/manage.py makemigrations {{ django_project_name }}"
   command: "{{ venv_python }} {{ scantron_dir }}/manage.py makemigrations {{ django_project_name }}"
   args:
     chdir: "{{ scantron_dir }}"
+  tags: update_code
 
 - name: Executing "{{ venv_python }} {{ scantron_dir }}/manage.py makemigrations"
   command: "{{ venv_python }} {{ scantron_dir }}/manage.py makemigrations"
   args:
     chdir: "{{ scantron_dir }}"
+  tags: update_code
 
 - name: Executing "{{ venv_python }} {{ scantron_dir }}/manage.py migrate"
   command: "{{ venv_python }} {{ scantron_dir }}/manage.py migrate"
   args:
     chdir: "{{ scantron_dir }}"
+  tags: update_code
 
 - name: Create folder for Django static files.
   file:
@@ -283,6 +292,7 @@
     name: uwsgi.service
     state: restarted
     enabled: yes
+  tags: update_code
 
 
 # NFS
