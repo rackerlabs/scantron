@@ -47,4 +47,4 @@ django_user: agent1
 django_user_email: changeme@localhost  # Filler email address, does not matter.
 
 # uwsgi
-uwsgi_version: 2.0.17.1
+uwsgi_version: 2.0.18
