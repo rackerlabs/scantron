@@ -36,27 +36,33 @@ cp master/scantron_secrets.json.empty master/scantron_secrets.json
 
 # Generate random Django key.
 # https://www.howtogeek.com/howto/30184/10-ways-to-generate-a-random-password-from-the-command-line/
-echo "[*] Generating random Django Key and database passwords."
-# Locale needs to be set for OSX, else tr responds with "tr: Illegal byte sequence".
-# https://unix.stackexchange.com/questions/45404/why-cant-tr-read-from-dev-urandom-on-osx
+echo "[*] Generating a random Django Key, database, and user passwords."
+
 if [[ `uname` == "Darwin" ]]
 then
+   # Locale needs to be set for OSX, else tr responds with "tr: Illegal byte sequence".
+   # https://unix.stackexchange.com/questions/45404/why-cant-tr-read-from-dev-urandom-on-osx
    DJANGO_KEY=`< /dev/urandom LC_ALL=C tr -dc _A-Z-a-z-0-9 | head -c${1:-64};echo;`
    DATABASE_PASSWORD=`< /dev/urandom LC_ALL=C tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
+   DJANGO_SUPER_USER_PASSWORD=`< /dev/urandom LC_ALL=C tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
+   DJANGO_USER_PASSWORD=`< /dev/urandom LC_ALL=C tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
+
+   # -i requires additional arguments on OSX, else it responds with "sed: 1: "<filename>": invalid command code".
+   # https://markhneedham.com/blog/2011/01/14/sed-sed-1-invalid-command-code-r-on-mac-os-x/
+   sed -i "" "s/REPLACE_THIS_DJANGO_KEY/$DJANGO_KEY/g" master/scantron_secrets.json
+   sed -i "" "s/REPLACE_THIS_DATABASE_PASSWORD/$DATABASE_PASSWORD/g" master/scantron_secrets.json
+   sed -i "" "s/REPLACE_THIS_DJANGO_SUPER_USER_PASSWORD/$DJANGO_SUPER_USER_PASSWORD/g" master/scantron_secrets.json
+   sed -i "" "s/REPLACE_THIS_DJANGO_USER_PASSWORD/$DJANGO_USER_PASSWORD/g" master/scantron_secrets.json
 else
    DJANGO_KEY=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-64};echo;`
    DATABASE_PASSWORD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
-fi
+   DJANGO_SUPER_USER_PASSWORD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
+   DJANGO_USER_PASSWORD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
 
-# -i requires additional arguments on OSX, else it responds with "sed: 1: "<filename>": invalid command code".
-# https://markhneedham.com/blog/2011/01/14/sed-sed-1-invalid-command-code-r-on-mac-os-x/
-if [[ `uname` == "Darwin" ]]
-then
-   sed -i "" "s/REPLACE_THIS_DJANGO_KEY/$DJANGO_KEY/g" master/scantron_secrets.json
-   sed -i "" "s/REPLACE_THIS_DATABASE_PASSWORD/$DATABASE_PASSWORD/g" master/scantron_secrets.json
-else 
    sed -i "s/REPLACE_THIS_DJANGO_KEY/$DJANGO_KEY/g" master/scantron_secrets.json
    sed -i "s/REPLACE_THIS_DATABASE_PASSWORD/$DATABASE_PASSWORD/g" master/scantron_secrets.json
+   sed -i "s/REPLACE_THIS_DJANGO_SUPER_USER_PASSWORD/$DJANGO_SUPER_USER_PASSWORD/g" master/scantron_secrets.json
+   sed -i "s/REPLACE_THIS_DJANGO_USER_PASSWORD/$DJANGO_USER_PASSWORD/g" master/scantron_secrets.json
 fi
 
 echo "[+] Done!"
