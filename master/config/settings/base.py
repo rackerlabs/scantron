@@ -60,6 +60,7 @@ THIRD_PARTY_APPS = [
     "crispy_forms",  # Form layouts.
     "django_extensions",  # Django extensions.
     "django_filters",  # Search filters for Django REST Framework.
+    "django_saml2_auth",  # SAML support.
     "recurrence",  # Used to configure periodic scans.
     "rest_framework",  # Django REST Framework.
     "rest_framework.authtoken",  # Enable token authentication for Django REST Framework.
@@ -234,3 +235,57 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ),
 }
+
+# SAML
+# https://github.com/fangli/django-saml2-auth
+# fmt: off
+# SAML2_AUTH = {
+#     # Metadata is required, choose either remote url or local file path.
+#     "METADATA_AUTO_CONF_URL": "",
+#     "METADATA_LOCAL_FILE_PATH": "",
+
+#     # Optional settings below.
+#     # Custom target redirect URL after the user get logged in. Default to /admin if not set. This setting will be
+#     # overwritten if you have parameter ?next= specificed in the login URL.
+#     "DEFAULT_NEXT_URL": "/",
+
+#     # Create a new Django user when a new user logs in. Defaults to True.
+#     "CREATE_USER": False,
+
+#     "NEW_USER_PROFILE": {
+#         "USER_GROUPS": [],  # The default group name when a new user logs in.
+#         "ACTIVE_STATUS": True,  # The default active status for new users.
+#         "STAFF_STATUS": False,  # The staff status for new users.
+#         "SUPERUSER_STATUS": False,  # The superuser status for new users.
+#     },
+
+#     # Change Email/UserName/FirstName/LastName to corresponding SAML2 userprofile attributes.
+#     "ATTRIBUTES_MAP": {
+#         "email": "Email",
+#         "username": "Username",
+#         "first_name": "FirstName",
+#         "last_name": "LastName",
+#     },
+
+#     "TRIGGER": {
+#         "CREATE_USER": "path.to.your.new.user.hook.method",
+#         "BEFORE_LOGIN": "path.to.your.login.hook.method",
+#     },
+
+#     # Custom URL to validate incoming SAML requests against.
+#     "ASSERTION_URL": "",
+
+#     # Populates the Issuer element in authn request.
+#     "ENTITY_ID": "",
+
+#     # Sets the Format property of authn NameIDPolicy element.
+#     "NAME_ID_FORMAT": "None",
+
+#     # Set this to True if you are running a Single Page Application (SPA) with Django Rest Framework (DRF), and are
+#     # using JWT authentication to authorize client users.
+#     "USE_JWT": False,
+
+#     # Redirect URL for the client if you are using JWT auth with DRF.
+#     "FRONTEND_URL": "",
+# }
+# fmt: on

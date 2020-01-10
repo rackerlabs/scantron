@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
+import django_saml2_auth.views
 
 from django_scantron.login.urls import urlpatterns as login_urls
 from django_scantron.logout.urls import urlpatterns as logout_urls
@@ -41,8 +42,25 @@ ur += scheduled_scan_urls
 if not hasattr(settings, "URL_PREFIX"):
     settings.URL_PREFIX = ""
 
+# fmt: off
 urlpatterns = [
+    # These are the SAML2 related URLs. You can change "^saml2_auth/" regex to any path you want, like "^sso_auth/",
+    # "^sso_login/", etc. (required)
+    # url(r"^saml2_auth/", include("django_saml2_auth.urls")),
+
+    # The following line will replace the default user login with SAML2 (optional).  If you want to specify the after
+    # login-redirect-URL, use parameter "?next=/the/path/you/want" with this view.
+    # url(r"^login/", django_saml2_auth.views.signin),
+
+    # The following line will replace the default user logout with the signout page (optional).
+    # url(r"^logout/", django_saml2_auth.views.signout),
+
+    # The following line will replace the admin login with SAML2 (optional).  If you want to specify the
+    # after-login-redirect-URL, use parameter "?next=/the/path/you/want" with this view.
+    # url(r"^scantron-admin/login/$", django_saml2_auth.views.signin),
+
     url(r"^scantron-admin/", admin.site.urls),  # Provide minimal obfuscation for admin panel.
     url(r"^%s" % settings.URL_PREFIX, include(ur)),
     url(r"^api/", include(api_urls)),
 ]
+# fmt: on

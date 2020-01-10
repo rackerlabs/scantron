@@ -19,6 +19,9 @@ django-filter==2.2.0
 # Django recurrences for periodic tasks
 django-recurrence==1.10.1
 
+# SAML
+django_saml2_auth==2.2.1
+
 # Django REST Framework
 djangorestframework==3.9.2
 
