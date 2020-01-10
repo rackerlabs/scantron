@@ -1,3 +1,15 @@
+- name: Add postgresql APT key.
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+
+- name: Add postgresql APT repository.
+  apt_repository:
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
+    filename: pgdg.list
+    state: present
+    update_cache: yes
+
 - name: Update APT package cache.
   apt:
     update_cache: yes
