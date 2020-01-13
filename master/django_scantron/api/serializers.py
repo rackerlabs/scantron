@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-# fmt: off
 from django_scantron.models import (
     Agent,
     ScanCommand,
@@ -17,19 +16,24 @@ import extract_targets
 class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
-        fields = ("scan_agent", "description", "api_token",)
+        fields = (
+            "scan_agent",
+            "description",
+            "api_token",
+        )
 
 
 class ScanCommandSerializer(serializers.ModelSerializer):
     class Meta:
         model = ScanCommand
-        fields = ("scan_binary", "scan_command_name", "scan_command",)
+        fields = (
+            "scan_binary",
+            "scan_command_name",
+            "scan_command",
+        )
 
 
 class SiteSerializer(serializers.ModelSerializer):
-    scan_command = serializers.StringRelatedField(many=False)
-    scan_agent = serializers.StringRelatedField(many=False)
-
     # Separate validation needed for DRF; doesn't use model's clean() function anymore.
     # https://www.django-rest-framework.org/community/3.0-announcement/#differences-between-modelserializer-validation-and-modelform
     def validate(self, attrs):
@@ -39,7 +43,9 @@ class SiteSerializer(serializers.ModelSerializer):
         if "targets" in attrs:
             targets = attrs["targets"]
 
-            target_extractor = extract_targets.TargetExtractor(targets_string=targets, private_ips_allowed=True, sort_targets=True)
+            target_extractor = extract_targets.TargetExtractor(
+                targets_string=targets, private_ips_allowed=True, sort_targets=True
+            )
             targets_dict = target_extractor.targets_dict
 
             if targets_dict["invalid_targets"]:
@@ -50,7 +56,9 @@ class SiteSerializer(serializers.ModelSerializer):
         if "excluded_targets" in attrs:
             excluded_targets = attrs["excluded_targets"]
 
-            target_extractor = extract_targets.TargetExtractor(targets_string=excluded_targets, private_ips_allowed=True, sort_targets=True)
+            target_extractor = extract_targets.TargetExtractor(
+                targets_string=excluded_targets, private_ips_allowed=True, sort_targets=True
+            )
             targets_dict = target_extractor.targets_dict
 
             if targets_dict["invalid_targets"]:
@@ -79,7 +87,12 @@ class ScanSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Scan
-        fields = ("id", "site", "scan_name", "start_time",)
+        fields = (
+            "id",
+            "site",
+            "scan_name",
+            "start_time",
+        )
 
 
 class ScheduledScanSerializer(serializers.ModelSerializer):
@@ -98,5 +111,3 @@ class ScheduledScanSerializer(serializers.ModelSerializer):
             "completed_time",
             "result_file_base_name",
         )
-
-# fmt: on

@@ -1,13 +1,11 @@
 from django.conf.urls import url
-# fmt:off
 from django_scantron.scan.views import (
     ScanListView,
     # ScanCreateView,
     # ScanDetailView,
     # ScanUpdateView,
-    # ScanDeleteView
+    # ScanDeleteView,
 )
-# fmt:on
 
 
 urlpatterns = [
