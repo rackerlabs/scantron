@@ -12,7 +12,7 @@ from django_scantron.api.serializers import (
     SiteSerializer,
 )
 
-# fmt: off
+
 from django_scantron.models import (
     Agent,
     ScanCommand,
@@ -20,7 +20,6 @@ from django_scantron.models import (
     ScheduledScan,
     Site,
 )
-# fmt: on
 
 
 def get_current_time():
