@@ -86,7 +86,7 @@ class ScanSerializer(serializers.ModelSerializer):
         model = Scan
         fields = (
             "id",
-            "site_id",
+            "site",
             "scan_name",
             "start_time",
             "recurrences",
