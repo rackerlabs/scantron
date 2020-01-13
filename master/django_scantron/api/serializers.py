@@ -80,15 +80,16 @@ class SiteSerializer(serializers.ModelSerializer):
 class ScanSerializer(serializers.ModelSerializer):
     # nested relationship
     # http://www.django-rest-framework.org/api-guide/relations/#nested-relationships
-    site = SiteSerializer(many=False)
+    # site = SiteSerializer(many=False)
 
     class Meta:
         model = Scan
         fields = (
             "id",
-            "site",
+            "site_id",
             "scan_name",
             "start_time",
+            "recurrences",
         )
 
 
