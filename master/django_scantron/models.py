@@ -150,10 +150,10 @@ class Site(models.Model):
 
 
 class Scan(models.Model):
-    """Model for a type of Scan"""
+    """Model for a type of Scan."""
 
     id = models.AutoField(primary_key=True, verbose_name="Scan ID")
-    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name="Site ID")
     scan_name = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Scan Name")
     start_time = models.TimeField(verbose_name="Scan start time")
     recurrences = RecurrenceField(include_dtstart=False, verbose_name="Recurrences")
