@@ -1,7 +1,7 @@
 {
     "scan_agent": "agent-{{ random_agent_number }}",
     "api_token": "{{ lookup('file', '../../../group_vars/static_api_key') }}",
-    "master_address": "https://127.0.0.1",
+    "master_address": "127.0.0.1",
     "master_port": 4430,
     "callback_interval_in_seconds": 60,
     "number_of_threads": 1,
