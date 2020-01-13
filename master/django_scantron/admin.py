@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 # from django.contrib.auth.decorators import login_required
 from django.contrib.sessions.models import Session
 from . import models
@@ -21,7 +22,7 @@ class AgentAdmin(admin.ModelAdmin):
 
     list_display = ("id", "scan_agent", "description", "api_token", "last_checkin")
 
-    readonly_fields = ("id", "scan_agent", "api_token")
+    readonly_fields = ("id", "scan_agent", "api_token", "last_checkin")
 
 
 class ScanCommandAdmin(admin.ModelAdmin):

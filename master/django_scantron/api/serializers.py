@@ -16,17 +16,14 @@ import extract_targets
 class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
-        fields = (
-            "scan_agent",
-            "description",
-            "api_token",
-        )
+        fields = ("id", "scan_agent", "description", "api_token", "last_checkin")
 
 
 class ScanCommandSerializer(serializers.ModelSerializer):
     class Meta:
         model = ScanCommand
         fields = (
+            "id",
             "scan_binary",
             "scan_command_name",
             "scan_command",
