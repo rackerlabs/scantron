@@ -9,7 +9,7 @@ import requests
 # Custom Python libraries.
 import utility
 
-__version__ = "1.0"
+__version__ = "1.1"
 
 
 class ScantronClient:
@@ -199,15 +199,21 @@ class ScantronClient:
     # Scan Results
     ##############
     def retrieve_scan_results(self, scan_id, file_type, **kwargs):
-        """Returns a text blob of the scan results.  For .json files, you can convert it to a Python JSON object using:
+        """Returns a text blob of the scan results if they actually exist.  For .json files, you can convert it to a
+        Python JSON object using:
         scan_results_json = json.loads(scan_results)"""
+
+        scan_results = None
 
         if file_type.lower() not in ["nmap", "xml", "json"]:
             print(f"Not a valid file type: {file_type}")
-            scan_results = None
 
         else:
-            scan_results = self.scantron_api_query(f"/results/{scan_id}?file_type={file_type}", **kwargs).text
+            response = self.scantron_api_query(f"/results/{scan_id}?file_type={file_type}", **kwargs)
+
+            # Only return the results if they actually exist.
+            if response.status_code == 200:
+                scan_results = response.text
 
         return scan_results
 
