@@ -1,0 +1,43 @@
+{% extends "django_scantron/scheduled_scan_base.html" %}
+
+{% block title %}
+Scan Commands
+{% endblock %}
+
+{% block content %}
+<h3>
+    <a href='/scan_command/create' title="Create/Update/Delete Scan Commands" class="btn btn-info">
+        <i class="fa fa-plus"></i> Create/Update/Delete Scan Commands
+    </a>
+</h3>
+
+{% if scan_command_list %}
+<table id="scan-table" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Scan Command ID</th>
+            <th>Scan Binary</th>
+            <th>Scan Command Name</th>
+            <th>Scan Command</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for scan_command in scan_command_list %}
+        <tr>
+            <td>{{ scan_command.id }}</td>
+            <td>{{ scan_command.scan_binary }}</td>
+            <td>{{ scan_command.scan_command_name }}</td>
+            <td>{{ scan_command.scan_command }}</td>
+            <td>Update / Delete</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+No scan commands configured yet.
+{% endif %}
+
+{% endblock %}

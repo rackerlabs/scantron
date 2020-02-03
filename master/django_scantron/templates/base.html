@@ -122,10 +122,14 @@
         {% endif %}
         {% if request.user.is_superuser %}
         <li>
-            <a target="_blank" href="/scantron-admin/django_scantron/scancommand/">
+            <a target="_blank" href="/scan_commands/">
                 <i class="fa fa-signal"></i>
                 <span>Scan commands</span>
             </a>
+            {% comment %} <a target="_blank" href="/scantron-admin/django_scantron/scancommand/">
+                <i class="fa fa-signal"></i>
+                <span>Scan commands</span>
+            </a> {% endcomment %}
         </li>
         {% endif %}
         {% if request.user.is_superuser %}
