@@ -97,7 +97,7 @@ def main():
         scan_binary = scan.site.scan_command.scan_binary
 
         # The ScheduledScan model acts as the sanitized endpoint for agents to determine scan jobs.  We don't want to
-        # expose the other models, so we populate that ScheduledScan mdoel instead.  The actual exposed fields for the
+        # expose the other models, so we populate that ScheduledScan model instead.  The actual exposed fields for the
         # API are controlled using master/api/serializers.py.
 
         # start_datetime is a DateTimeField in ScheduledScan, but the Scan model only contains start_time (TimeField)
