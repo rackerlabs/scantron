@@ -35,7 +35,7 @@ Scheduled Scans
             <td>{{ scan.scan_agent }}</td>
             <td>{{ scan.start_time|date:"H:i" }}</td>
             <td>{{ scan.scan_binary }}</td>
-            <td>{{ scan.scan_binary }} {{ scan.scan_command }}</td>
+            <td>{{ scan.scan_binary }} {{ scan.scan_command | truncatechars:255 }}</td>
             <td>{{ scan.scan_status }}</td>
             <td>{{ scan.completed_time|date:"Y-m-j H:i:s" }}</td>
             {% if scan.scan_binary == "nmap" %}
