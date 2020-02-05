@@ -220,7 +220,7 @@ class ScheduledScan(models.Model):
     )
     start_datetime = models.DateTimeField(verbose_name="Scheduled scan start date and time")
     scan_binary = models.CharField(max_length=7, default="nmap", verbose_name="Scan binary")
-    scan_command = models.CharField(unique=False, max_length=1024, verbose_name="Scan command")
+    scan_command = models.TextField(unique=False, verbose_name="Scan command")
     scan_command_id = models.IntegerField(
         validators=[MinValueValidator(1, message="Scan command ID must be greater than 0")],
         verbose_name="Scan command ID",
