@@ -41,8 +41,8 @@ def main(start_rank, end_rank, protocol="tcp", tool="nmap"):
     # Creates a list of strings, will covert to list of ints later.
     port_rank_list_temp = port_list[(start_rank - 1) : end_rank]  # noqa
 
-    # masscan requires a "U:<PORT>" if not specifying a range (U:80-90 is OK, however, -p U:53,500 will scan UDP 53 and
-    # TCP 500, so it needs to be -p U:53,U:500
+    # masscan requires a "U:<PORT>" if not specifying a range (-p U:80-90 is OK, however, -p U:53,500 will scan UDP 53
+    # and TCP 500, so it needs to be -p U:53,U:500
     if protocol == "udp" and tool == "masscan":
         port_rank_csv = "U:"
         port_rank_csv += ",U:".join(port_rank_list_temp)
