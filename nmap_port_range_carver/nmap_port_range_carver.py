@@ -18,7 +18,7 @@ egrep /udp /usr/share/nmap/nmap-services | sort -r -k3 | sed 's/[\t ]/,/g' \
 """
 
 
-def main(start_rank, end_rank, protocol="tcp"):
+def main(start_rank, end_rank, protocol="tcp", tool="nmap"):
 
     if protocol == "tcp":
         port_file = "nmap_top_ports_tcp.txt"
@@ -40,7 +40,14 @@ def main(start_rank, end_rank, protocol="tcp"):
     # Don't subtract one from end_rank to include actual rank.
     # Creates a list of strings, will covert to list of ints later.
     port_rank_list_temp = port_list[(start_rank - 1) : end_rank]  # noqa
-    port_rank_csv = ",".join(port_rank_list_temp)
+
+    # masscan requires a "U:<PORT>" if not specifying a range (U:80-90 is OK, however, -p U:53,500 will scan UDP 53 and
+    # TCP 500, so it needs to be -p U:53,U:500
+    if protocol == "udp" and tool == "masscan":
+        port_rank_csv = "U:"
+        port_rank_csv += ",U:".join(port_rank_list_temp)
+    else:
+        port_rank_csv = ",".join(port_rank_list_temp)
 
     port_rank_list = []
     for rank in port_rank_list_temp:
@@ -76,10 +83,19 @@ if __name__ == "__main__":
         default="tcp",
         help="Specify tcp or udp protocol.  Default: tcp",
     )
+    parser.add_argument(
+        "-t",
+        dest="tool",
+        action="store",
+        required=False,
+        default="nmap",
+        help="Specify the scanning tool output (nmap or masscan).  Default: nmap",
+    )
 
     args = parser.parse_args()
 
     args.protocol = args.protocol.lower()
+    args.tool = args.tool.lower()
 
     if args.protocol not in ["tcp", "udp"]:
         print("Protocol must be 'tcp' or 'udp'")
@@ -95,6 +111,10 @@ if __name__ == "__main__":
 
     if args.end_rank not in range(1, 8310):
         print("Port end rank must be 1-8309 inclusive")
+        exit()
+
+    if args.tool not in ["nmap", "masscan"]:
+        print("Tool must be 'nmap' or 'masscan'")
         exit()
 
     main(**vars(args))
