@@ -131,7 +131,7 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
     model = ScheduledScan
     serializer_class = ScheduledScanSerializer
 
-    def partial_update(self, request, pk=None):
+    def partial_update(self, request, pk=None, **kwargs):
 
         try:
             # Filter only the applicable ScheduledScans for the agent.  Prevents an agent modifying another agent's
@@ -162,7 +162,9 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
         except ScheduledScan.DoesNotExist:
             raise Http404
 
-        return HttpResponse(status=200)
+        kwargs["partial"] = True
+
+        return self.update(request, pk, **kwargs)
 
     def get_queryset(self):
         http_method = self.request.method

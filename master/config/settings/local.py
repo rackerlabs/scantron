@@ -2,12 +2,8 @@
 Local settings
 
 - Run in Debug mode
-
-- Use console backend for emails
-
 - Add Django Debug Toolbar
 """
-# export DJANGO_SETTINGS_MODULE="scantron.settings.local"
 from .base import *  # noqa
 
 
@@ -16,17 +12,14 @@ from .base import *  # noqa
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
 
-# Mail settings
-# ------------------------------------------------------------------------------
-EMAIL_HOST = "127.0.0.1"
-EMAIL_PORT = 1025
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-EMAIL_USE_TLS = True
-
 # django-debug-toolbar
 # ------------------------------------------------------------------------------
-# MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware', ]  # noqa
-# INSTALLED_APPS += ['debug_toolbar', ]  # noqa
+MIDDLEWARE += [  # noqa
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+]
+INSTALLED_APPS += [  # noqa
+    "debug_toolbar",
+]
 
 
 INTERNAL_IPS = ["127.0.0.1"]

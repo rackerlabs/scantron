@@ -7,6 +7,9 @@ Django==2.2.10
 # Forms
 django-crispy-forms==1.8.1
 
+# Django debug toolbar
+django-debug-toolbar==2.2
+
 # Django environ
 django-environ==0.4.5
 

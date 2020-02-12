@@ -64,7 +64,10 @@ class SiteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(f"Invalid excluded targets provided: {invalid_targets}")
 
         # Email scan alerts and email addresses.
-        if self.email_scan_alerts and not self.email_alert_address:
+        email_scan_alerts = attrs["email_scan_alerts"]
+        email_alert_address = attrs["email_alert_address"]
+
+        if email_scan_alerts and not email_alert_address:
             raise serializers.ValidationError(f"Provide an email address if enabling 'Email scan alerts'")
 
         return attrs
@@ -79,6 +82,8 @@ class SiteSerializer(serializers.ModelSerializer):
             "excluded_targets",
             "scan_command",
             "scan_agent",
+            "email_scan_alerts",
+            "email_alert_address",
         )
 
 

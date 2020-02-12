@@ -2,30 +2,20 @@
 Utility methods for other scripts to use.
 """
 # Standard Python libraries.
-import email
-import json
 import logging
 from logging import handlers
-import os
-import smtplib
-
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 # Third party Python libraries.
+from django.conf import settings
+from django.core.mail import send_mail
 
 # Custom Python libraries.
 import django_connector
 
 
-# Load secrets.
-with open("scantron_secrets.json", "r") as fh:
-    SECRETS = json.loads(fh.read())
-
 # Setup logging configuration.
 logger = logging.getLogger("rq.worker")
-verbosity = 5
+verbosity = 4  # INFO
 log_level = (6 - verbosity) * 10
 backup_count = 10
 max_size_megabytes = 500
@@ -77,7 +67,8 @@ def process_scan_status_change(queue_object):
     # 1) Does an email alert need to be sent?
     if email_scan_alerts:
 
-        to_addresses = site.email_alert_address
+        from_address = settings.EMAIL_HOST_USER
+        to_addresses = site.email_alert_address.split(",")
         subject = f"Scantron scan {scan_status.upper()}: {site.site_name}"
 
         if scan_status == "completed":
@@ -97,7 +88,8 @@ NMAP: http://127.0.0.1/results/{scheduled_scan.id}?file_type=nmap
         else:
             pass
 
-        email_sent_successfully = send_email(to_addresses, subject=subject, body=body)
+        # email_sent_successfully = custom_send_email(to_addresses, subject=subject, body=body)
+        email_sent_successfully = send_mail(subject, body, from_address, to_addresses, fail_silently=False,)
 
         if not email_sent_successfully:
             logger.error(f"Issue sending the email for Scheduled Scan ID: {scheduled_scan_id}")
@@ -106,73 +98,3 @@ NMAP: http://127.0.0.1/results/{scheduled_scan.id}?file_type=nmap
 
     # 2 Do other stuff
     # TODO
-
-
-def send_email(
-    to_addresses,  # This is expecting a comma separated string, not a list.
-    subject="",
-    body="",
-    attachments={},
-    from_address="",
-    smtp_server="127.0.0.1",
-    port=25,
-    debug=False,
-):
-    """Specifies the default email config, and sends an email. Returns True if the email is sent successfully, False
-    otherwise."""
-
-    if not isinstance(to_addresses, str):
-        logger.error("to_addresses must be a comma separated string of addresses.")
-        return False
-
-    if not isinstance(from_address, str):
-        logger.error("from_address must be a string.")
-        return False
-
-    smtp_settings = SECRETS["smtp_settings"]
-
-    # Create an SMTP server instance.
-    server = smtplib.SMTP(smtp_settings["SMTP_HOST"], smtp_settings["SMTP_PORT"])
-
-    # Enable debugging option.
-    if debug:
-        server.set_debuglevel(True)
-
-    # Use an encrypted connection.
-    server.ehlo()
-    server.starttls()
-
-    message = MIMEMultipart()
-    message["From"] = from_address
-    message["To"] = to_addresses
-    message["Subject"] = subject
-
-    for a in attachments:
-
-        file = MIMEBase("application", "octet-stream")
-
-        try:
-
-            with open(attachments[a], "rb") as f:
-                file.set_payload(f.read())
-                file.add_header("Content-Disposition", "attachment", filename=os.path.basename(attachments[a]))
-
-        except (FileNotFoundError, OSError, ValueError):
-            file.set_payload(attachments[a])
-            file.add_header("Content-Disposition", "attachment", filename=a)
-
-        email.encoders.encode_base64(file)
-        message.attach(file)
-
-    message.attach(MIMEText(body))
-
-    try:
-        server.sendmail(from_address, to_addresses.split(","), message.as_string())
-        server.quit()
-        logger.info(f"Email '{subject}' successfully sent to: {to_addresses}")
-
-    except Exception as e:
-        logger.error("Error sending email: {}".format(e))
-        return False
-
-    return True

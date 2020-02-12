@@ -90,6 +90,9 @@ payload = {
   "excluded_targets": "192.168.1.100",
   "scan_command": 1,
   "scan_agent": 1,
+  "email_scan_alerts": True,
+  "email_alert_address": "admin@example.com",
+
 }
 
 response = sc.create_site(payload)
