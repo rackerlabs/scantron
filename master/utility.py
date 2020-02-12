@@ -67,6 +67,7 @@ def process_scan_status_change(queue_object):
     # 1) Does an email alert need to be sent?
     if email_scan_alerts:
 
+        master_fqdn = settings.MASTER_FQDN
         from_address = settings.EMAIL_HOST_USER
         to_addresses = site.email_alert_address.split(",")
         subject = f"Scantron scan {scan_status.upper()}: {site.site_name}"
@@ -75,11 +76,11 @@ def process_scan_status_change(queue_object):
 
             # Provide different links based off the scan binary used.
             if scan_binary == "nmap":
-                body = f"""XML: http://127.0.0.1/results/{scheduled_scan.id}?file_type=xml
-NMAP: http://127.0.0.1/results/{scheduled_scan.id}?file_type=nmap
+                body = f"""XML: https://{master_fqdn}/results/{scheduled_scan.id}?file_type=xml
+NMAP: https://{master_fqdn}/results/{scheduled_scan.id}?file_type=nmap
 """
             else:
-                body = f"""Results: http://127.0.0.1/results/{scheduled_scan.id}?file_type=json"""
+                body = f"""Results: https://{master_fqdn}/results/{scheduled_scan.id}?file_type=json"""
 
         elif scan_status in ["started", "error"]:
             body = f""""""
