@@ -1,3 +1,6 @@
+# Actual file used is kept in scantron/ansible-playbooks/roles/master/templates/django_connector.py.j2
+# Modifying this file will do nothing if you are using the Ansible playbook.
+
 import os
 import sys
 
@@ -12,5 +15,6 @@ django.setup()
 from django_scantron.models import (  # noqa
     Scan,
     ScheduledScan,
+    Site,
 )
 # fmt: on

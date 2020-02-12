@@ -23,10 +23,10 @@ APPS_DIR = ROOT_DIR.path("django_scantron")  # scantron/master/django_scantron
 with open(os.path.join(str(ROOT_DIR), "scantron_secrets.json")) as fh:
     secrets_environment = os.environ["DJANGO_SETTINGS_MODULE"].split(".")[-1]
     print(f"[*] Loading [ {secrets_environment} ] scantron_secrets.json")
-    secrets = json.loads(fh.read())
+    SECRETS = json.loads(fh.read())
 
 
-def get_secret(setting, secrets=secrets):
+def get_secret(setting, secrets=SECRETS):
     """
     Get the secret variable or return explicit exception.
     """
@@ -65,7 +65,7 @@ THIRD_PARTY_APPS = [
     "rest_framework",  # Django REST Framework.
     "rest_framework.authtoken",  # Enable token authentication for Django REST Framework.
     "drf_yasg",  # Django Rest Framework Swagger and ReDoc support.
-    # 'django_baker'  # Django baker is used to create CRUD files for each model.
+    # "django_baker"  # Django baker is used to create CRUD files for each model.
 ]
 
 # Apps specific for this project go here.

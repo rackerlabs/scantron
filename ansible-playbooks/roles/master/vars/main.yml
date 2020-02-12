@@ -9,11 +9,13 @@ install_packages:
   - nfs-kernel-server
   - nginx
   - nmap
+  - postfix
+  - postgresql-contrib
   - python-dev
   - python3-pip
   - python-virtualenv
-  - postgresql-contrib
   - python3-psycopg2  # python3-psycopg2 required for Ansible.
+  - redis
   - xmlsec1  # SAML support.
 
 # secrets file
@@ -42,3 +44,7 @@ django_project_name: django_scantron
 
 # uwsgi
 uwsgi_version: 2.0.18
+
+# postfix
+postfix_hostname: scantron
+postfix_inet_interfaces: 127.0.0.1
