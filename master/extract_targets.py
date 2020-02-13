@@ -119,7 +119,6 @@ class TargetExtractor:
         """Update disallowed target list and count."""
 
         master_targets_dict["disallowed_targets"].append(str(target))
-        master_targets_dict["disallowed_targets_total"] += 1
 
     def extract_targets(self, targets_string):
         """Extracts valid IPv4 IP addresses from a string."""
@@ -157,9 +156,9 @@ class TargetExtractor:
         # fmt:on
 
         # Split on spaces.
-        ip_addresses_list = targets_string.split()
+        target_list = targets_string.split()
 
-        for target in ip_addresses_list:
+        for target in target_list:
 
             # Convert to a ipaddress object if it is an IP address.
             if self.is_ip_address(target):
@@ -202,7 +201,17 @@ class TargetExtractor:
 
             # Check if it is an IP network.
             elif self.is_ip_network(target):
+
+                # Ignore private networks if they are not allowed.
+                if not self.private_ips_allowed and ipaddress.ip_network(target).is_private:
+                    print(f"IP network is private and private networks are not allowed: {target}")
+                    continue
+
                 master_targets_dict["ip_networks"]["as_list"].append(target)
+
+
+
+
 
             # Check if it is a FQDN.
             elif self.is_valid_fqdn(target):
@@ -212,11 +221,13 @@ class TargetExtractor:
             else:
                 print(f"Invalid target type: {target}")
                 master_targets_dict["invalid_targets"].append(target)
-                master_targets_dict["invalid_targets_total"] += 1
 
         print("=" * 10)
 
         for target_type in ["ip_addresses", "ip_networks", "domains"]:
+
+            # Remove duplicates.
+            master_targets_dict[target_type]["as_list"] = list(set(master_targets_dict[target_type]["as_list"]))
 
             temp_list = []
 
@@ -249,6 +260,14 @@ class TargetExtractor:
             except Exception as e:
                 print(f"Exception sorting targets: {e}")
 
+        # Remove invalid duplicate targets.
+        master_targets_dict["invalid_targets"] = list(set(master_targets_dict["invalid_targets"]))
+        master_targets_dict["invalid_targets_total"] = len(master_targets_dict["invalid_targets"])
+
+        # Remove disallowed duplicate targets.
+        master_targets_dict["disallowed_targets"] = list(set(master_targets_dict["disallowed_targets"]))
+        master_targets_dict["disallowed_targets_total"] = len(master_targets_dict["disallowed_targets"])
+
         master_targets_dict["as_csv"] = ",".join(master_targets_dict["as_list"])
         master_targets_dict["as_nmap"] = " ".join(master_targets_dict["as_list"])
 
@@ -266,7 +285,7 @@ if __name__ == "__main__":
         dest="private_ips_allowed",
         action="store_true",
         default=False,
-        help="Private RFC1918 IPs allowed (192.168.1.1)",
+        help="Private RFC1918 IPs (192.168.1.1) and networks (192.168.1.0/24) are allowed.",
     )
     parser.add_argument("-s", dest="sort_targets", action="store_true", default=False, help="Sort targets")
     group.add_argument(
