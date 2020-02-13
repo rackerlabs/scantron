@@ -1,0 +1,19 @@
+# https://python-rq.org/patterns/systemd/
+[Unit]
+Description=RQ Worker Number %i
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory={{ scantron_dir }}
+Environment=LANG=en_US.UTF-8
+Environment=LC_ALL=en_US.UTF-8
+Environment=LC_LANG=en_US.UTF-8
+ExecStart={{ venv_python }} {{ venv_dir }}/bin/rq worker
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

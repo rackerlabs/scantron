@@ -2,10 +2,13 @@
 argon2-cffi==19.2.0
 
 # Django
-Django==2.2.9
+Django==2.2.10
 
 # Forms
 django-crispy-forms==1.8.1
+
+# Django debug toolbar
+django-debug-toolbar==2.2
 
 # Django environ
 django-environ==0.4.5
@@ -45,6 +48,12 @@ pygraphviz==1.5
 
 # nmap
 python-libnmap==0.7.0
+
+# redis
+redis==3.4.1
+
+# python-rq - Redis Queue
+rq==1.2.2
 
 # XML to JSON
 xmljson==0.2.0

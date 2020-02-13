@@ -1,7 +1,6 @@
 """
 Production Configuration
 """
-# export DJANGO_SETTINGS_MODULE="config.settings.production"
 from .base import *  # noqa
 
 # DEBUG
@@ -30,6 +29,10 @@ X_FRAME_OPTIONS = "DENY"
 # ------------------------------------------------------------------------------
 # Hosts/domain names that are valid for this site
 # See https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+
+# FQDN used to populate results URL for completed scan emails.
+MASTER_FQDN = "{{ master_fqdn }}"
+
 ALLOWED_HOSTS = [
     "{{ master_fqdn }}",
     "{{ ansible_default_ipv4.address }}",

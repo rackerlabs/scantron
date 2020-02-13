@@ -1,9 +1,15 @@
+# Standard Python libraries.
 import datetime
 import pytz
 
+# Third party Python libraries.
 from django.conf import settings
+from django.http import Http404, HttpResponse
+import redis
 from rest_framework import viewsets
+import rq
 
+# Custom Python libraries.
 from django_scantron.api.serializers import (
     AgentSerializer,
     ScanCommandSerializer,
@@ -11,8 +17,6 @@ from django_scantron.api.serializers import (
     ScheduledScanSerializer,
     SiteSerializer,
 )
-
-
 from django_scantron.models import (
     Agent,
     ScanCommand,
@@ -20,6 +24,7 @@ from django_scantron.models import (
     ScheduledScan,
     Site,
 )
+import utility
 
 
 def get_current_time():
@@ -125,6 +130,41 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
     model = ScheduledScan
     serializer_class = ScheduledScanSerializer
+
+    def partial_update(self, request, pk=None, **kwargs):
+
+        try:
+            # Filter only the applicable ScheduledScans for the agent.  Prevents an agent modifying another agent's
+            # ScheduledScan information.
+            obj = ScheduledScan.objects.filter(scan_agent=request.user).get(pk=pk)  # noqa
+
+            # Extract the json payload.
+            body = self.request.data
+
+            if body["scan_status"] in ["started", "completed", "error"]:
+
+                # Create a redis connection object.
+                redis_conn = redis.Redis(host="127.0.0.1", port=6379, db=0)
+
+                # Create a redis queue object.
+                q = rq.Queue(connection=redis_conn)
+
+                queue_object = {
+                    "scheduled_scan_id": pk,
+                    "scan_status": body["scan_status"],
+                }
+
+                job = q.enqueue(utility.process_scan_status_change, queue_object)  # noqa
+
+            else:
+                raise Http404
+
+        except ScheduledScan.DoesNotExist:
+            raise Http404
+
+        kwargs["partial"] = True
+
+        return self.update(request, pk, **kwargs)
 
     def get_queryset(self):
         http_method = self.request.method

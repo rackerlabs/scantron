@@ -33,6 +33,7 @@ class ScanCommandSerializer(serializers.ModelSerializer):
 class SiteSerializer(serializers.ModelSerializer):
     # Separate validation needed for DRF; doesn't use model's clean() function anymore.
     # https://www.django-rest-framework.org/community/3.0-announcement/#differences-between-modelserializer-validation-and-modelform
+
     def validate(self, attrs):
         """Checks for any invalid IPs, IP subnets, or FQDNs in the targets or excluded_targets fields."""
 
@@ -62,6 +63,13 @@ class SiteSerializer(serializers.ModelSerializer):
                 invalid_targets = ",".join(targets_dict["invalid_targets"])
                 raise serializers.ValidationError(f"Invalid excluded targets provided: {invalid_targets}")
 
+        # Email scan alerts and email addresses.
+        email_scan_alerts = attrs["email_scan_alerts"]
+        email_alert_address = attrs["email_alert_address"]
+
+        if email_scan_alerts and not email_alert_address:
+            raise serializers.ValidationError(f"Provide an email address if enabling 'Email scan alerts'")
+
         return attrs
 
     class Meta:
@@ -74,6 +82,8 @@ class SiteSerializer(serializers.ModelSerializer):
             "excluded_targets",
             "scan_command",
             "scan_agent",
+            "email_scan_alerts",
+            "email_alert_address",
         )
 
 

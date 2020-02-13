@@ -14,9 +14,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls import include, url
+from django.conf.urls import url
 from django.contrib import admin
-import django_saml2_auth.views
+from django.urls import include, path
+# import django_saml2_auth.views
 
 from django_scantron.login.urls import urlpatterns as login_urls
 from django_scantron.logout.urls import urlpatterns as logout_urls
@@ -64,3 +65,8 @@ urlpatterns = [
     url(r"^api/", include(api_urls)),
 ]
 # fmt: on
+
+if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns += [path("__debug__/", include(debug_toolbar.urls)),]  # noqa

@@ -23,7 +23,7 @@ alias gfp='find `pwd` -name $1'
 # Django
 alias pm='python manage.py $*'
 alias pmr='python manage.py runserver'
-alias pms='python manage.py shell'
+alias pms='python manage.py shell_plus'
 alias pmcs='python manage.py collectstatic --noinput'
 alias pmrl='python manage.py runserver --settings=config.settings.local'
 alias pmrp='python manage.py runserver --settings=config.settings.production'

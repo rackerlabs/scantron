@@ -38,7 +38,17 @@ class ScanAdmin(admin.ModelAdmin):
 
 
 class SiteAdmin(admin.ModelAdmin):
-    list_display = ("id", "site_name", "description", "targets", "excluded_targets", "scan_command", "scan_agent")
+    list_display = (
+        "id",
+        "site_name",
+        "description",
+        "targets",
+        "excluded_targets",
+        "scan_command",
+        "scan_agent",
+        "email_scan_alerts",
+        "email_alert_address",
+    )
 
 
 class ScheduledScanAdmin(admin.ModelAdmin):

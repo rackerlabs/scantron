@@ -9,19 +9,22 @@
 
 ## Overview
 
-Scantron is a distributed nmap scanner comprised of two components.  The first is a Master node that consists of a web
-front end used for scheduling scans and storing nmap scan targets and results.  The second component is an agent that
-pulls scan jobs from Master and conducts the actual nmap scanning.  A majority of the application's logic is purposely
-placed on Master to make the agent(s) as "dumb" as possible.  All nmap target files and nmap results reside on Master
-and are shared through a network file share (NFS) leveraging SSH tunnels.  The agents call back to Master periodically
-using a REST API to check for scan tasks and provide scan status updates.
+Scantron is a distributed nmap and masscan scanner comprised of two components.  The first is a Master node that
+consists of a web front end used for scheduling scans and storing nmap scan targets and results.  The second component
+is an agent that pulls scan jobs from Master and conducts the actual nmap scanning.  A majority of the application's
+logic is purposely placed on Master to make the agent(s) as "dumb" as possible.  All nmap target files and nmap results
+reside on Master and are shared through a network file share (NFS) leveraging SSH tunnels.  The agents call back to
+Master periodically using a REST API to check for scan tasks and provide scan status updates.
+
+Checkout the Python [Scantron API client](https://github.com/rackerlabs/scantron/tree/master/scantron_api_client) for
+interacting with the Scantron API and driving automated workflows.
 
 ![scheduled_scans](./img/scheduled_scans.png)
 
 Scantron is coded for Python3.6+ exclusively and leverages Django for the web front-end, Django REST Framework as the
-API endpoint, PostgreSQL as the database, and comes complete with Ubuntu-focused Ansible playbooks for smooth
-deployments.  Scantron has been tested on Ubuntu 18.04 and may be compatible with other operating systems.  Scantron's
-inspiration comes from:
+API endpoint, PostgreSQL as the database, a Redis job queue for tasks, Postfix for email scan alerts, and comes complete
+with Ubuntu-focused Ansible playbooks for smooth deployments.  Scantron has been tested on Ubuntu 18.04 and may be
+compatible with other operating systems.  Scantron's inspiration comes from:
 
 * [dnmap](https://sourceforge.net/projects/dnmap/)
 * [Minions](https://github.com/sixdub/Minions)
@@ -43,7 +46,8 @@ concepts, there are some great overviews and tutorials out there:
 
 Scantron is not engineered to be quickly deployed to a server to scan for a few minutes, then torn down and destroyed.  
 It's better suited for having a set of static scanners (e.g., "internal-scanner", "external-scanner") with a relatively
-static set of assets to scan.
+static set of assets to scan.  A [Scantron API client](https://github.com/rackerlabs/scantron/tree/master/scantron_api_client)
+is also available for creating, retrieving, updating, or deleting sites, scan commands, scans, etc.
 
 ## Architecture Diagram
 
@@ -55,7 +59,9 @@ static set of assets to scan.
 only 512 MB.  If you do not want to build masscan, set `install_masscan_on_agent` to `False` in
 `ansible-playbooks/group_vars/all`
 
-* Master: 512 MB of memory was the smallest amount successfully tested.
+* Master: 512 MB of memory was the smallest amount successfully tested, however, if you plan on processing large scan
+files (using the scripts found in `master/scan_results`: `masscan_json_to_csv.py`, `nmap_to_csv.py` or
+`xml_to_json_nmap_results.py`), you'll need more memory.
 
 ## Ansible Deployment Server and Initial Setup
 
@@ -410,6 +416,12 @@ nginx logs: `tail -f /var/log/nginx/{access,error}.log`
 If you need to reboot a box, do it with the provided `clean_reboot.sh` script that will stop all relevant services.
 Without stopping the `nfs-kernel-server` service gracefully, sometimes the OS will hang and get angry.
 
+## Email Alerts
+
+A vanilla Postfix instance is installed on Master that can be used to send email alerts when a scan starts, errors out,
+or finishes.  Email settings and credentials are kept in the `scantron_secrets.json` file.  Out of the box, most mail
+will likely be marked as spam/junk.  The recommendation is to use a credentialed account to send email alerts to users.
+
 ## Miscellaneous
 
 ### Updating nmap version
@@ -478,13 +490,36 @@ egrep /udp /usr/share/nmap/nmap-services | sort -r -k3
 
 Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-command-to-get-the-top-most-common-ports>
 
+## nmap_port_range_carver
+
+A standalone [script](https://github.com/rackerlabs/scantron/tree/master/nmap_port_range_carver)
+ to carve out a range of the top TCP/UDP ports according to the nmap-services file.
+
+This is useful
+when:
+
+1. You want to scan a subset of the ports specified in `--top-ports`, say the 10th through 20th top TCP ports, but not
+the 1st or 9th ports.
+
+2. You want the 1337th ranked TCP port.
+
+3. You want to utilize nmap to scan **both** TCP and UDP, but not scan the same number of top ports.
+
+    This works and will scan the top 10 ports for BOTH TCP and UDP
+
+    ```bash
+    nmap --top-ports 10 -sU -sT <TARGET>
+    ```
+
+    but you can't only scan the top 20 TCP and top 10 UDP ports using `--top-ports`.
+
 ## Workflow
 
 1. Create user/agent.  By default, Ansible creates `agent1`.
 
     ![create_user_agent](./img/create_user_agent.png)
 
-2. Create nmap command
+2. Create scan command
 
     ![create_nmap_command](./img/create_nmap_command.png)
 
@@ -521,17 +556,22 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
     Scan files are moved between a few folders.
 
     `/home/scantron/master/scan_results/pending` - Pending scan files from agents are stored here before being moved to
-    scan_results/complete
+    `scan_results/complete`
 
     `/home/scantron/master/scan_results/complete` - Completed scan files from agents are stored here before being
-    processed by nmap_to_csv.py
+    processed by `nmap_to_csv.py`
 
     The `scantron` user executes a cron job (`nmap_to_csv.sh` which calls `nmap_to_csv.py`) every 5 minutes that will
     process the `.xml` scan results found in the `complete` directory and move them to the `processed` directory.
 
-    `/home/scantron/master/scan_results/processed` - nmap scan files already processed by nmap_to_csv.py reside here.
+    `/home/scantron/master/scan_results/processed` - nmap scan files already processed by `nmap_to_csv.py` reside here.
 
-    `/home/scantron/master/for_bigdata_analytics` - csv files for big data analytics ingestion
+    `/home/scantron/master/for_bigdata_analytics` - .csv files for big data analytics ingestion if applicable
+
+## Scantron API Client
+
+Checkout the Python [Scantron API client](https://github.com/rackerlabs/scantron/tree/master/scantron_api_client) for
+interacting with the Scantron API and driving automated workflows.
 
 ## API Documentation
 

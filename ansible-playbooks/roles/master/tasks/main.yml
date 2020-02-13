@@ -307,6 +307,70 @@
   tags: update_code
 
 
+# POSTFIX
+- name: Update postfix main.cf configuration file.
+  template:
+    src: etc/postfix/main.cf.j2
+    dest: /etc/postfix/main.cf
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Restart postfix.
+  service:
+    name: postfix
+    state: restarted
+
+- name: Ensure postfix is started and enabled at boot.
+  service:
+    name: postfix
+    state: started
+    enabled: yes
+
+# REDIS
+# redis service
+- name: Restart redis.
+  service:
+    name: redis
+    state: restarted
+
+- name: Ensure redis is started and enabled at boot.
+  service:
+    name: redis
+    state: started
+    enabled: yes
+
+# rqworker service
+- name: Update rqworker service configuration file.
+  template:
+    src: rqworker@.service.j2
+    dest: "{{ scantron_dir }}/rqworker@.service"
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create symbolic link for rqworker service configuration file -- "{{ scantron_dir }}/rqworker@.service" --> /lib/systemd/system/rqworker@.service
+  file:
+    src: "{{ scantron_dir }}/rqworker@.service"
+    dest: /lib/systemd/system/rqworker@.service
+    owner: root
+    group: root
+    state: link
+
+- name: Restart rqworker service worker.
+  service:
+    name: rqworker@1
+    state: restarted
+
+- name: Ensure rqworker is started and enabled at boot.
+  service:
+    name: rqworker@1
+    state: started
+    enabled: yes
+
+
 # NFS
 #####
 - name: Upload /etc/exports.
