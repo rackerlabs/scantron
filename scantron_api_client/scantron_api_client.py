@@ -359,6 +359,36 @@ class ScantronClient:
 
         return site_id
 
+    def retrieve_all_scantron_information(
+        self, write_to_file=False, json_dump_file_name="all_scantron_information.json"
+    ):
+        """Retrieve all the scantron information for easier importing/exporting."""
+
+        all_scantron_information = {}
+
+        try:
+            agents = self.retrieve_agents()
+            scan_commands = self.retrieve_scan_commands()
+            scans = self.retrieve_scans()
+            scheduled_scans = self.retrieve_scheduled_scans()
+            sites = self.retrieve_sites()
+
+            all_scantron_information["agents"] = agents
+            all_scantron_information["scan_commands"] = scan_commands
+            all_scantron_information["scans"] = scans
+            all_scantron_information["scheduled_scans"] = scheduled_scans
+            all_scantron_information["sites"] = sites
+
+        except Exception as e:
+            print(f"Exception: {e}")
+
+        if write_to_file:
+            print(f"Writing results to: {json_dump_file_name}")
+            with open(json_dump_file_name, "w") as fh:
+                json.dump(all_scantron_information, fh, indent=4)
+
+        return all_scantron_information
+
 
 if __name__ == "__main__":
     print("Use 'import scantron_api_client', do not run directly.")
