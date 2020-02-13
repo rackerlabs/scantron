@@ -209,10 +209,6 @@ class TargetExtractor:
 
                 master_targets_dict["ip_networks"]["as_list"].append(target)
 
-
-
-
-
             # Check if it is a FQDN.
             elif self.is_valid_fqdn(target):
                 master_targets_dict["domains"]["as_list"].append(target)
