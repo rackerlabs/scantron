@@ -61,7 +61,7 @@ only 512 MB.  If you do not want to build masscan, set `install_masscan_on_agent
 
 * Master: 512 MB of memory was the smallest amount successfully tested, however, if you plan on processing large scan
 files (using the scripts found in `master/scan_results`: `masscan_json_to_csv.py`, `nmap_to_csv.py` or
-`xml_to_json_nmap_results.py`), you'll need  more memory.
+`xml_to_json_nmap_results.py`), you'll need more memory.
 
 ## Ansible Deployment Server and Initial Setup
 
