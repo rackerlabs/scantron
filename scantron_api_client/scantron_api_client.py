@@ -452,7 +452,7 @@ class ScantronClient:
 
         return masscan_dict
 
-    def retrieve_all_targets_with_an_open_port(self, masscan_dict):
+    def retrieve_all_masscan_targets_with_an_open_port(self, masscan_dict):
         """Extracts all the targets with at least 1 open port."""
 
         all_targets_with_an_open_port = sorted(list(set(masscan_dict.keys())))
@@ -464,7 +464,7 @@ class ScantronClient:
 
         return all_targets_with_an_open_port_dict
 
-    def retrieve_all_targets_with_a_specific_port_and_protocol(self, masscan_dict, port, protocol="tcp"):
+    def retrieve_all_masscan_targets_with_a_specific_port_and_protocol(self, masscan_dict, port, protocol="tcp"):
         """Retrieves all the targets with a specified open port and protocol."""
 
         all_targets_with_a_specific_port_and_protocol_dict = {
