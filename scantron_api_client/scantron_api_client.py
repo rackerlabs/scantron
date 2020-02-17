@@ -1,6 +1,7 @@
 # Standard Python libraries.
 import json
 import sys
+import time
 import urllib3
 
 # Third party Python libraries.
@@ -9,7 +10,7 @@ import requests
 # Custom Python libraries.
 import utility
 
-__version__ = "1.1"
+__version__ = "1.2"
 
 
 class ScantronClient:
@@ -198,22 +199,34 @@ class ScantronClient:
 
     # Scan Results
     ##############
-    def retrieve_scan_results(self, scan_id, file_type, **kwargs):
-        """Returns a text blob of the scan results if they actually exist.  For .json files, you can convert it to a
-        Python JSON object using:
-        scan_results_json = json.loads(scan_results)"""
+    def retrieve_scan_results(self, scan_id, file_type, write_to_disk=False, **kwargs):
+        """Returns a text blob of the scan results if they actually exist.  For .json files, the requests .json()
+        method is called to return a Python dictionary object."""
 
         scan_results = None
 
-        if file_type.lower() not in ["nmap", "xml", "json"]:
+        file_type = file_type.lower()
+        file_name = f"scan_results_{scan_id}.{file_type}"
+
+        if file_type not in ["nmap", "xml", "json"]:
             print(f"Not a valid file type: {file_type}")
 
         else:
             response = self.scantron_api_query(f"/results/{scan_id}?file_type={file_type}", **kwargs)
 
-            # Only return the results if they actually exist.
-            if response.status_code == 200:
+            if response.status_code == 200 and file_type in ["nmap", "xml"]:
                 scan_results = response.text
+
+                if write_to_disk:
+                    with open(file_name, "w") as fh:
+                        fh.write(scan_results)
+
+            elif response.status_code == 200 and file_type == "json":
+                scan_results = response.json()
+
+                if write_to_disk:
+                    with open(file_name, "w") as fh:
+                        json.dump(scan_results, fh)
 
         return scan_results
 
@@ -238,7 +251,7 @@ class ScantronClient:
         return self.scantron_api_query(f"/api/agents/{agent_id}", method="DELETE")
 
     # Agents - Miscellaneous functions.
-    def retrieve_agents(self, **kwargs):
+    def retrieve_agents(self):
         """Retrieve information for all the agents."""
         return self.scantron_api_query("/api/agents").json()
 
@@ -262,7 +275,7 @@ class ScantronClient:
         """Create a scan command"""
         return self.scantron_api_query("/api/scan_commands", method="POST", payload=payload)
 
-    def retrieve_scan_command(self, scan_command_id, **kwargs):
+    def retrieve_scan_command(self, scan_command_id):
         """Retrieve scan command."""
         return self.scantron_api_query(f"/api/scan_commands/{scan_command_id}", method="GET").json()
 
@@ -275,7 +288,7 @@ class ScantronClient:
         return self.scantron_api_query(f"/api/scan_commands/{scan_command_id}", method="DELETE")
 
     # Scan Commands - Miscellaneous functions.
-    def retrieve_scan_commands(self, **kwargs):
+    def retrieve_scan_commands(self):
         """Retrieve information for all the scan commands."""
         return self.scantron_api_query("/api/scan_commands").json()
 
@@ -312,13 +325,18 @@ class ScantronClient:
         return self.scantron_api_query(f"/api/scans/{scan_id}", method="DELETE")
 
     # Scans - Miscellaneous functions.
-    def retrieve_scans(self, **kwargs):
+    def retrieve_scans(self):
         """Retrieve information for all the scans."""
         return self.scantron_api_query("/api/scans").json()
 
     # SCHEDULED SCANS
     #################
-    def retrieve_scheduled_scans(self, **kwargs):
+    def retrieve_scheduled_scan(self, scheduled_scan_id):
+        """Retrieve a scheduled scan."""
+        return self.scantron_api_query(f"/api/scheduled_scans/{scheduled_scan_id}", method="GET")
+
+    # Scheduled Scans - Miscellaneous functions.
+    def retrieve_scheduled_scans(self):
         """Retrieve information for all scheduled scans."""
         return self.scantron_api_query("/api/scheduled_scans").json()
 
@@ -342,7 +360,7 @@ class ScantronClient:
         return self.scantron_api_query(f"/api/sites/{site_id}", method="DELETE")
 
     # Sites - Miscellaneous functions.
-    def retrieve_sites(self, **kwargs):
+    def retrieve_sites(self):
         """Retrieve information for all the sites."""
         return self.scantron_api_query(f"/api/sites").json()
 
@@ -388,6 +406,115 @@ class ScantronClient:
                 json.dump(all_scantron_information, fh, indent=4)
 
         return all_scantron_information
+
+    def generate_masscan_dict_from_masscan_result(self, scan_results_json):
+        """Distills masscan json object into relevent fields."""
+
+        masscan_dict = {}
+
+        for result in scan_results_json:
+
+            # Create an empty dictionary per target.
+            # Duplicates ignored because data structure is a set.
+            if result["ip"] not in masscan_dict:
+                masscan_dict[result["ip"]] = {
+                    "tcp": set(),
+                    "udp": set(),
+                }
+
+            for port in result["ports"]:
+                if "port" in port:
+                    if port["proto"] == "tcp":
+                        masscan_dict[result["ip"]]["tcp"].add(port["port"])
+                    elif port["proto"] == "udp":
+                        masscan_dict[result["ip"]]["udp"].add(port["port"])
+
+        # Convert sets to lists.
+        for key, value in masscan_dict.items():
+            masscan_dict[key]["tcp"] = list(sorted(value["tcp"]))
+            masscan_dict[key]["udp"] = list(sorted(value["udp"]))
+
+        return masscan_dict
+
+    def generate_masscan_dict_from_masscan_result_json_file(self, massscan_results_file):
+        """Return a distilled masscan json object into relevent fields given a masscan results .json file"""
+
+        masscan_dict = None
+
+        try:
+            with open(massscan_results_file, "r") as json_file:
+                scan_results_json = json.load(json_file)
+
+            masscan_dict = self.generate_masscan_dict_from_masscan_result(scan_results_json)
+
+        except FileNotFoundError:
+            print(f"File not found: {massscan_results_file}")
+
+        return masscan_dict
+
+    def retrieve_all_masscan_targets_with_an_open_port(self, masscan_dict):
+        """Extracts all the targets with at least 1 open port."""
+
+        all_targets_with_an_open_port = sorted(list(set(masscan_dict.keys())))
+        all_targets_with_an_open_port_dict = {
+            "all_targets_with_an_open_port_list": all_targets_with_an_open_port,
+            "all_targets_with_an_open_port_csv": ",".join(all_targets_with_an_open_port),
+            "all_targets_with_an_open_port_size": len(all_targets_with_an_open_port),
+        }
+
+        return all_targets_with_an_open_port_dict
+
+    def retrieve_all_masscan_targets_with_a_specific_port_and_protocol(self, masscan_dict, port, protocol="tcp"):
+        """Retrieves all the targets with a specified open port and protocol."""
+
+        all_targets_with_a_specific_port_and_protocol_dict = {
+            "port": port,
+            "protocol": protocol,
+            "all_targets_with_a_specific_port_and_protocol_list": [],
+            "all_targets_with_a_specific_port_and_protocol_csv": "",
+            "all_targets_with_a_specific_port_and_protocol_spaced": "",
+        }
+
+        for key, value in masscan_dict.items():
+            if port in masscan_dict[key][protocol]:
+                all_targets_with_a_specific_port_and_protocol_dict[
+                    "all_targets_with_a_specific_port_and_protocol_list"
+                ].append(key)
+
+        # Sort the targets.
+        all_targets_with_a_specific_port_and_protocol_dict[
+            "all_targets_with_a_specific_port_and_protocol_list"
+        ] = sorted(
+            all_targets_with_a_specific_port_and_protocol_dict["all_targets_with_a_specific_port_and_protocol_list"]
+        )
+
+        # Determine the total number of targets.
+        all_targets_with_a_specific_port_and_protocol_dict["all_targets_with_a_specific_port_and_protocol_size"] = len(
+            all_targets_with_a_specific_port_and_protocol_dict["all_targets_with_a_specific_port_and_protocol_list"]
+        )
+
+        # Create csv object from sorted list of targets.
+        all_targets_with_a_specific_port_and_protocol_dict[
+            "all_targets_with_a_specific_port_and_protocol_csv"
+        ] = ",".join(
+            all_targets_with_a_specific_port_and_protocol_dict["all_targets_with_a_specific_port_and_protocol_list"]
+        )
+
+        # Create target space delimited string from list of targets.
+        all_targets_with_a_specific_port_and_protocol_dict[
+            "all_targets_with_a_specific_port_and_protocol_spaced"
+        ] = " ".join(
+            all_targets_with_a_specific_port_and_protocol_dict["all_targets_with_a_specific_port_and_protocol_list"]
+        )
+
+        return all_targets_with_a_specific_port_and_protocol_dict
+
+    def wait_until_scheduled_scan_finishes(self, scheduled_scan_id, sleep_seconds=60):
+        """Given a scheduled scan ID, sleep until the scan finishes."""
+
+        while self.retrieve_scheduled_scan(scheduled_scan_id).json()["scan_status"] in ["started"]:
+            print(f"Scheduled scan ID {scheduled_scan_id} is still running...sleeping {sleep_seconds} seconds.")
+            time.sleep(sleep_seconds)
 
 
 if __name__ == "__main__":
