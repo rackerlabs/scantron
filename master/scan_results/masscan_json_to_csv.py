@@ -108,11 +108,11 @@ def main():
                             "siteName": site_name.lower(),
                             "scanner": "masscan",
                             "dest_ip": result["ip"],
-                            "transport": "tcp",  # Only option.
+                            "transport": result["proto"],
                             "dest_port": port["port"],
                             "app": "",  # Populated below.
                             "service": "",  # Populated below.
-                            "state": "open",  # Controlled by masscan --open switch.
+                            "state": result["status"],
                         }
 
                         if "service" in port:
