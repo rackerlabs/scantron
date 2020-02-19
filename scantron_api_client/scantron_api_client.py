@@ -8,16 +8,14 @@ import urllib3
 import requests
 
 # Custom Python libraries.
-import utility
+from . import utility
 
-__version__ = "1.2"
+__version__ = "1.3"
 
 
 class ScantronClient:
-    def __init__(self, **kwargs):
+    def __init__(self, secrets_file_location="./scantron_api_secrets.json", **kwargs):
         """Initialize a Scantron client."""
-
-        secrets_file_location = "./scantron_api_secrets.json"
 
         SECRETS = {}
 
