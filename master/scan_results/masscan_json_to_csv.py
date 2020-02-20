@@ -108,11 +108,11 @@ def main():
                             "siteName": site_name.lower(),
                             "scanner": "masscan",
                             "dest_ip": result["ip"],
-                            "transport": result["proto"],
+                            "transport": port["proto"],
                             "dest_port": port["port"],
                             "app": "",  # Populated below.
                             "service": "",  # Populated below.
-                            "state": result["status"],
+                            "state": "open",  # Hardcode; "status" key isn't always availble with banners.
                         }
 
                         if "service" in port:
