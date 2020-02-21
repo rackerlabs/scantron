@@ -8,9 +8,10 @@ import urllib3
 import requests
 
 # Custom Python libraries.
-from . import utility
+import utility
 
-__version__ = "1.3"
+
+__version__ = "1.31"
 
 
 class ScantronClient:
@@ -220,11 +221,15 @@ class ScantronClient:
                         fh.write(scan_results)
 
             elif response.status_code == 200 and file_type == "json":
-                scan_results = response.json()
+                try:
+                    scan_results = response.json()
 
-                if write_to_disk:
-                    with open(file_name, "w") as fh:
-                        json.dump(scan_results, fh)
+                    if write_to_disk:
+                        with open(file_name, "w") as fh:
+                            json.dump(scan_results, fh)
+
+                except Exception as e:
+                    print(f"Exception decoding json for scan ID {scan_id}: {e}")
 
         return scan_results
 
