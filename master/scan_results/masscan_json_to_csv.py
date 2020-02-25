@@ -46,7 +46,7 @@ import sys
     ]
 }
 """
-# Used when the .json file is 0 bytes and the column names from result_dict can't be extracted.
+# Used when the .json file is 0 bytes and the column names from result_dict cannot be extracted.
 CSV_FIELD_NAMES = [
     "starttime",
     "endtime",
