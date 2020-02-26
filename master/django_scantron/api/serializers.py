@@ -63,12 +63,14 @@ class SiteSerializer(serializers.ModelSerializer):
                 invalid_targets = ",".join(targets_dict["invalid_targets"])
                 raise serializers.ValidationError(f"Invalid excluded targets provided: {invalid_targets}")
 
-        # Email scan alerts and email addresses.
-        email_scan_alerts = attrs["email_scan_alerts"]
-        email_alert_address = attrs["email_alert_address"]
+        # Email scan alerts and email address.
+        if ("email_scan_alerts" in attrs) and ("email_alert_address" in attrs):
 
-        if email_scan_alerts and not email_alert_address:
-            raise serializers.ValidationError(f"Provide an email address if enabling 'Email scan alerts'")
+            email_scan_alerts = attrs["email_scan_alerts"]
+            email_alert_address = attrs["email_alert_address"]
+
+            if email_scan_alerts and not email_alert_address:
+                raise serializers.ValidationError(f"Provide an email address if enabling 'Email scan alerts'")
 
         return attrs
 
