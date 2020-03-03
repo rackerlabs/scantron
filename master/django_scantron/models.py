@@ -203,12 +203,6 @@ class ScheduledScan(models.Model):
         ],
         verbose_name="Site Name",
     )
-    site_name_id = models.IntegerField(
-        validators=[MinValueValidator(1, message="Site name ID must be greater than 0")], verbose_name="Site name ID"
-    )
-    scan_id = models.IntegerField(
-        validators=[MinValueValidator(1, message="Scan ID must be greater than 0")], verbose_name="Scan ID"
-    )
     start_time = models.TimeField(verbose_name="Scan start time")
     scan_agent = models.CharField(
         unique=False,
@@ -221,16 +215,9 @@ class ScheduledScan(models.Model):
         ],
         verbose_name="Agent Name",
     )
-    scan_agent_id = models.IntegerField(
-        validators=[MinValueValidator(1, message="Scan agent ID must be greater than 0")], verbose_name="Scan agent ID"
-    )
     start_datetime = models.DateTimeField(verbose_name="Scheduled scan start date and time")
     scan_binary = models.CharField(max_length=7, default="nmap", verbose_name="Scan binary")
     scan_command = models.TextField(unique=False, verbose_name="Scan command")
-    scan_command_id = models.IntegerField(
-        validators=[MinValueValidator(1, message="Scan command ID must be greater than 0")],
-        verbose_name="Scan command ID",
-    )
     targets = models.CharField(
         unique=False,
         max_length=1_048_576,  # 2^20 = 1048576
@@ -258,7 +245,7 @@ class ScheduledScan(models.Model):
         max_length=9, choices=SCAN_STATUS_CHOICES, default="pending", verbose_name="Scan status"
     )
     completed_time = models.DateTimeField(null=True, blank=True, verbose_name="Scan completion time")
-    result_file_base_name = models.CharField(max_length=255, blank=True, verbose_name="Result file base name")
+    result_file_base_name = models.CharField(max_length=255, blank=False, verbose_name="Result file base name")
 
     def __str__(self):
         return str(self.id)
