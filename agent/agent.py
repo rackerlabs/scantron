@@ -91,7 +91,7 @@ class Agent:
 
                 if scan_jobs:
                     for scan_job in scan_jobs:
-                        modules.logger.ROOT_LOGGER.info(f"Executing scan job ID: {scan_job['id']}")
+                        modules.logger.ROOT_LOGGER.info(f"scan_job: {scan_job}")
 
                         # Create new dictionary that will contain scan_job and config_data information.
                         scan_job_dict = {}
