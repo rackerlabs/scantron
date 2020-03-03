@@ -78,21 +78,17 @@ def main():
         # ScanCommand models is updated, it will update the Site model, and cascade to the Scan model.
 
         # Scan model.
-        scan_id = scan.id  # Can delete in future.
         scan_start_time = scan.start_time
 
         # Site model.
-        site_name_id = scan.site.id  # Can delete in future.
         site_name = scan.site.site_name
         targets = scan.site.targets
         excluded_targets = scan.site.excluded_targets
 
         # Agent model.
-        scan_agent_id = scan.site.scan_agent_id  # Can delete in future.
         scan_agent = scan.site.scan_agent.scan_agent
 
         # ScanCommand model.
-        scan_command_id = scan.site.scan_command.id  # Can delete in future.
         scan_command = scan.site.scan_command.scan_command
         scan_binary = scan.site.scan_command.scan_binary
 
@@ -116,20 +112,33 @@ def main():
 
         scan_dict = {
             "site_name": site_name,
-            "site_name_id": site_name_id,  # Can delete in future.
-            "scan_id": scan_id,  # Can delete in future.
             "start_time": scan_start_time,
             "scan_agent": scan_agent,
-            "scan_agent_id": scan_agent_id,  # Can delete in future.
             "start_datetime": start_datetime,
             "scan_binary": scan_binary,
             "scan_command": scan_command,
-            "scan_command_id": scan_command_id,  # Can delete in future.
             "targets": targets,
             "excluded_targets": excluded_targets,
             "result_file_base_name": result_file_base_name,
             "scan_status": "pending",
         }
+
+        # Ensure none of the values are empty.  blank=False is only enforced through forms, which this method of
+        # creating a scheduled scan does not honor.
+        empty_scan_dict_value_detected = False
+
+        for key, value in scan_dict.items():
+
+            # Ignore fields that are allowed to be empty.
+            if key in ["excluded_targets"]:
+                continue
+
+            if not value:
+                ROOT_LOGGER.error(f"scan_dict['{key}'] has an empty value.")
+                empty_scan_dict_value_detected = True
+
+        if empty_scan_dict_value_detected:
+            continue
 
         try:
             # Add entry to ScheduledScan model.  Convert dictionary to kwargs using **.
