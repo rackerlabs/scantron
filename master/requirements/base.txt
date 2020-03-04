@@ -37,6 +37,9 @@ fqdn==1.2.0
 # ipython
 ipython
 
+# compare json files
+jsondiff==1.2.0
+
 # packaging required for drf-yasg, adding this to be safe
 packaging
 
