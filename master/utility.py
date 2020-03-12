@@ -46,20 +46,18 @@ def process_scan_status_change(queue_object):
     logger.info(f"queue_object: {process_scan_status_change}")
 
     # Extract values from passed dictionary.
-    scheduled_scan_id = queue_object["scheduled_scan_id"]
+    site_name = queue_object["site_name"]
     scan_status = queue_object["scan_status"]
 
     # Look up scheduled scan information.
-    scheduled_scan = django_connector.ScheduledScan.objects.filter(id=scheduled_scan_id)[0]
-
-    # Determine Site ID.
-    site_id = scheduled_scan.site_name_id
+    scheduled_scan = django_connector.ScheduledScan.objects.filter(site_name=site_name)[0]
+    scheduled_scan_id = scheduled_scan.id
 
     # Determine the scan binary used.
     scan_binary = scheduled_scan.scan_binary
 
     # Retrieve site information.
-    site = django_connector.Site.objects.filter(id=site_id)[0]
+    site = django_connector.Site.objects.filter(site_name=site_name)[0]
 
     # Determine if site has email_scan_alerts enabled.
     email_scan_alerts = site.email_scan_alerts
