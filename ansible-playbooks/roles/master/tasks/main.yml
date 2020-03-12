@@ -111,6 +111,14 @@
     virtualenv_python: "{{ venv_python }}"
   tags: update_code
 
+# https://github.com/django-recurrence/django-recurrence/issues/160
+- name: Modify recurrence.js until django-recurrence maintainers address issue 160.
+  lineinfile:
+    path: "{{ venv_dir }}/lib/python3.6/site-packages/recurrence/static/recurrence/js/recurrence.js"
+    regexp: '        var language_code = recurrence.language_code;'
+    line: '        var language_code = "en";'
+    backup: yes
+
 - name: Change ownership of "{{ scantron_dir }}" folder.
   file:
     path: "{{ scantron_dir }}"
@@ -256,6 +264,7 @@
     chdir: "{{ scantron_dir }}"
   ignore_errors: yes  # Only applicable if playbook has already been run.  Use 'python manage.py changepassword scantron'.
 
+
 # uWSGI
 #######
 - name: Install system-wide uWSGI python pip3 package.
@@ -308,6 +317,7 @@
 
 
 # POSTFIX
+#########
 - name: Update postfix main.cf configuration file.
   template:
     src: etc/postfix/main.cf.j2
@@ -328,7 +338,9 @@
     state: started
     enabled: yes
 
+
 # REDIS
+#######
 # redis service
 - name: Restart redis.
   service:
@@ -481,6 +493,12 @@
     month: "*"
     weekday: "*"
     job: "{{ scantron_dir }}/scan_results/masscan_json_to_csv.sh"
+    user: root
+
+- name: Disable MAILTO for root's crontab.
+  cronvar:
+    name: MAILTO
+    value: '""'
     user: root
 
 - name: Copying custom logrotate configuration file to /etc/logrotate.d/

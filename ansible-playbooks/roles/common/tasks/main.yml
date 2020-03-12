@@ -2,7 +2,7 @@
   apt:
     update_cache: yes
 
-- name: Install aptitude
+- name: Install aptitude.
   apt:
     name: aptitude
     state: latest
@@ -58,16 +58,6 @@
   copy:
     src: files/.vimrc
     dest: /root
-
-- name: Updating root's .dircolors file
-  copy:
-    src: files/.dircolors
-    dest: /root
-
-- name: Updating /usr/lib/proxychains3/proxyresolv with 8.8.8.8 DNS.
-  copy:
-    src: files/usr/lib/proxychains3/proxyresolv
-    dest: /usr/lib/proxychains3/proxyresolv
 
 - name: Disable IPv6 in ufw.
   lineinfile:
