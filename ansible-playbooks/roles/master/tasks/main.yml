@@ -487,6 +487,12 @@
     job: "{{ scantron_dir }}/scan_results/masscan_json_to_csv.sh"
     user: root
 
+- name: Disable MAILTO for root's crontab.
+  cronvar:
+    name: MAILTO
+    value: '""'
+    user: root
+
 - name: Copying custom logrotate configuration file to /etc/logrotate.d/
   copy:
     src: "files/etc/logrotate.d/uwsgi"

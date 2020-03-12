@@ -59,11 +59,6 @@
     src: files/.vimrc
     dest: /root
 
-- name: Updating /usr/lib/proxychains3/proxyresolv with 8.8.8.8 DNS.
-  copy:
-    src: files/usr/lib/proxychains3/proxyresolv
-    dest: /usr/lib/proxychains3/proxyresolv
-
 - name: Disable IPv6 in ufw.
   lineinfile:
     path: /etc/default/ufw
