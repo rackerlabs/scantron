@@ -150,7 +150,7 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
                 q = rq.Queue(connection=redis_conn)
 
                 queue_object = {
-                    "scheduled_scan_id": pk,
+                    "site_name": obj.site_name,
                     "scan_status": body["scan_status"],
                 }
 
