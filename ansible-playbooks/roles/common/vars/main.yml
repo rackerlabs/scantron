@@ -2,7 +2,7 @@
 enable_ufw_firewall: true
 reboot_box: false
 disable_ipv6: false  # breaks nginx install
-timezone: America/Chicago
+timezone: UTC
 
 # apt packages
 install_packages:

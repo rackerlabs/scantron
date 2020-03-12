@@ -17,11 +17,6 @@
     dest: "/home/{{ item }}"
   with_items: "{{ users }}"
 
-- copy:
-    src: .dircolors
-    dest: "/home/{{ item }}"
-  with_items: "{{ users }}"
-
 - name: Change ownership of home directory.
   file:
     path: "/home/{{ item }}"

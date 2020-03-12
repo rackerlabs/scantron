@@ -256,6 +256,7 @@
     chdir: "{{ scantron_dir }}"
   ignore_errors: yes  # Only applicable if playbook has already been run.  Use 'python manage.py changepassword scantron'.
 
+
 # uWSGI
 #######
 - name: Install system-wide uWSGI python pip3 package.
@@ -308,6 +309,7 @@
 
 
 # POSTFIX
+#########
 - name: Update postfix main.cf configuration file.
   template:
     src: etc/postfix/main.cf.j2
@@ -328,7 +330,9 @@
     state: started
     enabled: yes
 
+
 # REDIS
+#######
 # redis service
 - name: Restart redis.
   service:
