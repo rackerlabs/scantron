@@ -111,6 +111,14 @@
     virtualenv_python: "{{ venv_python }}"
   tags: update_code
 
+# https://github.com/django-recurrence/django-recurrence/issues/160
+- name: Modify recurrence.js until django-recurrence maintainers address issue 160.
+  lineinfile:
+    path: "{{ venv_dir }}/lib/python3.6/site-packages/recurrence/static/recurrence/js/recurrence.js"
+    regexp: '        var language_code = recurrence.language_code;'
+    line: '        var language_code = "en";'
+    backup: yes
+
 - name: Change ownership of "{{ scantron_dir }}" folder.
   file:
     path: "{{ scantron_dir }}"
