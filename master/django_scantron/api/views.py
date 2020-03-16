@@ -4,7 +4,7 @@ import pytz
 
 # Third party Python libraries.
 from django.conf import settings
-from django.http import Http404, HttpResponse
+from django.http import Http404
 import redis
 from rest_framework import viewsets
 import rq
@@ -134,14 +134,21 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
     def partial_update(self, request, pk=None, **kwargs):
 
         try:
-            # Filter only the applicable ScheduledScans for the agent.  Prevents an agent modifying another agent's
-            # ScheduledScan information.
-            obj = ScheduledScan.objects.filter(scan_agent=request.user).get(pk=pk)  # noqa
 
             # Extract the json payload.
             body = self.request.data
 
             if body["scan_status"] in ["started", "completed", "error"]:
+
+                # Filter only the applicable ScheduledScans for the agent.  Prevents an agent modifying another agent's
+                # ScheduledScan information.
+                scheduled_scan_dict = (
+                    ScheduledScan.objects.filter(scan_agent=request.user).filter(pk=pk).values()[0]
+                )  # noqa
+
+                # Update the scheduled_scan_dict with the most recent scan_status state from the PUT request.  When
+                # originally querying above, the old state is passed to utility.py unless it is updated.
+                scheduled_scan_dict["scan_status"] = body["scan_status"]
 
                 # Create a redis connection object.
                 redis_conn = redis.Redis(host="127.0.0.1", port=6379, db=0)
@@ -149,12 +156,8 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
                 # Create a redis queue object.
                 q = rq.Queue(connection=redis_conn)
 
-                queue_object = {
-                    "site_name": obj.site_name,
-                    "scan_status": body["scan_status"],
-                }
-
-                job = q.enqueue(utility.process_scan_status_change, queue_object)  # noqa
+                # Queue up the scheduled_scan_dict to be processed by utility.py.
+                job = q.enqueue(utility.process_scan_status_change, scheduled_scan_dict)  # noqa
 
             else:
                 raise Http404
