@@ -183,7 +183,7 @@ their password changed) user password.
 python3 manage.py changepassword admin
 ```
 
-### Agent Installtion
+### Agent Installation
 
 #### Update Agent Ansible Variables
 

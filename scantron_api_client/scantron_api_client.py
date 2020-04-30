@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "1.31"
+__version__ = "1.32"
 
 
 class ScantronClient:
@@ -65,7 +65,7 @@ class ScantronClient:
     def scantron_api_query(self, endpoint, **kwargs):
         """Executes a properly formatted API call to the Scantron API with the supplied arguments."""
 
-        url = f"{self.BASE_URL}/{endpoint}"
+        url = f"{self.BASE_URL}{endpoint}"
 
         # Set HTTP headers.
         headers = kwargs.get("headers", {})
@@ -509,6 +509,33 @@ class ScantronClient:
         ] = " ".join(
             all_targets_with_a_specific_port_and_protocol_dict["all_targets_with_a_specific_port_and_protocol_list"]
         )
+
+        return all_targets_with_a_specific_port_and_protocol_dict
+
+    def retrieve_all_masscan_targets_with_a_specific_port_and_protocol_from_scan_id(
+        self, scan_id, port, protocol="tcp"
+    ):
+        """Retrieves all the targets with a specified open port and protocol given a scan ID.  Only supports masscan
+        .json files."""
+
+        all_targets_with_a_specific_port_and_protocol_dict = {
+            "scan_id": scan_id,
+            "port": port,
+            "protocol": protocol,
+            "all_targets_with_a_specific_port_and_protocol_list": [],
+            "all_targets_with_a_specific_port_and_protocol_csv": "",
+            "all_targets_with_a_specific_port_and_protocol_spaced": "",
+        }
+
+        scan_results_json = self.retrieve_scan_results(scan_id, "json")
+        masscan_dict = self.generate_masscan_dict_from_masscan_result(scan_results_json)
+
+        all_targets_with_a_specific_port_and_protocol_dict = self.retrieve_all_masscan_targets_with_a_specific_port_and_protocol(
+            masscan_dict, port, protocol
+        )
+
+        # Add scan ID to returned dictionary.
+        all_targets_with_a_specific_port_and_protocol_dict["scan_id"] = scan_id
 
         return all_targets_with_a_specific_port_and_protocol_dict
 
