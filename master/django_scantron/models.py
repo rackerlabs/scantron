@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User  # noqa
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, RegexValidator
+from django.core.validators import RegexValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -94,8 +94,8 @@ class Site(models.Model):
         max_length=1_048_576,  # 2^20 = 1048576
         validators=[
             RegexValidator(
-                regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
-                message="Targets can only contain alphanumeric characters, /, ., :, and spaces",
+                regex="^[a-zA-Z0-9/\.\:\- ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
+                message="Targets can only contain alphanumeric characters, /, ., :, -, and spaces",
             )
         ],
         verbose_name="Targets",
@@ -106,8 +106,8 @@ class Site(models.Model):
         max_length=1_048_576,  # 2^20 = 1048576
         validators=[
             RegexValidator(
-                regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
-                message="Excluded targets can only contain alphanumeric characters, /, ., :, and spaces",
+                regex="^[a-zA-Z0-9/\.\:\- ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
+                message="Excluded targets can only contain alphanumeric characters, /, ., :, -, and spaces",
             )
         ],
         verbose_name="Excluded targets",
