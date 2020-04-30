@@ -44,10 +44,14 @@ class ScantronClient:
         # logging.getLogger("requests").setLevel(print)
         # logging.getLogger("urllib3").setLevel(print)
 
+        # Extract User-Agent, default to "scantron-api-client-v(version)".
+        self.user_agent = kwargs.get("user_agent", f"scantron-api-client-v{__version__}")
+
         self.headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
             "Authorization": f"Token {self.token}",
+            "User-Agent": self.user_agent,
         }
 
         # Extract timeout, default to 30 seconds.
@@ -70,18 +74,12 @@ class ScantronClient:
         # Set HTTP headers.
         headers = kwargs.get("headers", {})
 
-        default_headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": f"Token {self.token}",
-        }
-
         if not isinstance(headers, dict):
             raise ValueError("headers keyword passed to scantron_api_query is not a valid dict object")
 
         # Merge dictionaries.
         # https://treyhunner.com/2016/02/how-to-merge-dictionaries-in-python/
-        headers = {**default_headers, **headers}
+        headers = {**self.headers, **headers}
 
         # Extract HTTP verb, defaults to GET.
         method = kwargs.get("method", "GET")
