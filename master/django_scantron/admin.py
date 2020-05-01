@@ -47,7 +47,7 @@ class SiteAdmin(admin.ModelAdmin):
         "scan_command",
         "scan_agent",
         "email_scan_alerts",
-        "email_alert_address",
+        "email_alert_addresses",
     )
 
 

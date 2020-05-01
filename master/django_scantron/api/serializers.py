@@ -9,6 +9,7 @@ from django_scantron.models import (
 )
 
 import extract_targets
+import email_validation_utils
 
 # Serializers define the API representations.
 
@@ -64,13 +65,22 @@ class SiteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(f"Invalid excluded targets provided: {invalid_targets}")
 
         # Email scan alerts and email address.
-        if ("email_scan_alerts" in attrs) and ("email_alert_address" in attrs):
+        if ("email_scan_alerts" in attrs) and ("email_alert_addresses" in attrs):
 
             email_scan_alerts = attrs["email_scan_alerts"]
-            email_alert_address = attrs["email_alert_address"]
+            email_alert_addresses = attrs["email_alert_addresses"]
 
-            if email_scan_alerts and not email_alert_address:
+            if email_scan_alerts and not email_alert_addresses:
                 raise serializers.ValidationError(f"Provide an email address if enabling 'Email scan alerts'")
+
+        # Check for valid email addresseses string.
+        if "email_alert_addresses" in attrs:
+            """Checks that email addresses are valid and returns a cleaned up string of them to save to the database."""
+
+            email_alert_addresses = attrs["email_alert_addresses"]
+            attrs["email_alert_addresses"] = email_validation_utils.validate_string_of_email_addresses(
+                email_alert_addresses
+            )
 
         return attrs
 
@@ -85,7 +95,7 @@ class SiteSerializer(serializers.ModelSerializer):
             "scan_command",
             "scan_agent",
             "email_scan_alerts",
-            "email_alert_address",
+            "email_alert_addresses",
         )
 
 
