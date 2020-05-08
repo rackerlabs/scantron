@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "1.32"
+__version__ = "1.33"
 
 
 class ScantronClient:
@@ -421,6 +421,7 @@ class ScantronClient:
                 masscan_dict[result["ip"]] = {
                     "tcp": set(),
                     "udp": set(),
+                    "icmp": set(),
                 }
 
             for port in result["ports"]:
@@ -429,11 +430,14 @@ class ScantronClient:
                         masscan_dict[result["ip"]]["tcp"].add(port["port"])
                     elif port["proto"] == "udp":
                         masscan_dict[result["ip"]]["udp"].add(port["port"])
+                    elif port["proto"] == "icmp":
+                        masscan_dict[result["ip"]]["icmp"].add(port["port"])
 
         # Convert sets to lists.
         for key, value in masscan_dict.items():
             masscan_dict[key]["tcp"] = list(sorted(value["tcp"]))
             masscan_dict[key]["udp"] = list(sorted(value["udp"]))
+            masscan_dict[key]["icmp"] = list(sorted(value["icmp"]))
 
         return masscan_dict
 
