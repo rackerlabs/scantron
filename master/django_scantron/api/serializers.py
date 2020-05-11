@@ -110,6 +110,7 @@ class ScanSerializer(serializers.ModelSerializer):
             "id",
             "site",
             "scan_name",
+            "enable_scan",
             "start_time",
             "recurrences",
         )
