@@ -62,7 +62,7 @@ def process_scan_status_change(scheduled_scan_dict):
 
         master_fqdn = settings.MASTER_FQDN
         from_address = settings.EMAIL_HOST_USER
-        to_addresses = site.email_alert_address.split(",")
+        to_addresses = site.email_alert_addresses.split(",")
         subject = f"Scantron scan {scan_status.upper()}: {site.site_name}"
 
         if scan_status == "completed":

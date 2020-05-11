@@ -25,8 +25,8 @@ def check_email_address_validity(email_address):
 
 
 def validate_string_of_email_addresses(string_of_email_addresses):
-    """Given a string of comma deliminited strings, determine if they are all valid email addresses.  Returns a cleaned
-    up version of string_of_email_addresses to be saved in the database.  Splits on commas because that is what
+    """Given a comma deliminited string of email addresses, determine if they are all valid.  Returns a cleaned up
+    version of string_of_email_addresses to be saved in the database.  Splits on commas because that is what
     master.utility.process_scan_status_change() does when sending email alerts."""
 
     # Remove any extra whitespaces, trailing commas, new lines, etc.
