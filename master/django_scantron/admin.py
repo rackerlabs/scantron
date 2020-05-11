@@ -32,7 +32,7 @@ class ScanCommandAdmin(admin.ModelAdmin):
 
 class ScanAdmin(admin.ModelAdmin):
 
-    list_display = ("id", "site", "scan_name", "start_time", "recurrences")
+    list_display = ("id", "site", "scan_name", "enable_scan", "start_time", "recurrences")
 
     exclude = ("completed_time", "result_file_base_name")
 

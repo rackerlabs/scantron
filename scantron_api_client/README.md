@@ -111,6 +111,7 @@ At a minimum, you need to include `RDATE:`.
 payload = {
     "site": 1,
     "scan_name": "DMZ Scan",
+    "enable_scan": True,
     "start_time": "16:00:00",
     "recurrences": "RRULE:FREQ=WEEKLY;BYDAY=MO\nRDATE:20200113T060000Z",
 }

@@ -42,10 +42,12 @@ def main():
 
     # Only filter on scans that should start at this time based off hour and minute, ignoring seconds.
     # If minute is the time resolution, this script (wrapped with scan_scheduler.sh) must be executed every minute
-    # through cron.  We can't filter on occurrences using Django's filter() method; it will have to be checked using
-    # logic below.
-    scans = django_connector.Scan.objects.filter(start_time__hour=now_time_hour).filter(
-        start_time__minute=now_time_minute
+    # through cron.  Also filter on scans that are enabled.  We can't filter on occurrences using Django's filter()
+    # method; it will have to be checked using logic below.
+    scans = (
+        django_connector.Scan.objects.filter(start_time__hour=now_time_hour)
+        .filter(start_time__minute=now_time_minute)
+        .filter(enable_scan=True)
     )
 
     if not scans:
