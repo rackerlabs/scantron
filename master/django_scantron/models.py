@@ -10,6 +10,7 @@ from recurrence.fields import RecurrenceField
 from rest_framework.authtoken.models import Token
 
 import extract_targets
+import email_validation_utils
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -115,7 +116,9 @@ class Site(models.Model):
     scan_command = models.ForeignKey(ScanCommand, on_delete=models.CASCADE, verbose_name="Scan binary and name")
     scan_agent = models.ForeignKey(Agent, on_delete=models.CASCADE, verbose_name="Scan Agent")
     email_scan_alerts = models.BooleanField(verbose_name="Email scan alerts?")
-    email_alert_address = models.EmailField(max_length=254, blank=True, verbose_name="Email alert address")
+    email_alert_addresses = models.CharField(
+        unique=False, blank=True, max_length=4096, verbose_name="Email alert addresses, comma separated"
+    )
 
     def clean(self):
         """Checks for any invalid IPs, IP subnets, or FQDNs in the targets and excluded_targets fields."""
@@ -145,8 +148,15 @@ class Site(models.Model):
         self.excluded_targets = targets_dict["as_nmap"]
 
         # Email scan alerts and email addresses.
-        if self.email_scan_alerts and not self.email_alert_address:
+        if self.email_scan_alerts and not self.email_alert_addresses:
             raise ValidationError(f"Provide an email address if enabling 'Email scan alerts'")
+
+        # Check for valid email addresseses string.
+        if self.email_alert_addresses:
+            """Checks that email addresses are valid and returns a cleaned up string of them to save to the database."""
+            self.email_alert_addresses = email_validation_utils.validate_string_of_email_addresses(
+                self.email_alert_addresses
+            )
 
     def __str__(self):
         return str(self.site_name)

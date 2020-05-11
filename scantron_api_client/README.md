@@ -91,8 +91,7 @@ payload = {
   "scan_command": 1,
   "scan_agent": 1,
   "email_scan_alerts": True,
-  "email_alert_address": "admin@example.com",
-
+  "email_alert_addresses": "alice@example.com,bob@example.com",
 }
 
 response = sc.create_site(payload)
