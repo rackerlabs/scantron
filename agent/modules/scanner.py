@@ -71,7 +71,7 @@ def scan_site(scan_job_dict):
 
         if scan_binary == "masscan":
             # Output format.
-            # xml_file = os.path.join(pending_files_dir, "{}.xml".format(result_file_base_name))
+            # xml_file = os.path.join(pending_files_dir, f"{result_file_base_name}.xml")
             json_file = os.path.join(pending_files_dir, f"{result_file_base_name}.json")
 
             # Check if the paused.conf file already exists and resume scan.
@@ -146,11 +146,24 @@ def scan_site(scan_job_dict):
         else:
             logger.ROOT_LOGGER.error(f"Invalid scan binary specified: {scan_binary}")
 
-        # Start the scan.
-        logger.ROOT_LOGGER.info(f"Starting scan for site '{site_name}' with command: {command}")
-
         # Start nmap scan.
         process = subprocess.Popen(command.split())
+
+        # Extract PID.
+        scan_binary_process_id = process.pid
+
+        # Start the scan.
+        logger.ROOT_LOGGER.info(
+            f"Starting scan for site '{site_name}', with process ID {scan_binary_process_id}, and command: {command}"
+        )
+
+        # Update Master with the process ID.
+        update_info = {
+            "scan_status": "started",
+            "scan_binary_process_id": scan_binary_process_id,
+        }
+        api.update_scan_information(config_data, scan_job, update_info)
+
         process.wait()
 
         # nmap process completed successfully.

@@ -66,6 +66,7 @@ class ScheduledScanAdmin(admin.ModelAdmin):
         "scan_status",
         "completed_time",
         "result_file_base_name",
+        "scan_binary_process_id",
     )
 
     exclude = ("completed_time", "result_file_base_name")

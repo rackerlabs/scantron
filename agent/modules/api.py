@@ -25,7 +25,7 @@ def check_for_scan_jobs(config_data):
     api_token = config_data["api_token"]
 
     url = f"{master_address}:{master_port}/api/scheduled_scans"
-    logger.ROOT_LOGGER.info("check_for_scans URL: {}".format(url))
+    logger.ROOT_LOGGER.info(f"check_for_scans URL: {url}")
 
     # Update User-Agent and add API token.
     # fmt:off
@@ -86,5 +86,5 @@ def update_scan_information(config_data, scan_job, update_info):
         logger.ROOT_LOGGER.error(
             f"Could not access {url} or failed to update scan ID {scan_job_id}. HTTP status code: {response.status_code}"
         )
-        logger.ROOT_LOGGER.error(f"Response content: {response.content}".format())
+        logger.ROOT_LOGGER.error(f"Response content: {response.content}")
         return None

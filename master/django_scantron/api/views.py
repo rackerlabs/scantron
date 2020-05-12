@@ -187,7 +187,7 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
         elif http_method == "GET":
             queryset = (
                 ScheduledScan.objects.filter(scan_agent=user)
-                .filter(scan_status="pending")
+                .filter(scan_status__in=["cancelled", "pending"])
                 .filter(start_datetime__lt=now_datetime)
             )
 

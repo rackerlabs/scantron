@@ -101,13 +101,6 @@ class Agent:
                         # Place scan_job_dict on queue.
                         self.queue.put(scan_job_dict)
 
-                        # Allow the jobs to execute before changing status.
-                        time.sleep(5)
-
-                        # Update scan_status from "pending" to "started".
-                        update_info = {"scan_status": "started"}
-                        modules.api.update_scan_information(self.config_data, scan_job, update_info)
-
                     self.queue.join()
 
                 else:
