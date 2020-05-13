@@ -100,7 +100,6 @@ def check_for_scan_jobs():
 
     except Exception as e:
         ROOT_LOGGER.error(f"check_for_scan_jobs() function exception: {e}")
-        ROOT_LOGGER.error(f"Response content: {response_data}")
 
 
 def update_scan_information(scan_job, update_info):
