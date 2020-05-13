@@ -2,7 +2,7 @@
 """The goals of agent.py are to:
 
 1) Utilize native Python libraries and not depend on third party or custom libraries
-2) Be a single file so it can be moved, downloaded, or transferred between systems easily
+2) Be a single file so it can be easily moved, downloaded, or transferred between systems
 """
 
 # Standard Python libraries.
