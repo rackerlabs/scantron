@@ -24,13 +24,10 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 # Custom Python libraries.
 # The goal of agent.py is to utilize native Python libraries and not depend on third party or custom packages.
 
-# Logging support and functions.
-################################
 ROOT_LOGGER = logging.getLogger("scantron")
 
 # ISO8601 datetime format by default.
 LOG_FORMATTER = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)s] %(message)s")
-
 
 # Track scan process IDs and subprocess.Popen() objects.
 SCAN_PROCESS_DICT = {}
@@ -41,14 +38,6 @@ def get_current_time():
 
     now_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return now_datetime
-
-
-def log_timestamp():
-    """Return a timestamp formatted for logs."""
-
-    now = time.localtime()
-    timestamp = time.strftime("%Y%m%d_%H%M%S", now)
-    return timestamp
 
 
 def check_for_scan_jobs(config_data):
