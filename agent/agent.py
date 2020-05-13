@@ -1,5 +1,9 @@
 #!/usr/bin/env python
-"""The goal of agent.py is to utilize native Python libraries and not depend on third party or custom libraries."""
+"""The goals of agent.py are to:
+
+1) Utilize native Python libraries and not depend on third party or custom libraries
+2) Be a single file so it can be moved, downloaded, or transferred between systems easily
+"""
 
 # Standard Python libraries.
 import argparse
