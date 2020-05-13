@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+"""The goal of agent.py is to utilize native Python libraries and not depend on third party or custom libraries."""
+
 # Standard Python libraries.
 import argparse
 import datetime
@@ -14,12 +16,6 @@ import sys
 import threading
 import time
 import urllib.request
-
-# Third party Python libraries.
-# The goal of agent.py is to utilize native Python libraries and not depend on third party or custom packages.
-
-# Custom Python libraries.
-# The goal of agent.py is to utilize native Python libraries and not depend on third party or custom packages.
 
 # Disable SSL/TLS verification.
 # https://stackoverflow.com/questions/36600583/python-3-urllib-ignore-ssl-certificate-verification#comment96281490_36601223
@@ -41,6 +37,31 @@ def get_current_time():
     return now_datetime
 
 
+def build_masscan_command(scan_command, target_file, excluded_target_file, json_file, http_useragent):
+    """Builds the masscan command."""
+
+    # Can only have 1 file output type.
+    file_options = f"-iL {target_file} -oJ {json_file} --http-user-agent {http_useragent}"
+
+    if excluded_target_file:
+        file_options += f" --excludefile {excluded_target_file}"
+
+    # scan_command is used for both nmap and masscan commands.
+    masscan_command = f"masscan {scan_command} {file_options}"
+
+    return masscan_command
+
+
+def move_wildcard_files(wildcard_filename, source_directory, destination_directory):
+    """Move files with supported fnmatch patterns (* and ?)."""
+
+    file_list = os.listdir(source_directory)
+
+    for file_name in file_list:
+        if fnmatch.fnmatch(file_name, wildcard_filename):
+            shutil.move(os.path.join(source_directory, file_name), os.path.join(destination_directory, file_name))
+
+
 def check_for_scan_jobs():
     """Check for new scans through the API."""
 
@@ -54,12 +75,10 @@ def check_for_scan_jobs():
     ROOT_LOGGER.info(f"check_for_scans URL: {url}")
 
     # Update User-Agent and add API token.
-    # fmt:off
     headers = {
         "user-agent": scan_agent,
         "Authorization": f"Token {api_token}",
     }
-    # fmt:on
 
     try:
         # Make the HTTP GET request.
@@ -129,31 +148,6 @@ def update_scan_information(scan_job, update_info):
     return update_scan_information_success
 
 
-def build_masscan_command(scan_command, target_file, excluded_target_file, json_file, http_useragent):
-    """Builds the masscan command."""
-
-    # Can only have 1 file output type.
-    file_options = f"-iL {target_file} -oJ {json_file} --http-user-agent {http_useragent}"
-
-    if excluded_target_file:
-        file_options += f" --excludefile {excluded_target_file}"
-
-    # scan_command is used for both nmap and masscan commands.
-    masscan_command = f"masscan {scan_command} {file_options}"
-
-    return masscan_command
-
-
-def move_wildcard_files(wildcard_filename, source_directory, destination_directory):
-    """Move files with supported fnmatch patterns (* and ?)."""
-
-    file_list = os.listdir(source_directory)
-
-    for file_name in file_list:
-        if fnmatch.fnmatch(file_name, wildcard_filename):
-            shutil.move(os.path.join(source_directory, file_name), os.path.join(destination_directory, file_name))
-
-
 def scan_site(scan_job_dict):
     """Start a scan."""
 
@@ -207,7 +201,7 @@ def scan_site(scan_job_dict):
                             f"Issue killing process ID {scan_binary_process_id}.  stderr: {stderr}.  stdout: {stdout}"
                         )
 
-                    # Remove the killed process ID from the process dictionary.
+                    # Remove the killed process ID from the scan process dictionary.
                     SCAN_PROCESS_DICT.pop(scan_binary_process_id)
 
                     if scan_status == "cancel":
@@ -363,7 +357,7 @@ def scan_site(scan_job_dict):
 
             update_scan_information(scan_job, update_info)
 
-            # Remove the completed process ID from the process dictionary.
+            # Remove the completed process ID from the scan process dictionary.
             SCAN_PROCESS_DICT.pop(scan_binary_process_id)
 
     except Exception as e:
