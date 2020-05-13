@@ -3,7 +3,6 @@
 import argparse
 import datetime
 import fnmatch
-import http.client
 import json
 import logging
 import os
@@ -14,13 +13,17 @@ import subprocess
 import sys
 import threading
 import time
-
+import urllib.request
 
 # Third party Python libraries.
 # The goal of agent.py is to utilize native Python libraries and not depend on third party or custom packages.
 
 # Custom Python libraries.
 # The goal of agent.py is to utilize native Python libraries and not depend on third party or custom packages.
+
+# Disable SSL/TLS verification.
+# https://stackoverflow.com/questions/36600583/python-3-urllib-ignore-ssl-certificate-verification#comment96281490_36601223
+ssl._create_default_https_context = ssl._create_unverified_context
 
 ROOT_LOGGER = logging.getLogger("scantron")
 
@@ -47,7 +50,7 @@ def check_for_scan_jobs():
     scan_agent = agent.config_data["scan_agent"]
     api_token = agent.config_data["api_token"]
 
-    url = f"https://{master_address}:{master_port}/api/scheduled_scans"
+    url = f"{master_address}:{master_port}/api/scheduled_scans"
     ROOT_LOGGER.info(f"check_for_scans URL: {url}")
 
     # Update User-Agent and add API token.
@@ -60,10 +63,10 @@ def check_for_scan_jobs():
 
     try:
         # Make the HTTP GET request.
-        agent.connection.request("GET", "/api/scheduled_scans", headers=headers)
+        request = urllib.request.Request(method="GET", url=url, headers=headers)
+        response = urllib.request.urlopen(request)
 
-        response = agent.connection.getresponse()
-        response_code = response.code
+        response_code = response.status
         response_data = response.read().decode("utf-8")
 
         # Return response as JSON if request is successful.
@@ -72,15 +75,13 @@ def check_for_scan_jobs():
             return json_data
 
         else:
-            ROOT_LOGGER.error(
-                f"Could not access https://{master_address}:{master_port}. HTTP status code: {response_code}"
-            )
-            ROOT_LOGGER.error(f"Response content: {response.read()}")
+            ROOT_LOGGER.error(f"Could not access {master_address}:{master_port}. HTTP status code: {response_code}")
+            ROOT_LOGGER.error(f"Response content: {response_data}")
             return None
 
     except Exception as e:
         ROOT_LOGGER.error(f"check_for_scan_jobs() function exception: {e}")
-        ROOT_LOGGER.error(f"Response content: {response.read()}")
+        ROOT_LOGGER.error(f"Response content: {response_data}")
 
 
 def update_scan_information(scan_job, update_info):
@@ -93,25 +94,24 @@ def update_scan_information(scan_job, update_info):
     scan_job_id = scan_job["id"]
 
     # Build URL to update scan job.
-    url = f"https://{master_address}:{master_port}/api/scheduled_scans/{scan_job_id}"
+    url = f"{master_address}:{master_port}/api/scheduled_scans/{scan_job_id}"
     ROOT_LOGGER.info(f"update_scan_information URL: {url}")
 
     # Update the User-Agent, API token, and Content-Type.
-    # fmt:off
     headers = {
         "user-agent": scan_agent,
         "Authorization": f"Token {api_token}",
         "Content-Type": "application/json",
     }
-    # fmt:on
+
+    # Convert dictionary to a string, then encode to bytes.
+    data = json.dumps(update_info).encode("utf-8")
 
     # Make the HTTP PATCH request.
-    agent.connection.request(
-        "PATCH", f"/api/scheduled_scans/{scan_job_id}", body=json.dumps(update_info), headers=headers
-    )
+    request = urllib.request.Request(method="PATCH", url=url, data=data, headers=headers)
+    response = urllib.request.urlopen(request)
 
-    response = agent.connection.getresponse()
-    response_code = response.code
+    response_code = response.status
     response_data = response.read().decode("utf-8")
 
     if response_code == 200:
@@ -120,7 +120,7 @@ def update_scan_information(scan_job, update_info):
 
     else:
         ROOT_LOGGER.error(
-            f"Could not access https://{master_address}:{master_port} or failed to update scan ID {scan_job_id}. "
+            f"Could not access {master_address}:{master_port} or failed to update scan ID {scan_job_id}. "
             f"HTTP status code: {response_code}"
         )
         ROOT_LOGGER.error(f"Response content: {response_data}")
@@ -409,9 +409,6 @@ class Agent:
         # Create queue.
         self.queue = queue.Queue()
 
-        # Create an http.client connection object.
-        self.connection = self.create_connection_object(self.config_data)
-
     def load_config(self, config_file):
         """Load the agent_config.json file and return a JSON object."""
 
@@ -423,19 +420,6 @@ class Agent:
         else:
             ROOT_LOGGER.error(f"'{config_file}' does not exist or contains no data.")
             sys.exit(0)
-
-    def create_connection_object(self, config_data):
-        """Create an http.client connection object."""
-
-        master_address = config_data["master_address"]
-        master_port = config_data["master_port"]
-
-        context = ssl.create_default_context()
-        context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
-        connection = http.client.HTTPSConnection(master_address, port=master_port, timeout=15, context=context)
-
-        return connection
 
     def go(self):
         """Start the scan agent."""
