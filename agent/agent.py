@@ -3,11 +3,13 @@
 import argparse
 import datetime
 import fnmatch
+import http.client
 import json
 import logging
 import os
 import queue
 import shutil
+import ssl
 import subprocess
 import sys
 import threading
@@ -16,10 +18,6 @@ import time
 
 # Third party Python libraries.
 # The goal of agent.py is to utilize native Python libraries and not depend on third party or custom packages.
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 # Custom Python libraries.
 # The goal of agent.py is to utilize native Python libraries and not depend on third party or custom packages.
@@ -40,52 +38,62 @@ def get_current_time():
     return now_datetime
 
 
-def check_for_scan_jobs(config_data):
+def check_for_scan_jobs():
     """Check for new scans through the API."""
 
     # Build URL to pull new scan jobs.  Server determines jobs based off agent (user) making request.
-    master_address = config_data["master_address"]
-    master_port = config_data["master_port"]
-    api_token = config_data["api_token"]
+    master_address = agent.config_data["master_address"]
+    master_port = agent.config_data["master_port"]
+    scan_agent = agent.config_data["scan_agent"]
+    api_token = agent.config_data["api_token"]
 
-    url = f"{master_address}:{master_port}/api/scheduled_scans"
+    url = f"https://{master_address}:{master_port}/api/scheduled_scans"
     ROOT_LOGGER.info(f"check_for_scans URL: {url}")
 
     # Update User-Agent and add API token.
     # fmt:off
     headers = {
-        "user-agent": config_data["scan_agent"],
+        "user-agent": scan_agent,
         "Authorization": f"Token {api_token}",
     }
     # fmt:on
 
     try:
         # Make the HTTP GET request.
-        response = requests.get(url, headers=headers, verify=False, timeout=15)
+        agent.connection.request("GET", "/api/scheduled_scans", headers=headers)
+
+        response = agent.connection.getresponse()
+        response_code = response.code
+        response_data = response.read().decode("utf-8")
 
         # Return response as JSON if request is successful.
-        if response.status_code == 200:
-            return response.json()
+        if response_code == 200:
+            json_data = json.loads(response_data)
+            return json_data
 
         else:
-            ROOT_LOGGER.error(f"Could not access {url}. HTTP status code: {response.status_code}")
+            ROOT_LOGGER.error(
+                f"Could not access https://{master_address}:{master_port}. HTTP status code: {response_code}"
+            )
+            ROOT_LOGGER.error(f"Response content: {response.read()}")
             return None
 
     except Exception as e:
-        ROOT_LOGGER.error(f"check_for_scan_jobs function exception: {e}")
+        ROOT_LOGGER.error(f"check_for_scan_jobs() function exception: {e}")
+        ROOT_LOGGER.error(f"Response content: {response.read()}")
 
 
-def update_scan_information(config_data, scan_job, update_info):
+def update_scan_information(scan_job, update_info):
     """Update scan information using a PATCH API request."""
 
-    master_address = config_data["master_address"]
-    master_port = config_data["master_port"]
-    api_token = config_data["api_token"]
-    scan_agent = config_data["scan_agent"]
+    master_address = agent.config_data["master_address"]
+    master_port = agent.config_data["master_port"]
+    scan_agent = agent.config_data["scan_agent"]
+    api_token = agent.config_data["api_token"]
     scan_job_id = scan_job["id"]
 
     # Build URL to update scan job.
-    url = f"{master_address}:{master_port}/api/scheduled_scans/{scan_job_id}"
+    url = f"https://{master_address}:{master_port}/api/scheduled_scans/{scan_job_id}"
     ROOT_LOGGER.info(f"update_scan_information URL: {url}")
 
     # Update the User-Agent, API token, and Content-Type.
@@ -98,18 +106,27 @@ def update_scan_information(config_data, scan_job, update_info):
     # fmt:on
 
     # Make the HTTP PATCH request.
-    response = requests.patch(url, headers=headers, verify=False, timeout=15, json=update_info)
+    agent.connection.request(
+        "PATCH", f"/api/scheduled_scans/{scan_job_id}", body=json.dumps(update_info), headers=headers
+    )
 
-    if response.status_code == 200:
+    response = agent.connection.getresponse()
+    response_code = response.code
+    response_data = response.read().decode("utf-8")
+
+    if response_code == 200:
         ROOT_LOGGER.info(f"Successfully updated scan information for scan ID {scan_job_id} with data {update_info}")
-        return None
+        update_scan_information_success = True
 
     else:
         ROOT_LOGGER.error(
-            f"Could not access {url} or failed to update scan ID {scan_job_id}. HTTP status code: {response.status_code}"
+            f"Could not access https://{master_address}:{master_port} or failed to update scan ID {scan_job_id}. "
+            f"HTTP status code: {response_code}"
         )
-        ROOT_LOGGER.error(f"Response content: {response.content}")
-        return None
+        ROOT_LOGGER.error(f"Response content: {response_data}")
+        update_scan_information_success = False
+
+    return update_scan_information_success
 
 
 def build_masscan_command(scan_command, target_file, excluded_target_file, json_file, http_useragent):
@@ -209,7 +226,7 @@ def scan_site(scan_job_dict):
             update_info = {
                 "scan_status": updated_scan_status,
             }
-            update_scan_information(config_data, scan_job, update_info)
+            update_scan_information(scan_job, update_info)
 
             return
 
@@ -326,7 +343,7 @@ def scan_site(scan_job_dict):
             "scan_status": "started",
             "scan_binary_process_id": scan_binary_process_id,
         }
-        update_scan_information(config_data, scan_job, update_info)
+        update_scan_information(scan_job, update_info)
 
         process.wait()
 
@@ -344,7 +361,7 @@ def scan_site(scan_job_dict):
                 "result_file_base_name": result_file_base_name,
             }
 
-            update_scan_information(config_data, scan_job, update_info)
+            update_scan_information(scan_job, update_info)
 
             # Remove the completed process ID from the process dictionary.
             SCAN_PROCESS_DICT.pop(scan_binary_process_id)
@@ -352,7 +369,7 @@ def scan_site(scan_job_dict):
     except Exception as e:
         ROOT_LOGGER.exception(f"Error with scan ID {scan_job_id}.  Exception: {e}")
         update_info = {"scan_status": "error"}
-        update_scan_information(config_data, scan_job, update_info)
+        update_scan_information(scan_job, update_info)
 
 
 class Worker(threading.Thread):
@@ -392,6 +409,9 @@ class Agent:
         # Create queue.
         self.queue = queue.Queue()
 
+        # Create an http.client connection object.
+        self.connection = self.create_connection_object(self.config_data)
+
     def load_config(self, config_file):
         """Load the agent_config.json file and return a JSON object."""
 
@@ -403,6 +423,19 @@ class Agent:
         else:
             ROOT_LOGGER.error(f"'{config_file}' does not exist or contains no data.")
             sys.exit(0)
+
+    def create_connection_object(self, config_data):
+        """Create an http.client connection object."""
+
+        master_address = config_data["master_address"]
+        master_port = config_data["master_port"]
+
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        connection = http.client.HTTPSConnection(master_address, port=master_port, timeout=15, context=context)
+
+        return connection
 
     def go(self):
         """Start the scan agent."""
@@ -425,7 +458,7 @@ class Agent:
                 ROOT_LOGGER.info(f"Current scan processes being tracked in SCAN_PROCESS_DICT: {SCAN_PROCESS_DICT}")
 
                 # Retrieve any new scan jobs from master through API.
-                scan_jobs = check_for_scan_jobs(self.config_data)
+                scan_jobs = check_for_scan_jobs()
 
                 if scan_jobs:
                     for scan_job in scan_jobs:
