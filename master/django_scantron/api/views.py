@@ -138,7 +138,7 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
             # Extract the json payload.
             body = self.request.data
 
-            if body["scan_status"] in ["started", "cancel", "cancelled", "completed", "error"]:
+            if body["scan_status"] in ["started", "pause", "paused", "cancel", "cancelled", "completed", "error"]:
 
                 # Filter only the applicable ScheduledScans for the agent.  Prevents an agent modifying another agent's
                 # ScheduledScan information.
@@ -187,7 +187,7 @@ class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
         elif http_method == "GET":
             queryset = (
                 ScheduledScan.objects.filter(scan_agent=user)
-                .filter(scan_status__in=["cancel", "pending"])
+                .filter(scan_status__in=["pending", "pause", "cancel"])
                 .filter(start_datetime__lt=now_datetime)
             )
 

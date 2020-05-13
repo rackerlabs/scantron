@@ -198,6 +198,8 @@ class ScheduledScan(models.Model):
     SCAN_STATUS_CHOICES = (
         ("pending", "Pending"),
         ("started", "Started"),
+        ("pause", "Pause"),
+        ("paused", "Paused"),
         ("cancel", "Cancel"),
         ("cancelled", "Cancelled"),
         ("completed", "Completed"),
