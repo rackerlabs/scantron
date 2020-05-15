@@ -14,6 +14,7 @@ import logging
 import os
 import queue
 import shutil
+import signal
 import ssl
 import subprocess
 import sys
@@ -22,7 +23,6 @@ import time
 import urllib.request
 
 # Disable SSL/TLS verification.
-# https://stackoverflow.com/questions/36600583/python-3-urllib-ignore-ssl-certificate-verification#comment96281490_36601223
 ssl._create_default_https_context = ssl._create_unverified_context
 
 ROOT_LOGGER = logging.getLogger("scantron")
@@ -151,15 +151,15 @@ def update_scan_information(scan_job, update_info):
     return update_scan_information_success
 
 
-def scan_site(scan_job_dict):
-    """Start a scan."""
+def scan_job_handler(scan_job_dict):
+    """Manages different scan functionality."""
 
     try:
         # Unpack the scan_job_dict dictionary.
         scan_job = scan_job_dict["scan_job"]
         config_data = scan_job_dict["config_data"]
 
-        # Assign variables.
+        # Assign variables from scan_job.
         scan_job_id = scan_job["id"]
         scan_status = scan_job["scan_status"]
         site_name = scan_job["site_name"]
@@ -167,15 +167,21 @@ def scan_site(scan_job_dict):
         scan_command = scan_job["scan_command"]
         result_file_base_name = scan_job["result_file_base_name"]
 
+        # Assign variables from config_data.
+        supported_scan_binaries = config_data["supported_scan_binaries"]
         http_useragent = config_data["http_useragent"]
         scan_results_dir = config_data["scan_results_dir"]
         target_files_dir = config_data["target_files_dir"]
         target_file = os.path.join(target_files_dir, f"{result_file_base_name}.targets")
 
-        # Setup folder structure.
+        # Setup folder directories.
         pending_files_dir = os.path.join(scan_results_dir, "pending")
         completed_files_dir = os.path.join(scan_results_dir, "complete")
         cancelled_files_dir = os.path.join(scan_results_dir, "cancelled")
+
+        if scan_binary not in supported_scan_binaries:
+            ROOT_LOGGER.error(f"Invalid scan binary specified: {scan_binary}")
+            return
 
         # A request to pause or cancel a scan has been detected.
         if scan_status in ["pause", "cancel"]:
@@ -187,11 +193,36 @@ def scan_site(scan_job_dict):
 
             try:
                 # Extract the subprocess.Popen() object based off the scan_binary_process_id key.
-                process = SCAN_PROCESS_DICT[scan_binary_process_id]
+                process = SCAN_PROCESS_DICT[scan_binary_process_id]["popen_object"]
 
                 # Ensure the scan binary name is one of the supported scan binaries.
-                if process.args[0] in config_data["supported_scan_binaries"]:
-                    process.kill()
+                scan_binary = process.args[0]
+
+                if scan_binary in supported_scan_binaries:
+
+                    if scan_binary == "masscan" and scan_status == "pause":
+
+                        # Update SCAN_PROCESS_DICT[scan_binary_process_id]["scan_status"] to be "paused", so in the
+                        # other thread when the process.wait() realizes it's received a ctrl-c, it will check
+                        # scan_status and ensure it's only in the state "started".  Even though the process receives a
+                        # ctrl-c, the process.returncode == 0 is not enough.
+                        SCAN_PROCESS_DICT[scan_binary_process_id]["scan_status"] = "paused"
+
+                        # Simulates ctrl-c key combination to generate the paused.conf file.
+                        process.send_signal(signal.SIGINT)
+
+                        # "By default, masscan waits 10 seconds for any responses to come back after a scan is complete."
+                        # https://blog.erratasec.com/2018/06/smb-version-detection-in-masscan.html
+                        # TODO add logic to pull out --wait value?
+                        ROOT_LOGGER.info(
+                            "ctrl-c sent to the masscan process, sleeping 15 seconds to create the paused.conf file."
+                        )
+                        time.sleep(15)
+                        ROOT_LOGGER.info("Done sleeping 15 seconds.")
+
+                    else:
+                        process.kill()
+
                     stdout, stderr = process.communicate()
 
                     if not stdout and not stderr:
@@ -201,7 +232,8 @@ def scan_site(scan_job_dict):
 
                     else:
                         ROOT_LOGGER.error(
-                            f"Issue killing process ID {scan_binary_process_id}.  stderr: {stderr}.  stdout: {stdout}"
+                            f"Issue killing process ID {scan_binary_process_id}.  "
+                            f"stderr: {stderr.decode()}.  stdout: {stdout.decode()}"
                         )
 
                     # Remove the killed process ID from the scan process dictionary.
@@ -216,157 +248,175 @@ def scan_site(scan_job_dict):
                     elif scan_status == "pause":
                         updated_scan_status = "paused"
 
+                    # Update Master with the updated scan status.
+                    update_info = {
+                        "scan_status": updated_scan_status,
+                    }
+                    update_scan_information(scan_job, update_info)
+
             except KeyError:
                 ROOT_LOGGER.error(f"Process ID {scan_binary_process_id} is not running.")
 
-            # Update Master with the updated scan status.
-            update_info = {
-                "scan_status": updated_scan_status,
-            }
-            update_scan_information(scan_job, update_info)
-
             return
 
-        # Write targets to a file.
-        # "Passing a huge list of hosts is often awkward on the command line...Each entry must be separated by one or
-        # more spaces, tabs, or newlines."
-        # https://nmap.org/book/man-target-specification.html
-        targets = scan_job["targets"]  # Extract string of targets.
+        elif scan_status == "pending":
+            # Write targets to a file.
+            # "Passing a huge list of hosts is often awkward on the command line...Each entry must be separated by one
+            # or more spaces, tabs, or newlines."
+            # https://nmap.org/book/man-target-specification.html
+            targets = scan_job["targets"]  # Extract string of targets.
 
-        with open(target_file, "w") as fh:
-            fh.write(f"{targets}")
+            with open(target_file, "w") as fh:
+                fh.write(f"{targets}")
 
-        # Write excluded targets to file if specified.
-        excluded_targets = scan_job["excluded_targets"]  # Extract string of targets.
-        excluded_target_file = None
+            # Write excluded targets to file if specified.
+            excluded_targets = scan_job["excluded_targets"]  # Extract string of targets.
+            excluded_target_file = None
 
-        if excluded_targets:
-            excluded_target_file = os.path.join(target_files_dir, f"{result_file_base_name}.excluded_targets")
-            with open(excluded_target_file, "w") as fh:
-                fh.write(f"{excluded_targets}")
+            if excluded_targets:
+                excluded_target_file = os.path.join(target_files_dir, f"{result_file_base_name}.excluded_targets")
+                with open(excluded_target_file, "w") as fh:
+                    fh.write(f"{excluded_targets}")
 
-        if scan_binary == "masscan":
-            # Output format.
-            # xml_file = os.path.join(pending_files_dir, f"{result_file_base_name}.xml")
-            json_file = os.path.join(pending_files_dir, f"{result_file_base_name}.json")
+            if scan_binary == "masscan":
+                # Output format.
+                # xml_file = os.path.join(pending_files_dir, f"{result_file_base_name}.xml")
+                json_file = os.path.join(pending_files_dir, f"{result_file_base_name}.json")
 
-            # Check if the paused.conf file already exists and resume scan.
-            # Only 1 paused.conf file exists, and can be overwritten with a different scan.
-            if os.path.isfile("paused.conf"):
-                with open("paused.conf", "r") as fh:
-                    paused_file = fh.read()
+                # Check if the paused.conf file already exists and resume scan.
+                # Only 1 paused.conf file exists, and can be overwritten with a different scan.
+                if os.path.isfile("paused.conf"):
+                    with open("paused.conf", "r") as fh:
+                        paused_file = fh.read()
 
-                    # Move back to the beginning of the file.
-                    fh.seek(0, 0)
+                        # Move back to the beginning of the file.
+                        fh.seek(0, 0)
 
-                    paused_file_lines = fh.readlines()
+                        paused_file_lines = fh.readlines()
 
-                ROOT_LOGGER.info(f"Previous paused.conf scan file found: {paused_file}")
+                    ROOT_LOGGER.info(f"Previous paused.conf scan file found: {paused_file}")
 
-                # Need to check if output-filename is the same as json_file.
-                paused_file_output_filename = None
-                for line in paused_file_lines:
-                    if line.startswith("output-filename"):
-                        paused_file_output_filename = line.split(" = ")[1].strip()
+                    # Need to check if output-filename is the same as json_file.
+                    paused_file_output_filename = None
+                    for line in paused_file_lines:
+                        if line.startswith("output-filename"):
+                            paused_file_output_filename = line.split(" = ")[1].strip()
 
-                ROOT_LOGGER.info("Checking if the output-filename is the same.")
+                    ROOT_LOGGER.info("Checking if the output-filename is the same.")
 
-                if paused_file_output_filename == json_file:
-                    ROOT_LOGGER.info(
-                        f"paused.conf file's output-filename '{paused_file_output_filename}' matches this scan request "
-                        f"output filename '{json_file}'"
-                    )
-                    command = "masscan --resume paused.conf"
+                    if paused_file_output_filename == json_file:
+                        ROOT_LOGGER.info(
+                            f"paused.conf file's output-filename '{paused_file_output_filename}' matches this scan "
+                            f"request output filename '{json_file}'"
+                        )
+                        command = "masscan --resume paused.conf"
 
+                    else:
+                        ROOT_LOGGER.info(
+                            f"paused.conf file's output-filename '{paused_file_output_filename}' does not match this "
+                            f" scan request output filename '{json_file}'.  Starting a new masscan scan."
+                        )
+
+                        # Build the masscan command.
+                        command = build_masscan_command(
+                            scan_command, target_file, excluded_target_file, json_file, http_useragent
+                        )
+
+                # New scan.
                 else:
-                    ROOT_LOGGER.info(
-                        f"paused.conf file's output-filename '{paused_file_output_filename}' does not match this scan "
-                        f"request output filename '{json_file}'.  Starting a new masscan scan."
-                    )
-
                     # Build the masscan command.
                     command = build_masscan_command(
                         scan_command, target_file, excluded_target_file, json_file, http_useragent
                     )
 
-            # New scan.
+            elif scan_binary == "nmap":
+
+                # Check if the gnmap file already exists and resume scan.
+                gnmap_file = os.path.join(pending_files_dir, f"{result_file_base_name}.gnmap")
+
+                # Ensure the .gnmap file exists and it is greater than 0 bytes before using it.
+                if os.path.isfile(gnmap_file) and (os.path.getsize(gnmap_file) > 0):
+                    ROOT_LOGGER.info(f"Previous scan file found '{gnmap_file}'.  Resuming the scan.")
+                    command = f"nmap --resume {gnmap_file}"
+
+                # New scan.
+                else:
+                    # Build the nmap command.
+                    nmap_results = os.path.join(pending_files_dir, result_file_base_name)
+
+                    file_options = (
+                        f"-iL {target_file} -oA {nmap_results} --script-args http.useragent='{http_useragent}'"
+                    )
+                    if excluded_target_file:
+                        file_options += f" --excludefile {excluded_target_file}"
+
+                    command = f"nmap {scan_command} {file_options}"
+
+            # Placeholder if other scan binaries are added.
             else:
-                # Build the masscan command.
-                command = build_masscan_command(
-                    scan_command, target_file, excluded_target_file, json_file, http_useragent
-                )
+                return
 
-        elif scan_binary == "nmap":
+            # Spawn a new process for the scan.
+            process = subprocess.Popen(command.split())
 
-            # Check if the gnmap file already exists and resume scan.
-            gnmap_file = os.path.join(pending_files_dir, f"{result_file_base_name}.gnmap")
+            # Extract PID.
+            scan_binary_process_id = process.pid
 
-            # Ensure the .gnmap file exists and it is greater than 0 bytes before using it.
-            if os.path.isfile(gnmap_file) and (os.path.getsize(gnmap_file) > 0):
-                ROOT_LOGGER.info(f"Previous scan file found '{gnmap_file}'.  Resuming the scan.")
-                command = f"nmap --resume {gnmap_file}"
-
-            # New scan.
-            else:
-                # Build the nmap command.
-                nmap_results = os.path.join(pending_files_dir, result_file_base_name)
-
-                file_options = f"-iL {target_file} -oA {nmap_results} --script-args http.useragent='{http_useragent}'"
-                if excluded_target_file:
-                    file_options += f" --excludefile {excluded_target_file}"
-
-                command = f"nmap {scan_command} {file_options}"
-
-        else:
-            ROOT_LOGGER.error(f"Invalid scan binary specified: {scan_binary}")
-            return
-
-        # Spawn a new process for the scan.
-        process = subprocess.Popen(command.split())
-
-        # Extract PID.
-        scan_binary_process_id = process.pid
-
-        # Track the process ID and subprocess.Popen() object.
-        SCAN_PROCESS_DICT[scan_binary_process_id] = process
-
-        # Start the scan.
-        ROOT_LOGGER.info(
-            f"Starting scan for site '{site_name}', with process ID {scan_binary_process_id}, and command: {command}"
-        )
-
-        # Update Master with the process ID.
-        update_info = {
-            "scan_status": "started",
-            "scan_binary_process_id": scan_binary_process_id,
-        }
-        update_scan_information(scan_job, update_info)
-
-        process.wait()
-
-        # Scan binary process completed successfully.
-        # Move files from "pending" directory to "complete" directory.
-        if process.returncode == 0:
-
-            move_wildcard_files(f"{result_file_base_name}*", pending_files_dir, completed_files_dir)
-
-            # Update completed_time, scan_status, and result_file_base_name.
-            now_datetime = get_current_time()
-            update_info = {
-                "completed_time": now_datetime,
-                "scan_status": "completed",
-                "result_file_base_name": result_file_base_name,
+            # Track the process ID and subprocess.Popen() object.
+            SCAN_PROCESS_DICT[scan_binary_process_id] = {
+                "popen_object": process,
+                "scan_status": "started",
             }
 
+            # Start the scan.
+            ROOT_LOGGER.info(
+                f"Starting scan for site '{site_name}', with process ID {scan_binary_process_id}, and command: {command}"
+            )
+
+            # Update Master with the process ID.
+            update_info = {
+                "scan_status": "started",
+                "scan_binary_process_id": scan_binary_process_id,
+            }
             update_scan_information(scan_job, update_info)
 
-            # Remove the completed process ID from the scan process dictionary.
-            SCAN_PROCESS_DICT.pop(scan_binary_process_id)
+            process.wait()
+
+            ROOT_LOGGER.info(f"process.returncode: {process.returncode}")
+
+            # process.returncode = 0 for completed (nmap/masscan) and SIGINT processes (masscan)
+            # process.returncode = -9 for killed processes (nmap/masscan)
+            if process.returncode == 0:
+
+                # Scan binary process completed successfully.  scan_status == "paused" for masscan processes only. This
+                # check ensures the scan status of a masscan process isn't "paused".
+                if SCAN_PROCESS_DICT[scan_binary_process_id]["scan_status"] == "started":
+
+                    # Move files from "pending" directory to "complete" directory.
+                    move_wildcard_files(f"{result_file_base_name}*", pending_files_dir, completed_files_dir)
+
+                    # Update completed_time, scan_status, and result_file_base_name.
+                    now_datetime = get_current_time()
+                    update_info = {
+                        "completed_time": now_datetime,
+                        "scan_status": "completed",
+                        "result_file_base_name": result_file_base_name,
+                    }
+
+                    update_scan_information(scan_job, update_info)
+
+                    # Remove the completed process ID from the scan process dictionary.
+                    SCAN_PROCESS_DICT.pop(scan_binary_process_id)
+
+        else:
+            ROOT_LOGGER.error(f"Unsupported scan_status: {scan_status}")
 
     except Exception as e:
         ROOT_LOGGER.exception(f"Error with scan ID {scan_job_id}.  Exception: {e}")
         update_info = {"scan_status": "error"}
         update_scan_information(scan_job, update_info)
+
+    return
 
 
 class Worker(threading.Thread):
@@ -381,15 +431,16 @@ class Worker(threading.Thread):
         """Start Worker thread."""
 
         while True:
+
             # Grab scan_job_dict off the queue.
             scan_job_dict = agent.queue.get()
 
             try:
                 # Kick off scan.
-                scan_site(scan_job_dict)
+                scan_job_handler(scan_job_dict)
 
             except Exception as e:
-                ROOT_LOGGER.error(f"Failed to start scan.  Exception: {e}")
+                ROOT_LOGGER.error(f"Failed to call scan_job_handler.  Exception: {e}")
 
             agent.queue.task_done()
 
@@ -447,14 +498,15 @@ class Agent:
                         ROOT_LOGGER.info(f"scan_job: {scan_job}")
 
                         # Create new dictionary that will contain scan_job and config_data information.
-                        scan_job_dict = {}
-                        scan_job_dict["scan_job"] = scan_job
-                        scan_job_dict["config_data"] = self.config_data
+                        scan_job_dict = {
+                            "scan_job": scan_job,
+                            "config_data": self.config_data,
+                        }
 
                         # Place scan_job_dict on queue.
                         self.queue.put(scan_job_dict)
 
-                        # Allow the job to execute and change status before moving to the next one.
+                        # Provide some breathing room for the jobs to execute.
                         time.sleep(5)
 
                     # Don't wait for threads to finish.
@@ -464,7 +516,8 @@ class Agent:
                     ROOT_LOGGER.info(
                         f"No scan jobs found...checking back in {self.config_data['callback_interval_in_seconds']} seconds."
                     )
-                    time.sleep(self.config_data["callback_interval_in_seconds"])
+
+                time.sleep(self.config_data["callback_interval_in_seconds"])
 
             except KeyboardInterrupt:
                 break
