@@ -22,15 +22,18 @@ import threading
 import time
 import urllib.request
 
+__version__ = "1.0"
+
 # Disable SSL/TLS verification.
 ssl._create_default_https_context = ssl._create_unverified_context
 
+# Logging object.
 ROOT_LOGGER = logging.getLogger("scantron")
+LOG_FORMATTER = logging.Formatter(
+    "%(asctime)s [%(threadName)-12.12s] [%(filename)s-%(funcName)s()] [%(levelname)s] %(message)s"
+)
 
-# ISO8601 datetime format by default.
-LOG_FORMATTER = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)s] %(message)s")
-
-# Track scan process IDs and subprocess.Popen() objects.
+# Track scan process IDs, subprocess.Popen() objects, and scan status state.
 SCAN_PROCESS_DICT = {}
 
 
@@ -203,9 +206,12 @@ def scan_job_handler(scan_job_dict):
                     if scan_binary == "masscan" and scan_status == "pause":
 
                         # Update SCAN_PROCESS_DICT[scan_binary_process_id]["scan_status"] to be "paused", so in the
-                        # other thread when the process.wait() realizes it's received a ctrl-c, it will check
-                        # scan_status and ensure it's only in the state "started".  Even though the process receives a
-                        # ctrl-c, the process.returncode == 0 is not enough.
+                        # thread doing the actual scanning, when the process.wait() realizes it's received a ctrl-c, it
+                        # will check SCAN_PROCESS_DICT[scan_binary_process_id]["scan_status"] and ensure it's only in
+                        # the state "started".  Even though the process receives a ctrl-c, the process.returncode == 0
+                        # is not enough for it to realize the difference between a successfully completed scan and a
+                        # ctrl-c signal interupt, which resulted in race condition in which the status was updated to
+                        # "completed" in one thread, then updated to "paused" in the other.
                         SCAN_PROCESS_DICT[scan_binary_process_id]["scan_status"] = "paused"
 
                         # Simulates ctrl-c key combination to generate the paused.conf file.
@@ -221,6 +227,8 @@ def scan_job_handler(scan_job_dict):
                         ROOT_LOGGER.info("Done sleeping 15 seconds.")
 
                     else:
+                        SCAN_PROCESS_DICT[scan_binary_process_id]["scan_status"] = "cancelled"
+
                         process.kill()
 
                     stdout, stderr = process.communicate()
@@ -382,7 +390,7 @@ def scan_job_handler(scan_job_dict):
 
             process.wait()
 
-            ROOT_LOGGER.info(f"process.returncode: {process.returncode}")
+            ROOT_LOGGER.debug(f"process.returncode: {process.returncode}")
 
             # process.returncode = 0 for completed (nmap/masscan) and SIGINT processes (masscan)
             # process.returncode = -9 for killed processes (nmap/masscan)
@@ -548,6 +556,8 @@ if __name__ == "__main__":
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(LOG_FORMATTER)
     ROOT_LOGGER.addHandler(console_handler)
+
+    ROOT_LOGGER.info(f"Starting scantron agent version: v{__version__}")
 
     agent = Agent(args.config_file)
     agent.go()

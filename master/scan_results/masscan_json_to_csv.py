@@ -164,7 +164,11 @@ def main():
 
         # csv files have been created, move all .json scan file types from "completed" to "processed" folder.
         # move(source, destination)
-        shutil.move(scan, processed_dir)
+        try:
+            shutil.move(scan, processed_dir)
+        except shutil.Error:
+            os.remove(os.path.join(processed_dir, os.path.basename(scan)))
+            shutil.move(scan, processed_dir)
 
 
 if __name__ == "__main__":
