@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User  # noqa
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -198,6 +198,9 @@ class ScheduledScan(models.Model):
     SCAN_STATUS_CHOICES = (
         ("pending", "Pending"),
         ("started", "Started"),
+        ("pause", "Pause"),
+        ("paused", "Paused"),
+        ("cancel", "Cancel"),
         ("cancelled", "Cancelled"),
         ("completed", "Completed"),
         ("error", "Error"),
@@ -258,6 +261,10 @@ class ScheduledScan(models.Model):
     )
     completed_time = models.DateTimeField(null=True, blank=True, verbose_name="Scan completion time")
     result_file_base_name = models.CharField(max_length=255, blank=False, verbose_name="Result file base name")
+    scan_binary_process_id = models.IntegerField(
+        validators=[MinValueValidator(limit_value=0, message="Process ID must be a positive integer")],
+        verbose_name="Scan binary process ID.",
+    )
 
     def __str__(self):
         return str(self.id)

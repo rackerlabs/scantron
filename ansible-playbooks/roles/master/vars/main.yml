@@ -4,8 +4,8 @@ reboot_box: true
 
 install_packages:
   - autossh
-  - graphviz  # For django-extensions's graph_models.
-  - libgraphviz-dev  # For django-extensions's graph_models.
+  - graphviz  # For django-extensions' graph_models.
+  - libgraphviz-dev  # For django-extensions' graph_models.
   - nfs-kernel-server
   - nginx
   - nmap

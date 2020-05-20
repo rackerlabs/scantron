@@ -123,6 +123,7 @@ def main():
             "excluded_targets": excluded_targets,
             "result_file_base_name": result_file_base_name,
             "scan_status": "pending",
+            "scan_binary_process_id": 0,
         }
 
         # Ensure none of the values are empty.  blank=False is only enforced through forms, which this method of
@@ -132,7 +133,7 @@ def main():
         for key, value in scan_dict.items():
 
             # Ignore fields that are allowed to be empty.
-            if key in ["excluded_targets"]:
+            if key in ["excluded_targets", "scan_binary_process_id"]:
                 continue
 
             if not value:

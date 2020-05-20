@@ -11,6 +11,11 @@ import re
 import shutil
 import sys
 
+# Third party Python libraries.
+
+
+# Custom Python libraries.
+
 
 # Scan result with a banner.
 """
@@ -97,74 +102,82 @@ def main():
     # Then move them to the "processed" directory.
     for scan in json_scans:
 
-        # Variables used for every file.
-        base_scan_file_name = os.path.basename(scan).split(".json")[0]
-        masscan_csv_file_name = f"{base_scan_file_name}.csv"
-        results_list = []
+        try:
+            # Variables used for every file.
+            base_scan_file_name = os.path.basename(scan).split(".json")[0]
+            masscan_csv_file_name = f"{base_scan_file_name}.csv"
+            results_list = []
 
-        if os.path.getsize(scan) == 0:
-            print(f"File is 0 bytes: {scan}")
+            if os.path.getsize(scan) == 0:
+                print(f"File is 0 bytes: {scan}")
 
-        else:
-            # "scan" variable is constructed as "result_file_base_name" in master/scan_scheduler.py
-            scan_file_name = os.path.basename(scan)
-            site_name = scan_file_name.split("__")[0]
+            else:
+                # "scan" variable is constructed as "result_file_base_name" in master/scan_scheduler.py
+                scan_file_name = os.path.basename(scan)
+                site_name = scan_file_name.split("__")[0]
 
-            with open(scan, "r") as fh:
+                with open(scan, "r") as fh:
 
-                # Load json file into memory.  Be sure you have enough.
-                scan_results = json.load(fh)
+                    # Load json file into memory.  Be sure you have enough.
+                    scan_results = json.load(fh)
 
-                for result in scan_results:
+                    for result in scan_results:
 
-                    try:
-                        for port in result["ports"]:
+                        try:
+                            for port in result["ports"]:
 
-                            # Conforming key values to what big data analytics platform is expecting with
-                            # scantron/master/scan_results/nmap_to_csv.py
-                            result_dict = {
-                                "starttime": result["timestamp"],
-                                "endtime": result["timestamp"],
-                                "siteName": site_name.lower(),
-                                "scanner": "masscan",
-                                "dest_ip": result["ip"],
-                                "transport": port["proto"],
-                                "dest_port": port["port"],
-                                "app": "",  # Populated below.
-                                "service": "",  # Populated below.
-                                "state": "open",  # Hardcode; "status" key isn't always available with banners.
-                            }
+                                # Conforming key values to what big data analytics platform is expecting with
+                                # scantron/master/scan_results/nmap_to_csv.py
+                                result_dict = {
+                                    "starttime": result["timestamp"],
+                                    "endtime": result["timestamp"],
+                                    "siteName": site_name.lower(),
+                                    "scanner": "masscan",
+                                    "dest_ip": result["ip"],
+                                    "transport": port["proto"],
+                                    "dest_port": port["port"],
+                                    "app": "",  # Populated below.
+                                    "service": "",  # Populated below.
+                                    "state": "open",  # Hardcode; "status" key isn't always available with banners.
+                                }
 
-                            if "service" in port:
-                                # Shorten SSL/TLS certificates.
-                                if port["service"]["banner"].startswith("MII"):
-                                    result_dict["service"] = "custom_service_modification_TLS_cert"
+                                if "service" in port:
+                                    # Shorten SSL/TLS certificates.
+                                    if port["service"]["banner"].startswith("MII"):
+                                        result_dict["service"] = "custom_service_modification_TLS_cert"
 
-                                # Shorten source HTML source code pages.
-                                elif re.search(r"\u003c", port["service"]["banner"]):
-                                    result_dict["service"] = "custom_service_modification_html_source_blob"
+                                    # Shorten source HTML source code pages.
+                                    elif re.search(r"\u003c", port["service"]["banner"]):
+                                        result_dict["service"] = "custom_service_modification_html_source_blob"
 
-                                else:
-                                    # Replace newlines and carriage returns with spaces.
-                                    result_dict["service"] = (
-                                        port["service"]["banner"].replace("\n", " ").replace("\r", " ")
-                                    )
+                                    else:
+                                        # Replace newlines and carriage returns with spaces.
+                                        result_dict["service"] = (
+                                            port["service"]["banner"].replace("\n", " ").replace("\r", " ")
+                                        )
 
-                                result_dict["app"] = port["service"]["name"]
+                                    result_dict["app"] = port["service"]["name"]
 
-                            # We care about all open ports found, not just ones with a banner.
-                            results_list.append(result_dict)
+                                # We care about all open ports found, not just ones with a banner.
+                                results_list.append(result_dict)
 
-                    except Exception as e:
-                        print(f"Issue with parsing scan: {result}.  Exception: {e}")
-                        sys.exit(0)
+                        except Exception as e:
+                            print(f"Issue with parsing scan: {result}.  Exception: {e}")
+                            sys.exit(0)
 
-        # Pass results and full file path to "for_bigdata_analytics" directory.
-        write_results_to_csv_file(results_list, os.path.join(bigdata_analytics_dir, masscan_csv_file_name))
+            # Pass results and full file path to "for_bigdata_analytics" directory.
+            write_results_to_csv_file(results_list, os.path.join(bigdata_analytics_dir, masscan_csv_file_name))
 
-        # csv files have been created, move all .json scan file types from "completed" to "processed" folder.
-        # move(source, destination)
-        shutil.move(scan, processed_dir)
+            # csv files have been created, move all .json scan file types from "completed" to "processed" folder.
+            # move(source, destination)
+            try:
+                shutil.move(scan, processed_dir)
+            except shutil.Error:
+                os.remove(os.path.join(processed_dir, os.path.basename(scan)))
+                shutil.move(scan, processed_dir)
+
+        except Exception as e:
+            print(f"Exception: {e}")
 
 
 if __name__ == "__main__":
