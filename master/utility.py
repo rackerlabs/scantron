@@ -75,7 +75,7 @@ NMAP: https://{master_fqdn}/results/{scheduled_scan_id}?file_type=nmap
             else:
                 body = f"""Results: https://{master_fqdn}/results/{scheduled_scan_id}?file_type=json"""
 
-        elif scan_status in ["started", "error"]:
+        elif scan_status in ["started", "paused", "cancelled", "error"]:
             body = f""""""
 
         # Ignore "pending" status.  Shouldn't ever reach this branch.
