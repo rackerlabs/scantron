@@ -244,17 +244,24 @@ In this example:
 
 ```bash
 # Master --> Agent 1
-su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -p 22 -R 4430:127.0.0.1:443 -R 2049:127.0.0.1:2049 -i /home/scantron/master/autossh.key autossh@192.168.1.100'
+su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" \
+    -o "ServerAliveCountMax 3" -p 22 -R 4430:127.0.0.1:443 -R 2049:127.0.0.1:2049 \
+    -i /home/scantron/master/autossh.key autossh@192.168.1.100'
 
 # Master --> Agent 2
-su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -p 22 -R 4430:127.0.0.1:443 -R 2049:127.0.0.1:2049 -i /home/scantron/master/autossh.key autossh@192.168.1.101'
+su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" \
+    -o "ServerAliveCountMax 3" -p 22 -R 4430:127.0.0.1:443 -R 2049:127.0.0.1:2049 \
+    -i /home/scantron/master/autossh.key autossh@192.168.1.101'
 ```
 
-If Master cannot SSH to an agent, then the autossh command will be run on the agent and the port forwards will be local (`-L`) instead of remote (`-R`).
+If Master cannot SSH to an agent, then the autossh command will be run on the agent and the port forwards will be local
+(`-L`) instead of remote (`-R`).
 
 ```bash
 # Master <-- Agent 1
-su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -p 22 -L 4430:127.0.0.1:443 -L 2049:127.0.0.1:2049 -i /home/scantron/master/autossh.key autossh@192.168.1.99'
+su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" \
+    -o "ServerAliveCountMax 3" -p 22 -L 4430:127.0.0.1:443 -L 2049:127.0.0.1:2049 \
+    -i /home/scantron/master/autossh.key autossh@192.168.1.99'
 ```
 
 ## Agents
@@ -282,8 +289,7 @@ port forward.
 
 **callback_interval_in_seconds:** Number of seconds agents wait before calling back for scan jobs.
 
-**number_of_threads:** Experimental!  Number of threads used to execute scan jobs if multiple jobs may be required at
-the same time.  Keep at 1 to avoid a doubling scanning race condition.
+**number_of_threads:** Number of threads used to execute/kill scan jobs.
 
 **target_files_dir:** Name of actual agent `target_files` directory on the agent box.
 
@@ -302,6 +308,8 @@ the same time.  Keep at 1 to avoid a doubling scanning race condition.
 
 **http_useragent:** HTTP User-Agent used instead of nmap's default
 `Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)`.
+
+**supported_scan_binaries** Experimental.  Supported scan binaries advertised by the agent.
 
 ### Agent Execution
 
