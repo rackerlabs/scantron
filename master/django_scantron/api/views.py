@@ -6,12 +6,13 @@ import pytz
 from django.conf import settings
 from django.http import Http404
 import redis
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 import rq
 
 # Custom Python libraries.
 from django_scantron.api.serializers import (
     AgentSerializer,
+    GloballyExcludedTargetSerializer,
     ScanCommandSerializer,
     ScanSerializer,
     ScheduledScanSerializer,
@@ -19,6 +20,7 @@ from django_scantron.api.serializers import (
 )
 from django_scantron.models import (
     Agent,
+    GloballyExcludedTarget,
     ScanCommand,
     Scan,
     ScheduledScan,
@@ -35,6 +37,30 @@ def get_current_time():
     datetime_tz = pytz.timezone(django_timezone).localize(datetime_tz_naive)
 
     return datetime_tz
+
+
+class ListRetrieveUpdateViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet
+):
+    """A viewset that provides list, retrieve, and update actions. To use it, override the class and set the .queryset
+    and .serializer_class attributes.
+
+    https://www.django-rest-framework.org/api-guide/viewsets/#custom-viewset-base-classes
+    """
+
+    pass
+
+
+# class ListRetrieveDeleteViewSet(
+#     mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet
+# ):
+#     """A viewset that provides list, retrieve, and delete actions. To use it, override the class and set the .queryset
+#     and .serializer_class attributes.
+
+#     https://www.django-rest-framework.org/api-guide/viewsets/#custom-viewset-base-classes
+#     """
+
+#     pass
 
 
 class DefaultsMixin(object):
@@ -57,6 +83,26 @@ class AgentViewSet(DefaultsMixin, viewsets.ModelViewSet):
         # Don't filter results for super users.
         if user.is_superuser:
             queryset = Agent.objects.all()
+
+        # Return empty queryset.
+        else:
+            queryset = []
+
+        return queryset
+
+
+class GloballyExcludedTargetViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
+    """API CRUD operations for GloballyExcludedTarget Model."""
+
+    model = GloballyExcludedTarget
+    serializer_class = GloballyExcludedTargetSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+
+        # Don't filter results for super users.
+        if user.is_superuser:
+            queryset = GloballyExcludedTarget.objects.filter(id=1)
 
         # Return empty queryset.
         else:
