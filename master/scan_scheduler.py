@@ -2,6 +2,7 @@
 
 # Standard Python libraries.
 import datetime
+import ipaddress
 import logging
 import pytz
 
@@ -30,6 +31,26 @@ def clean_text(uncleaned_text):
     )
 
     return cleaned_text
+
+
+def is_ip_address(ip):
+    """Determine if a provided string is an IP address.
+
+    Args:
+        ip (string): Potential IP address
+
+    Returns:
+        bool: Whether or not the string is a valid IP address
+    """
+
+    ip = str(ip)
+
+    try:
+        ipaddress.ip_address(ip)
+        return True
+
+    except ValueError:
+        return False
 
 
 def main():
@@ -84,8 +105,9 @@ def main():
 
         # Site model.
         site_name = scan.site.site_name
-        targets = scan.site.targets
-        excluded_targets = scan.site.excluded_targets
+        included_targets = scan.site.targets
+        # Convert to list to reduce duplicates later.
+        excluded_targets = scan.site.excluded_targets.split()
 
         # Agent model.
         scan_agent = scan.site.scan_agent.scan_agent
@@ -93,6 +115,41 @@ def main():
         # ScanCommand model.
         scan_command = scan.site.scan_command.scan_command
         scan_binary = scan.site.scan_command.scan_binary
+
+        # Globally Excluded Targets.
+        # Convert queryset to a list of strings (where each string may contain more than 1 target).
+        globally_excluded_targets_objects = list(
+            django_connector.GloballyExcludedTarget.objects.all().values_list("globally_excluded_targets", flat=True)
+        )
+
+        # Initialize empty list.
+        globally_excluded_targets = []
+
+        # globally_excluded_targets_objects may look like ["1.2.3.4 50.60.70.80", "www.example.com"], so we need to loop
+        # through each string in the list, split on space (if applicable), in order to build a new list.
+        for get in globally_excluded_targets_objects:
+            targets = get.split(" ")
+            for target in targets:
+                globally_excluded_targets.append(target)
+
+        # Combine both excluded lists, cast as set to reduce duplicates, re-cast as list, and sort targets.
+        all_excluded_targets = sorted(list(set(excluded_targets + globally_excluded_targets)))
+
+        # masscan --excludefile can only contain IP addresses.  If the scan_binary is masscan, remove non-IP addresses
+        # from all_excluded_targets.
+        if scan_binary == "masscan":
+
+            # Create a temporary list of valid IP addresses.
+            all_excluded_targets_temp = []
+
+            for excluded_target in all_excluded_targets:
+                if is_ip_address(excluded_target):
+                    all_excluded_targets_temp.append(excluded_target)
+
+            all_excluded_targets = all_excluded_targets_temp
+
+        # Convert to a string.  strip() removes any prepended or trailing spaces.
+        all_excluded_targets_string = " ".join(all_excluded_targets).strip()
 
         # The ScheduledScan model acts as the sanitized endpoint for agents to determine scan jobs.  We don't want to
         # expose the other models, so we populate that ScheduledScan model instead.  The actual exposed fields for the
@@ -119,8 +176,8 @@ def main():
             "start_datetime": start_datetime,
             "scan_binary": scan_binary,
             "scan_command": scan_command,
-            "targets": targets,
-            "excluded_targets": excluded_targets,
+            "targets": included_targets,
+            "excluded_targets": all_excluded_targets_string,
             "result_file_base_name": result_file_base_name,
             "scan_status": "pending",
             "scan_binary_process_id": 0,
