@@ -7,6 +7,7 @@ from django.conf import settings
 from django.http import Http404
 import redis
 from rest_framework import mixins, viewsets
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 import rq
 
 # Custom Python libraries.
@@ -51,18 +52,6 @@ class ListRetrieveUpdateViewSet(
     pass
 
 
-# class ListRetrieveDeleteViewSet(
-#     mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet
-# ):
-#     """A viewset that provides list, retrieve, and delete actions. To use it, override the class and set the .queryset
-#     and .serializer_class attributes.
-
-#     https://www.django-rest-framework.org/api-guide/viewsets/#custom-viewset-base-classes
-#     """
-
-#     pass
-
-
 class DefaultsMixin(object):
     """Default settings for view pagination and filtering."""
 
@@ -76,39 +65,15 @@ class AgentViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
     model = Agent
     serializer_class = AgentSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-
-        # Don't filter results for super users.
-        if user.is_superuser:
-            queryset = Agent.objects.all()
-
-        # Return empty queryset.
-        else:
-            queryset = []
-
-        return queryset
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
 
-class GloballyExcludedTargetViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
+class GloballyExcludedTargetViewSet(DefaultsMixin, viewsets.ModelViewSet):
     """API CRUD operations for GloballyExcludedTarget Model."""
 
     model = GloballyExcludedTarget
     serializer_class = GloballyExcludedTargetSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-
-        # Don't filter results for super users.
-        if user.is_superuser:
-            queryset = GloballyExcludedTarget.objects.filter(id=1)
-
-        # Return empty queryset.
-        else:
-            queryset = []
-
-        return queryset
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
 
 class ScanCommandViewSet(DefaultsMixin, viewsets.ModelViewSet):
@@ -116,19 +81,7 @@ class ScanCommandViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
     model = ScanCommand
     serializer_class = ScanCommandSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-
-        # Don't filter results for super users.
-        if user.is_superuser:
-            queryset = ScanCommand.objects.all()
-
-        # Return empty queryset.
-        else:
-            queryset = []
-
-        return queryset
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
 
 class SiteViewSet(DefaultsMixin, viewsets.ModelViewSet):
@@ -136,19 +89,7 @@ class SiteViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
     model = Site
     serializer_class = SiteSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-
-        # Don't filter results for super users.
-        if user.is_superuser:
-            queryset = Site.objects.all()
-
-        # Return empty queryset.
-        else:
-            queryset = []
-
-        return queryset
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
 
 class ScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
@@ -156,22 +97,10 @@ class ScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
     model = Scan
     serializer_class = ScanSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-
-        # Don't filter results for super users.
-        if user.is_superuser:
-            queryset = Scan.objects.all()
-
-        # Return empty queryset.
-        else:
-            queryset = []
-
-        return queryset
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
 
-class ScheduledScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
+class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
     """API CRUD operations for ScheduledScan Model."""
 
     model = ScheduledScan
