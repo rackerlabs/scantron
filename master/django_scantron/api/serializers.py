@@ -162,3 +162,17 @@ class ScheduledScanSerializer(serializers.ModelSerializer):
             "result_file_base_name",
             "scan_binary_process_id",
         )
+        read_only_fields = (
+            "id",
+            "site_name",
+            "scan_agent",
+            "start_datetime",
+            "scan_binary",
+            "scan_command",
+            "targets",
+            "excluded_targets",
+            # "scan_status",
+            # "completed_time",
+            # "result_file_base_name",
+            # "scan_binary_process_id",
+        )
