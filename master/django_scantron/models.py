@@ -52,6 +52,46 @@ class Agent(models.Model):
         verbose_name_plural = "Agents"
 
 
+class GloballyExcludedTarget(models.Model):
+    """Model for globally excluded targets."""
+
+    id = models.AutoField(primary_key=True, verbose_name="Globally excluded target ID")
+    globally_excluded_targets = models.CharField(
+        unique=False,
+        max_length=1_048_576,  # 2^20 = 1048576
+        validators=[
+            RegexValidator(
+                regex="^[a-zA-Z0-9/\.\:\- ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
+                message="Targets can only contain alphanumeric characters, /, ., :, -, and spaces",
+            )
+        ],
+        verbose_name="Globally Excluded Targets",
+    )
+    note = models.TextField(unique=False, blank=True, verbose_name="Note")
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="Last updated")
+
+    def clean(self):
+        """Checks for any invalid IPs, IP subnets, or FQDNs in the globally_excluded_targets field."""
+
+        # Globally excluded targets.
+        target_extractor = extract_targets.TargetExtractor(
+            targets_string=self.globally_excluded_targets, private_ips_allowed=True, sort_targets=True
+        )
+        targets_dict = target_extractor.targets_dict
+
+        if targets_dict["invalid_targets"]:
+            invalid_targets = ",".join(target_extractor.targets_dict["invalid_targets"])
+            raise ValidationError(f"Invalid globally excluded targets provided: {invalid_targets}")
+
+        self.globally_excluded_targets = targets_dict["as_nmap"]
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name_plural = "Globally Excluded Targets"
+
+
 class ScanCommand(models.Model):
     """Model for a scan command"""
 

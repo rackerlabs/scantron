@@ -25,6 +25,11 @@ class AgentAdmin(admin.ModelAdmin):
     readonly_fields = ("id", "scan_agent", "api_token", "last_checkin")
 
 
+class GloballyExcludedTargetAdmin(admin.ModelAdmin):
+
+    list_display = ("id", "globally_excluded_targets", "note", "last_updated")
+
+
 class ScanCommandAdmin(admin.ModelAdmin):
 
     list_display = ("id", "scan_binary", "scan_command_name", "scan_command")
@@ -79,6 +84,7 @@ def _register(model, admin_class):
 _register(Session, SessionAdmin)
 
 _register(models.Agent, AgentAdmin)
+_register(models.GloballyExcludedTarget, GloballyExcludedTargetAdmin)
 _register(models.ScanCommand, ScanCommandAdmin)
 _register(models.Scan, ScanAdmin)
 _register(models.ScheduledScan, ScheduledScanAdmin)

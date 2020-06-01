@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from django_scantron.models import (
     Agent,
+    GloballyExcludedTarget,
     ScanCommand,
     Scan,
     ScheduledScan,
@@ -18,6 +19,34 @@ class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
         fields = ("id", "scan_agent", "description", "api_token", "last_checkin")
+
+
+class GloballyExcludedTargetSerializer(serializers.ModelSerializer):
+
+    # Separate validation needed for DRF; doesn't use model's clean() function anymore.
+    # https://www.django-rest-framework.org/community/3.0-announcement/#differences-between-modelserializer-validation-and-modelform
+
+    def validate(self, attrs):
+        """Checks for any invalid IPs, IP subnets, or FQDNs in the globally_excluded_targets field."""
+
+        # Globally excluded targets.
+        if "globally_excluded_targets" in attrs:
+            globally_excluded_targets = attrs["globally_excluded_targets"]
+
+            target_extractor = extract_targets.TargetExtractor(
+                targets_string=globally_excluded_targets, private_ips_allowed=True, sort_targets=True
+            )
+            targets_dict = target_extractor.targets_dict
+
+            if targets_dict["invalid_targets"]:
+                invalid_targets = ",".join(targets_dict["invalid_targets"])
+                raise serializers.ValidationError(f"Invalid globally excluded targets provided: {invalid_targets}")
+
+        return attrs
+
+    class Meta:
+        model = GloballyExcludedTarget
+        fields = ("id", "globally_excluded_targets", "note", "last_updated")
 
 
 class ScanCommandSerializer(serializers.ModelSerializer):
@@ -132,4 +161,18 @@ class ScheduledScanSerializer(serializers.ModelSerializer):
             "completed_time",
             "result_file_base_name",
             "scan_binary_process_id",
+        )
+        read_only_fields = (
+            "id",
+            "site_name",
+            "scan_agent",
+            "start_datetime",
+            "scan_binary",
+            "scan_command",
+            "targets",
+            "excluded_targets",
+            # "scan_status",
+            # "completed_time",
+            # "result_file_base_name",
+            # "scan_binary_process_id",
         )

@@ -2,6 +2,7 @@
 
 # Standard Python libraries.
 import datetime
+import ipaddress
 import logging
 import pytz
 
@@ -30,6 +31,32 @@ def clean_text(uncleaned_text):
     )
 
     return cleaned_text
+
+
+def is_ip_address(ip):
+    """Takes an IP address returns True/False if it is a valid IPv4 or IPv6 address."""
+
+    ip = str(ip)
+
+    try:
+        ipaddress.ip_address(ip)
+        return True
+
+    except ValueError:
+        return False
+
+
+def is_ip_network(address, strict=False):
+    """Takes an address returns True/False if it is a valid network."""
+
+    address = str(address)
+
+    try:
+        ipaddress.ip_network(address, strict)
+        return True
+
+    except ValueError:
+        return False
 
 
 def main():
@@ -82,17 +109,86 @@ def main():
         # Scan model.
         scan_start_time = scan.start_time
 
+        # ScanCommand model.
+        scan_command = scan.site.scan_command.scan_command
+        scan_binary = scan.site.scan_command.scan_binary
+
         # Site model.
         site_name = scan.site.site_name
-        targets = scan.site.targets
-        excluded_targets = scan.site.excluded_targets
+
+        # masscan -iL argument file can only contain IP addresses.  If the scan_binary is masscan, remove non-IP
+        # addresses from included_targets.
+        if scan_binary == "masscan":
+
+            # Convert from string to list of targets.
+            included_targets_list = scan.site.targets.split()
+
+            # Create a temporary list of valid IP addresses.
+            included_targets_temp = []
+
+            for included_target in included_targets_list:
+                if is_ip_address(included_target) or is_ip_network(included_target):
+                    included_targets_temp.append(included_target)
+                else:
+                    ROOT_LOGGER.info(
+                        f"masscan can only scan IPs.  Removed target '{included_target}' from included targets."
+                    )
+
+            # Convert to a string.  strip() removes any prepended or trailing spaces.
+            included_targets = " ".join(included_targets_temp).strip()
+
+            # Don't schedule a masscan scan if no valid IP targets are provided.
+            if not included_targets:
+                ROOT_LOGGER.error(f"No valid IP targets specified for a masscan scan...not scheduling scan ID {scan}.")
+                continue
+
+        else:
+            included_targets = scan.site.targets
+
+        # Convert to list to reduce duplicates later.
+        excluded_targets = scan.site.excluded_targets.split()
 
         # Agent model.
         scan_agent = scan.site.scan_agent.scan_agent
 
-        # ScanCommand model.
-        scan_command = scan.site.scan_command.scan_command
-        scan_binary = scan.site.scan_command.scan_binary
+        # Globally Excluded Targets.
+        # Convert queryset to a list of strings (where each string may contain more than 1 target).
+        globally_excluded_targets_objects = list(
+            django_connector.GloballyExcludedTarget.objects.all().values_list("globally_excluded_targets", flat=True)
+        )
+
+        # Initialize empty list.
+        globally_excluded_targets = []
+
+        # globally_excluded_targets_objects may look like ["1.2.3.4 50.60.70.80", "www.example.com"], so we need to loop
+        # through each string in the list, split on space (if applicable), in order to build a new list.
+        for get in globally_excluded_targets_objects:
+            targets = get.split(" ")
+            for target in targets:
+                globally_excluded_targets.append(target)
+
+        # Combine both excluded lists, cast as set to reduce duplicates, re-cast as list, and sort targets.
+        all_excluded_targets = sorted(list(set(excluded_targets + globally_excluded_targets)))
+
+        # masscan --excludefile can only contain IP addresses.  If the scan_binary is masscan, remove non-IP addresses
+        # from all_excluded_targets.
+        if scan_binary == "masscan":
+
+            # Create a temporary list of valid IP addresses.
+            all_excluded_targets_temp = []
+
+            for excluded_target in all_excluded_targets:
+                if is_ip_address(excluded_target) or is_ip_network(excluded_target):
+                    all_excluded_targets_temp.append(excluded_target)
+                else:
+                    ROOT_LOGGER.info(
+                        f"masscan can only scan IPs.  Removed target '{excluded_target}' from excluded targets."
+                    )
+
+            all_excluded_targets = all_excluded_targets_temp
+
+        # Convert to a string.  strip() removes any prepended or trailing spaces.
+        all_excluded_targets_string = " ".join(all_excluded_targets).strip()
 
         # The ScheduledScan model acts as the sanitized endpoint for agents to determine scan jobs.  We don't want to
         # expose the other models, so we populate that ScheduledScan model instead.  The actual exposed fields for the
@@ -119,8 +215,8 @@ def main():
             "start_datetime": start_datetime,
             "scan_binary": scan_binary,
             "scan_command": scan_command,
-            "targets": targets,
-            "excluded_targets": excluded_targets,
+            "targets": included_targets,
+            "excluded_targets": all_excluded_targets_string,
             "result_file_base_name": result_file_base_name,
             "scan_status": "pending",
             "scan_binary_process_id": 0,

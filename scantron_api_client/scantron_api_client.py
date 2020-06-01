@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "1.33"
+__version__ = "1.34"
 
 
 class ScantronClient:
@@ -269,11 +269,39 @@ class ScantronClient:
 
         return agent_id
 
-    # Scan Commands
+    # GLOBALLY EXCLUDED TARGETS
+    ###########################
+    # Globally Excluded Targets - CRUD functions.
+    def create_globally_excluded_target(self, payload):
+        """Create a globally excluded target."""
+        return self.scantron_api_query("/api/globally_excluded_targets", method="POST", payload=payload)
+
+    def retrieve_globally_excluded_target(self, globally_excluded_target_id):
+        """Retrieve globally excluded target."""
+        return self.scantron_api_query(
+            f"/api/globally excluded targets/{globally_excluded_target_id}", method="GET"
+        ).json()
+
+    def update_globally_excluded_target(self, globally_excluded_target_id, payload):
+        """Update globally excluded target for specific globally excluded target ID."""
+        return self.scantron_api_query(
+            f"/api/globally excluded targets/{globally_excluded_target_id}", method="PATCH", payload=payload
+        )
+
+    def delete_globally_excluded_target(self, globally_excluded_target_id):
+        """Delete a globally excluded target."""
+        return self.scantron_api_query(f"/api/globally excluded targets/{globally_excluded_target_id}", method="DELETE")
+
+    # Globally Excluded Targets- Miscellaneous functions.
+    def retrieve_globally_excluded_targets(self):
+        """Retrieve information for all the globally excluded targets."""
+        return self.scantron_api_query("/api/globally_excluded_targets").json()
+
+    # SCAN COMMANDS
     ###############
     # Scan Commands - CRUD functions.
     def create_scan_command(self, payload):
-        """Create a scan command"""
+        """Create a scan command."""
         return self.scantron_api_query("/api/scan_commands", method="POST", payload=payload)
 
     def retrieve_scan_command(self, scan_command_id):
@@ -281,11 +309,11 @@ class ScantronClient:
         return self.scantron_api_query(f"/api/scan_commands/{scan_command_id}", method="GET").json()
 
     def update_scan_command(self, scan_command_id, payload):
-        """Update scan command for specific scan command ID"""
+        """Update scan command for specific scan command ID."""
         return self.scantron_api_query(f"/api/scan_commands/{scan_command_id}", method="PATCH", payload=payload)
 
     def delete_scan_command(self, scan_command_id):
-        """Delete a scan"""
+        """Delete a scan."""
         return self.scantron_api_query(f"/api/scan_commands/{scan_command_id}", method="DELETE")
 
     # Scan Commands - Miscellaneous functions.
@@ -310,7 +338,7 @@ class ScantronClient:
     #######
     # Scans - CRUD functions.
     def create_scan(self, payload):
-        """Create a scan"""
+        """Create a scan."""
         return self.scantron_api_query("/api/scans", method="POST", payload=payload)
 
     def retrieve_scan(self, scan_id):
@@ -318,11 +346,11 @@ class ScantronClient:
         return self.scantron_api_query(f"/api/scans/{scan_id}", method="GET")
 
     def update_scan(self, scan_id, payload):
-        """Update scan for specific scan ID"""
+        """Update scan for specific scan ID."""
         return self.scantron_api_query(f"/api/scans/{scan_id}", method="PATCH", payload=payload)
 
     def delete_scan(self, scan_id):
-        """Delete a scan"""
+        """Delete a scan."""
         return self.scantron_api_query(f"/api/scans/{scan_id}", method="DELETE")
 
     # Scans - Miscellaneous functions.
@@ -357,7 +385,7 @@ class ScantronClient:
         return self.scantron_api_query(f"/api/sites/{site_id}", method="PATCH", payload=payload)
 
     def delete_site(self, site_id):
-        """Delete a site"""
+        """Delete a site."""
         return self.scantron_api_query(f"/api/sites/{site_id}", method="DELETE")
 
     # Sites - Miscellaneous functions.
@@ -442,7 +470,7 @@ class ScantronClient:
         return masscan_dict
 
     def generate_masscan_dict_from_masscan_result_json_file(self, massscan_results_file):
-        """Return a distilled masscan json object into relevent fields given a masscan results .json file"""
+        """Return a distilled masscan json object into relevent fields given a masscan results .json file."""
 
         masscan_dict = None
 
