@@ -34,19 +34,25 @@ def clean_text(uncleaned_text):
 
 
 def is_ip_address(ip):
-    """Determine if a provided string is an IP address.
-
-    Args:
-        ip (string): Potential IP address
-
-    Returns:
-        bool: Whether or not the string is a valid IP address
-    """
+    """Takes an IP address returns True/False if it is a valid IPv4 or IPv6 address."""
 
     ip = str(ip)
 
     try:
         ipaddress.ip_address(ip)
+        return True
+
+    except ValueError:
+        return False
+
+
+def is_ip_network(address, strict=False):
+    """Takes an address returns True/False if it is a valid network."""
+
+    address = str(address)
+
+    try:
+        ipaddress.ip_network(address, strict)
         return True
 
     except ValueError:
@@ -121,7 +127,7 @@ def main():
             included_targets_temp = []
 
             for included_target in included_targets_list:
-                if is_ip_address(included_target):
+                if is_ip_address(included_target) or is_ip_network(included_target):
                     included_targets_temp.append(included_target)
                 else:
                     ROOT_LOGGER.info(
@@ -172,7 +178,7 @@ def main():
             all_excluded_targets_temp = []
 
             for excluded_target in all_excluded_targets:
-                if is_ip_address(excluded_target):
+                if is_ip_address(excluded_target) or is_ip_network(excluded_target):
                     all_excluded_targets_temp.append(excluded_target)
                 else:
                     ROOT_LOGGER.info(
