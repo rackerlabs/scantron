@@ -22,7 +22,7 @@ import threading
 import time
 import urllib.request
 
-__version__ = "1.0"
+__version__ = "1.01"
 
 # Disable SSL/TLS verification.
 ssl._create_default_https_context = ssl._create_unverified_context
