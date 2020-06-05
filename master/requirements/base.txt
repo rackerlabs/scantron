@@ -2,7 +2,7 @@
 argon2-cffi==19.2.0
 
 # Django
-Django==2.2.10
+Django==2.2.13
 
 # Forms
 django-crispy-forms==1.8.1

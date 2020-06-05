@@ -503,7 +503,7 @@ class Agent:
                 if scan_jobs:
                     for scan_job in scan_jobs:
 
-                        ROOT_LOGGER.info(f"scan_job: {scan_job}")
+                        ROOT_LOGGER.info(f"scan_job: {json.dumps(scan_job, indent=4)}")
 
                         # Create new dictionary that will contain scan_job and config_data information.
                         scan_job_dict = {

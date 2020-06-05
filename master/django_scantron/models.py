@@ -306,6 +306,40 @@ class ScheduledScan(models.Model):
         verbose_name="Scan binary process ID.",
     )
 
+    def clean(self):
+        """Based off the current scan status, ensure the updated scan status is valid."""
+
+        # Any updates to this dictionary should also be updated in master/django_scantron/api/views.py
+        scan_status_allowed_state_update_dict = {
+            "pending": ["started", "error"],
+            "started": ["pause", "cancel", "completed", "error"],
+            "pause": ["paused", "error"],
+            "paused": ["pending", "cancel", "error"],
+            "cancel": ["cancelled", "error"],
+            "cancelled": ["error"],
+            "completed": ["error"],
+            "error": ["pending"],
+        }
+
+        scheduled_scan_dict = ScheduledScan.objects.get(pk=self.pk)
+        current_scan_status = scheduled_scan_dict.scan_status
+
+        if self.scan_status not in scan_status_allowed_state_update_dict[current_scan_status]:
+            # Convert list to a string.
+            valid_scan_states = ", ".join(scan_status_allowed_state_update_dict[current_scan_status])
+
+            raise ValidationError(
+                f"Invalid scan status change requested.  Scan status state '{current_scan_status}' can only transition "
+                f"to: {valid_scan_states}"
+            )
+
+        # If a scan is paused and needs to be cancelled, don't set the state to "cancel", because the agent will try and
+        # cancel a running process that doesn't exist and error out.  Just bypass the "cancel" state and set it to
+        # "cancelled".  This logic is not needed on the client / API side in the ScheduledScanViewSet class in
+        # master/django_scantron/api/views.py.
+        if current_scan_status == "paused" and self.scan_status == "cancel":
+            self.scan_status = "cancelled"
+
     def __str__(self):
         return str(self.id)
 
