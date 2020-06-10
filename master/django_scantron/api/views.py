@@ -4,7 +4,7 @@ import pytz
 
 # Third party Python libraries.
 from django.conf import settings
-from django.http import Http404
+from django.http import Http404, JsonResponse
 import redis
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -108,22 +108,48 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
 
     def partial_update(self, request, pk=None, **kwargs):
 
+        # Any updates to this dictionary should also be updated in master/django_scantron/models.py
+        scan_status_allowed_state_update_dict = {
+            "pending": ["started", "error"],
+            "started": ["pause", "cancel", "completed", "error"],
+            "pause": ["paused", "error"],
+            "paused": ["pending", "cancel", "error"],
+            "cancel": ["cancelled", "error"],
+            "cancelled": ["error"],
+            "completed": ["error"],
+            "error": ["pending"],
+        }
+
         try:
 
             # Extract the json payload.
             body = self.request.data
+            new_scan_status = body["scan_status"]
 
-            if body["scan_status"] in ["started", "pause", "paused", "cancel", "cancelled", "completed", "error"]:
+            if new_scan_status in ["started", "pause", "paused", "cancel", "cancelled", "completed", "error"]:
 
                 # Filter only the applicable ScheduledScans for the agent.  Prevents an agent modifying another agent's
                 # ScheduledScan information.
-                scheduled_scan_dict = (
-                    ScheduledScan.objects.filter(scan_agent=request.user).filter(pk=pk).values()[0]
-                )  # noqa
+                scheduled_scan_dict = ScheduledScan.objects.filter(scan_agent=request.user).filter(pk=pk).values()[0]
+
+                current_scan_status = scheduled_scan_dict["scan_status"]
+
+                # Based off the current scan status, ensure the updated scan status is valid.
+                if new_scan_status not in scan_status_allowed_state_update_dict[current_scan_status]:
+
+                    # Convert list to a string.
+                    valid_scan_states = ", ".join(scan_status_allowed_state_update_dict[current_scan_status])
+
+                    response_dict = {
+                        "detail": f"Invalid scan status change requested.  Scan status state '{current_scan_status}' "
+                        f"can only transition to: {valid_scan_states}"
+                    }
+
+                    return JsonResponse(response_dict)
 
                 # Update the scheduled_scan_dict with the most recent scan_status state from the PUT request.  When
                 # originally querying above, the old state is passed to utility.py unless it is updated.
-                scheduled_scan_dict["scan_status"] = body["scan_status"]
+                scheduled_scan_dict["scan_status"] = new_scan_status
 
                 # Create a redis connection object.
                 redis_conn = redis.Redis(host="127.0.0.1", port=6379, db=0)
