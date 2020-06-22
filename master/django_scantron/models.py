@@ -147,12 +147,12 @@ class Site(models.Model):
         ],
         verbose_name="Targets",
     )
+    # See the client_max_body_size setting in
+    # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
+    # is changed.
     excluded_targets = models.CharField(
         unique=False,
         blank=True,
-        # See the client_max_body_size setting in
-        # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
-        # is changed.
         max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
@@ -282,11 +282,11 @@ class ScheduledScan(models.Model):
     start_datetime = models.DateTimeField(verbose_name="Scheduled scan start date and time")
     scan_binary = models.CharField(max_length=7, default="nmap", verbose_name="Scan binary")
     scan_command = models.TextField(unique=False, verbose_name="Scan command")
+    # See the client_max_body_size setting in
+    # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
+    # is changed.
     targets = models.CharField(
         unique=False,
-        # See the client_max_body_size setting in
-        # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
-        # is changed.
         max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
@@ -296,12 +296,12 @@ class ScheduledScan(models.Model):
         ],
         verbose_name="Targets",
     )
+    # See the client_max_body_size setting in
+    # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
+    # is changed.
     excluded_targets = models.CharField(
         unique=False,
         blank=True,
-        # See the client_max_body_size setting in
-        # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
-        # is changed.
         max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
