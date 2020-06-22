@@ -41,5 +41,11 @@ server {
     location / {
         uwsgi_pass scantron;
         include uwsgi_params;
+        uwsgi_read_timeout 600;
     }
+
+    # client_max_body_size must be the MB value of the max_length of any target type fields in
+    # master/django_scantron/models.py
+    # 4194304 bytes --> 4M, assuming each character takes up 1 byte.
+    client_max_body_size 4M;
 }
