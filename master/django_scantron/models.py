@@ -56,9 +56,12 @@ class GloballyExcludedTarget(models.Model):
     """Model for globally excluded targets."""
 
     id = models.AutoField(primary_key=True, verbose_name="Globally excluded target ID")
+    # See the client_max_body_size setting in
+    # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
+    # is changed.
     globally_excluded_targets = models.CharField(
         unique=False,
-        max_length=1_048_576,  # 2^20 = 1048576
+        max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\:\- ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
@@ -130,9 +133,12 @@ class Site(models.Model):
         verbose_name="Site Name",
     )
     description = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Description")
+    # See the client_max_body_size setting in
+    # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
+    # is changed.
     targets = models.CharField(
         unique=False,
-        max_length=1_048_576,  # 2^20 = 1048576
+        max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\:\- ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
@@ -144,7 +150,10 @@ class Site(models.Model):
     excluded_targets = models.CharField(
         unique=False,
         blank=True,
-        max_length=1_048_576,  # 2^20 = 1048576
+        # See the client_max_body_size setting in
+        # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
+        # is changed.
+        max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\:\- ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
@@ -275,7 +284,10 @@ class ScheduledScan(models.Model):
     scan_command = models.TextField(unique=False, verbose_name="Scan command")
     targets = models.CharField(
         unique=False,
-        max_length=1_048_576,  # 2^20 = 1048576
+        # See the client_max_body_size setting in
+        # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
+        # is changed.
+        max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
@@ -287,7 +299,10 @@ class ScheduledScan(models.Model):
     excluded_targets = models.CharField(
         unique=False,
         blank=True,
-        max_length=1_048_576,  # 2^20 = 1048576
+        # See the client_max_body_size setting in
+        # ansible-playbooks/roles/master/templates/etc/nginx/sites-available/scantron_nginx.conf.j2 if the max_length value
+        # is changed.
+        max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.

@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "1.34"
+__version__ = "1.35"
 
 
 class ScantronClient:
@@ -29,9 +29,9 @@ class ScantronClient:
 
         # Ensure key/values exist in secrets.json.
         try:
-            self.host = SECRETS["host"]
-            self.port = SECRETS["port"]
-            self.token = SECRETS["token"]
+            self.host = SECRETS["scantron"]["host"]
+            self.port = SECRETS["scantron"]["port"]
+            self.token = SECRETS["scantron"]["token"]
 
         except KeyError:
             print(f"Error reading key-values in {secrets_file_location} file.  Exiting...")
