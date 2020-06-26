@@ -65,6 +65,7 @@ class AgentViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
     model = Agent
     serializer_class = AgentSerializer
+    queryset = Agent.objects.all()
     permission_classes = (IsAuthenticated, IsAdminUser)
 
 
@@ -73,6 +74,7 @@ class GloballyExcludedTargetViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
     model = GloballyExcludedTarget
     serializer_class = GloballyExcludedTargetSerializer
+    queryset = GloballyExcludedTarget.objects.all()
     permission_classes = (IsAuthenticated, IsAdminUser)
 
 
@@ -81,6 +83,7 @@ class ScanCommandViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
     model = ScanCommand
     serializer_class = ScanCommandSerializer
+    queryset = ScanCommand.objects.all()
     permission_classes = (IsAuthenticated, IsAdminUser)
 
 
@@ -89,6 +92,7 @@ class SiteViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
     model = Site
     serializer_class = SiteSerializer
+    queryset = Site.objects.all()
     permission_classes = (IsAuthenticated, IsAdminUser)
 
 
@@ -97,6 +101,7 @@ class ScanViewSet(DefaultsMixin, viewsets.ModelViewSet):
 
     model = Scan
     serializer_class = ScanSerializer
+    queryset = Scan.objects.all()
     permission_classes = (IsAuthenticated, IsAdminUser)
 
 
