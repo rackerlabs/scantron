@@ -115,17 +115,17 @@ class TargetExtractor:
         except ValueError as e:
             print(f"{e}")
 
-    def update_disallowed_target(self, master_targets_dict, target):
+    def update_disallowed_target(self, targets_dict, target):
         """Update disallowed target list and count."""
 
-        master_targets_dict["disallowed_targets"].append(str(target))
+        targets_dict["disallowed_targets"].append(str(target))
 
     def extract_targets(self, targets_string):
         """Extracts valid IPv4 IP addresses from a string."""
 
         # Dictionary to track valid and invalid targets.
         # fmt:off
-        master_targets_dict = {
+        targets_dict = {
             "ip_addresses": {
                 "as_list": [],
                 "as_csv": "",
@@ -169,22 +169,22 @@ class TargetExtractor:
                 # Cloud metadata IPs are covered under this as well: 169.254.169.254
                 if ip_address.is_private and not self.private_ips_allowed:
                     print(f"IP address is a private IP: {ip_address}")
-                    self.update_disallowed_target(master_targets_dict, ip_address)
+                    self.update_disallowed_target(targets_dict, ip_address)
                     continue
 
                 elif ip_address.is_multicast:
                     print(f"IP address is a multicast IP: {ip_address}")
-                    self.update_disallowed_target(master_targets_dict, ip_address)
+                    self.update_disallowed_target(targets_dict, ip_address)
                     continue
 
                 elif ip_address.is_loopback:
                     print(f"IP address is a loopback IP: {ip_address}")
-                    self.update_disallowed_target(master_targets_dict, ip_address)
+                    self.update_disallowed_target(targets_dict, ip_address)
                     continue
 
                 elif ip_address.is_link_local:
                     print(f"IP address is a link local IP: {ip_address}")
-                    self.update_disallowed_target(master_targets_dict, ip_address)
+                    self.update_disallowed_target(targets_dict, ip_address)
                     continue
 
                 # Double check and make sure IP is a public (global) IP if private IPs are not allowed.
@@ -193,9 +193,9 @@ class TargetExtractor:
                     continue
 
                 if self.is_ipv4_address(ip_address):
-                    master_targets_dict["ip_addresses"]["as_list"].append(ip_address)
+                    targets_dict["ip_addresses"]["as_list"].append(ip_address)
                 elif self.is_ipv6_address(ip_address):
-                    master_targets_dict["ip_addresses"]["as_list"].append(ip_address)
+                    targets_dict["ip_addresses"]["as_list"].append(ip_address)
                 else:
                     print(f"Unknown IP address type: {ip_address}")
 
@@ -207,28 +207,28 @@ class TargetExtractor:
                     print(f"IP network is private and private networks are not allowed: {target}")
                     continue
 
-                master_targets_dict["ip_networks"]["as_list"].append(target)
+                targets_dict["ip_networks"]["as_list"].append(target)
 
             # Check if it is a FQDN.
             elif self.is_valid_fqdn(target):
-                master_targets_dict["domains"]["as_list"].append(target)
+                targets_dict["domains"]["as_list"].append(target)
 
             # Not a valid target.
             else:
                 print(f"Invalid target type: {target}")
-                master_targets_dict["invalid_targets"].append(target)
+                targets_dict["invalid_targets"].append(target)
 
         print("=" * 10)
 
         for target_type in ["ip_addresses", "ip_networks", "domains"]:
 
             # Remove duplicates.
-            master_targets_dict[target_type]["as_list"] = list(set(master_targets_dict[target_type]["as_list"]))
+            targets_dict[target_type]["as_list"] = list(set(targets_dict[target_type]["as_list"]))
 
             temp_list = []
 
             # Standardize object type to string.
-            for target in master_targets_dict[target_type]["as_list"]:
+            for target in targets_dict[target_type]["as_list"]:
                 temp_list.append(str(target))
 
             # Sort within each individual target type: "ip_addresses", "ip_networks", or "domains"
@@ -238,36 +238,36 @@ class TargetExtractor:
                 except Exception as e:
                     print(f"Exception sorting targets in '{target_type}': {e}")
 
-            master_targets_dict[target_type]["as_list"] = temp_list
-            master_targets_dict[target_type]["as_csv"] = ",".join(temp_list)
-            master_targets_dict[target_type]["as_nmap"] = " ".join(temp_list)
+            targets_dict[target_type]["as_list"] = temp_list
+            targets_dict[target_type]["as_csv"] = ",".join(temp_list)
+            targets_dict[target_type]["as_nmap"] = " ".join(temp_list)
 
-            master_targets_dict[target_type]["total"] = len(temp_list)
+            targets_dict[target_type]["total"] = len(temp_list)
 
             # Extend array with target_type's list.  If requested, will sort later.
-            master_targets_dict["as_list"].extend(temp_list)
+            targets_dict["as_list"].extend(temp_list)
 
-            master_targets_dict["total"] += len(temp_list)
+            targets_dict["total"] += len(temp_list)
 
         # Sort for combined "as_list" targets.
         if self.sort_targets:
             try:
-                master_targets_dict["as_list"].sort()
+                targets_dict["as_list"].sort()
             except Exception as e:
                 print(f"Exception sorting targets: {e}")
 
         # Remove invalid duplicate targets.
-        master_targets_dict["invalid_targets"] = list(set(master_targets_dict["invalid_targets"]))
-        master_targets_dict["invalid_targets_total"] = len(master_targets_dict["invalid_targets"])
+        targets_dict["invalid_targets"] = list(set(targets_dict["invalid_targets"]))
+        targets_dict["invalid_targets_total"] = len(targets_dict["invalid_targets"])
 
         # Remove disallowed duplicate targets.
-        master_targets_dict["disallowed_targets"] = list(set(master_targets_dict["disallowed_targets"]))
-        master_targets_dict["disallowed_targets_total"] = len(master_targets_dict["disallowed_targets"])
+        targets_dict["disallowed_targets"] = list(set(targets_dict["disallowed_targets"]))
+        targets_dict["disallowed_targets_total"] = len(targets_dict["disallowed_targets"])
 
-        master_targets_dict["as_csv"] = ",".join(master_targets_dict["as_list"])
-        master_targets_dict["as_nmap"] = " ".join(master_targets_dict["as_list"])
+        targets_dict["as_csv"] = ",".join(targets_dict["as_list"])
+        targets_dict["as_nmap"] = " ".join(targets_dict["as_list"])
 
-        return master_targets_dict
+        return targets_dict
 
 
 if __name__ == "__main__":
@@ -300,6 +300,6 @@ if __name__ == "__main__":
     # args.targets_string = "100.12.43.55 1.2.3.4 1.5.4.8 22.22.224.24 2.2.2.2 127.0.0.1 2001:978:1:2::d  7.7.7.0/24  4.4.4.4  . : % ^ 2.2.3.)  1.84.5.2555 224.0.1.10 169.254.169.254 2.2.2.3 2.2.2.4"
 
     te = TargetExtractor(**vars(args))
-    master_targets_dict = te.targets_dict
+    targets_dict = te.targets_dict
 
-    pprint.pprint(master_targets_dict)
+    pprint.pprint(targets_dict)
