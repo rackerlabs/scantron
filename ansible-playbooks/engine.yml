@@ -1,0 +1,7 @@
+---
+- hosts: engine
+  roles:
+    - name: common
+      tags: [ common ]
+    - name: engine
+      tags: [ engine ]

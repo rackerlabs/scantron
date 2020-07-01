@@ -1,0 +1,151 @@
+- name: Update APT package cache.
+  apt:
+    update_cache: yes
+
+- name: Install specified packages.
+  apt:
+    pkg: "{{ install_packages }}"
+    state: latest
+
+- name: Install masscan packages.
+  apt:
+    pkg: "{{ masscan_install_packages }}"
+    state: latest
+  when: install_masscan_on_engine
+
+- name: Clone masscan Github repo.
+  git:
+    repo: "https://github.com/robertdavidgraham/masscan.git"
+    dest: "{{ engine_dir }}/masscan"
+    version: master
+  ignore_errors: true  # For re-runs only.
+  when: install_masscan_on_engine
+
+- name: Run make for masscan.
+  command: make -j
+  args:
+    chdir: "{{ engine_dir }}/masscan"
+  when: install_masscan_on_engine
+
+- name: Check that masscan binary exists.
+  stat:
+    path: "{{ engine_dir }}/masscan/bin/masscan"
+  register: masscan_stat
+  when: install_masscan_on_engine
+
+- name: Copy masscan binary to /usr/bin
+  command: cp "{{ engine_dir }}/masscan/bin/masscan" /usr/bin/masscan
+  when: (masscan_stat.stat.exists == True) and
+        (install_masscan_on_engine == True)
+
+- name: Create autossh user.
+  user:
+    name: autossh
+    shell: /bin/bash
+
+- name: Push autossh.pub to authorized_keys on remote server.
+  authorized_key:
+    user: autossh
+    key: "{{ lookup('file', 'files/autossh.pub') }}"
+
+- name: Upload /etc/rc.local
+  template:
+    src: templates/etc/rc.local.j2
+    dest: /etc/rc.local
+    backup: yes
+    owner: root
+    group: root
+    mode: 0755
+
+- name: rsync engine files to server.
+  synchronize:
+    src: ../../../../engine
+    dest: /root
+  # Only required if re-running Ansible on an engine that already has comms with console.
+  # Ansible will get angry since it can't chown /root/engine/scan_results and /root/engine/target_files
+  ignore_errors: yes
+
+- name: Change owner of autossh.key to autossh.
+  file:
+    path: "{{ engine_dir }}/autossh.key"
+    owner: autossh
+    group: autossh
+
+- name: Move autossh.key to /home/autossh since it can't be accessed in the /root directory.
+  command: mv "{{ engine_dir }}/autossh.key" /home/autossh/autossh.key
+
+- name: Generate random engine name.
+  set_fact:
+    random_engine_number: "{{ range(1, 999999) | random }}"
+  when: utilize_static_api_token_across_engines
+
+- name: Update engine_config.json configuration file with a static API token and random engine name if utilize_static_api_token_across_engines in group_vars/all is set to True.
+  template:
+    src: templates/engine_config.json
+    dest: /root/engine/engine_config.json
+    backup: no
+    owner: root
+    group: root
+    mode: 0700
+  when: utilize_static_api_token_across_engines
+
+- name: Copy random_engine_number into group_vars/<engine_exteral_ip>.txt
+  local_action: copy content="engine-{{ random_engine_number }}" dest="group_vars/{{ engine_exteral_ip }}.txt"
+  when: utilize_static_api_token_across_engines
+
+- name: Create "{{ venv_dir }}" virtualenv directory.
+  command: "virtualenv -p /usr/bin/python3.6 {{ venv_dir }}"
+  ignore_errors: yes  # For reruns only.
+
+- name: Install pip requirements.
+  pip:
+    requirements: "{{ engine_dir }}/requirements.txt"
+    virtualenv: "{{ venv_dir }}"
+    virtualenv_python: "{{ venv_python }}"
+
+- name: Add crontab entry for nfs_watcher.sh
+  cron:
+    name: nfs_watcher.sh
+    minute: "*"
+    hour: "*"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: /root/engine/nfs_watcher.sh
+    user: root
+
+- name: Make nfs_watcher.sh executable.
+  file:
+    path: /root/engine/nfs_watcher.sh
+    owner: root
+    group: root
+    mode: 0700
+
+- name: "Create symbolic link for scantron-engine service configuration file -- {{ engine_dir }}/scantron-engine.service --> /lib/systemd/system/scantron-engine.service"
+  file:
+    src: "{{ engine_dir }}/scantron-engine.service"
+    dest: /lib/systemd/system/scantron-engine.service
+    owner: root
+    group: root
+    state: link
+
+- name: Copying custom logrotate configuration file to /etc/logrotate.d/
+  copy:
+    src: "files/etc/logrotate.d/scantron-engine"
+    dest: "/etc/logrotate.d/scantron-engine"
+    owner: root
+    group: root
+    mode: 0644  # Must be 0644 or 0444
+
+- name: chmod files to root only
+  file:
+    path: "{{ engine_dir }}"
+    owner: root
+    group: root
+    recurse: yes
+    mode: 0700
+  ignore_errors: True  # For rerun conflicts.
+
+- name: Reboot the box in 1 minute.
+  command: shutdown -r 1
+  when: reboot_box

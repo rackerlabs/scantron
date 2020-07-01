@@ -1,0 +1,75 @@
+"""
+Production Configuration
+"""
+from .base import *  # noqa
+
+# DEBUG
+# ------------------------------------------------------------------------------
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
+DEBUG = False
+
+# SECURITY CONFIGURATION
+# ------------------------------------------------------------------------------
+# See https://docs.djangoproject.com/en/dev/ref/middleware/#module-django.middleware.security
+# and https://docs.djangoproject.com/en/dev/howto/deployment/checklist/#run-manage-py-check-deploy
+
+# set this to 60 seconds and then to 518400 when you can prove it works
+# SECURE_HSTS_SECONDS = 60
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
+# SECURE_CONTENT_TYPE_NOSNIFF = env.bool("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True)
+SECURE_BROWSER_XSS_FILTER = True
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SECURE_SSL_REDIRECT = True
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+X_FRAME_OPTIONS = "DENY"
+
+# SITE CONFIGURATION
+# ------------------------------------------------------------------------------
+# Hosts/domain names that are valid for this site
+# See https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
+
+# FQDN used to populate results URL for completed scan emails.
+CONSOLE_FQDN = "{{ console_fqdn }}"
+
+ALLOWED_HOSTS = [
+    "{{ console_fqdn }}",
+    "{{ ansible_default_ipv4.address }}",
+    "127.0.0.1",
+    "localhost",
+]  # 127.0.0.1 / localhost prevent "Invalid HTTP_HOST header" error
+# END SITE CONFIGURATION
+
+# LOGGING CONFIGURATION
+# ------------------------------------------------------------------------------
+# fmt: off
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s %(levelname)s %(module)s " "%(process)d %(thread)d %(message)s",
+        },
+    },
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "/var/log/webapp/django_scantron.log",
+            "maxBytes": 1024 * 1024 * 15,  # 15MB
+            "backupCount": 10,
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+}
+# fmt: on
+# Your production stuff: Below this line define 3rd party library settings
+# ------------------------------------------------------------------------------

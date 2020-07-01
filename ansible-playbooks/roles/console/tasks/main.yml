@@ -1,0 +1,530 @@
+- name: Add postgresql APT key.
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+
+- name: Add postgresql APT repository.
+  apt_repository:
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
+    filename: pgdg.list
+    state: present
+    update_cache: yes
+
+- name: Update APT package cache.
+  apt:
+    update_cache: yes
+
+- name: Install specified packages.
+  apt:
+    pkg: "{{ install_packages }}"
+    state: latest
+
+- name: Create autossh user.
+  user:
+    name: autossh
+    shell: /usr/sbin/nologin
+
+- name: Push autossh.pub to authorized_keys on remote server.
+  authorized_key:
+    user: autossh
+    key: "{{ lookup('file', 'files/autossh.pub') }}"
+
+# nginx
+#######
+- name: Update nginx.conf configuration file.
+  template:
+    src: templates/etc/nginx/nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create scantron_nginx.conf configuration file.
+  template:
+    src: templates/etc/nginx/sites-available/scantron_nginx.conf.j2
+    dest: /etc/nginx/sites-available/scantron_nginx.conf
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create symbolic link /etc/nginx/sites-enabled/scantron_nginx.conf --> /etc/nginx/sites-available/scantron_nginx.conf
+  file:
+    src: /etc/nginx/sites-available/scantron_nginx.conf
+    dest: /etc/nginx/sites-enabled/scantron_nginx.conf
+    owner: root
+    group: root
+    state: link
+
+- name: Generate temporary self-signed SSL certificate.
+  command: openssl req -x509 -nodes -days 730 -sha256 -newkey rsa:2048 -keyout /etc/ssl/scantron.key -out /etc/ssl/scantron.crt -subj "/C=US/ST=Texas/L=San Antonio/O=Scantron/OU=NA/CN={{ console_fqdn }}"
+  args:
+    creates: /etc/ssl/scantron.key  # Only checks if .key file exists, not the .crt file.
+  when: application_environment == 'production'
+
+- name: Remove default nginx index.* files.
+  shell: "rm -f {{ item }}"
+  with_items:
+    - /var/www/html/index.*
+    - /usr/share/nginx/html/index.html
+
+- name: Restart nginx and ensure nginx is enabled at boot.
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+- name: Allow TCP 80 through firewall.
+  ufw:
+    rule: allow
+    port: 80
+    proto: tcp
+    comment: nginx
+  when: enable_ufw_firewall
+
+- name: Allow TCP 443 through firewall.
+  ufw:
+    rule: allow
+    port: 443
+    proto: tcp
+    comment: nginx
+  when: enable_ufw_firewall
+
+
+# Misc.
+#######
+- name: rsync console files to server.
+  synchronize:
+    src: ../../../../console
+    dest: "/home/{{ non_root_user }}"
+  tags: update_code
+
+- name: Create "{{ venv_dir }}" virtualenv directory.
+  command: "virtualenv -p /usr/bin/python3.6 {{ venv_dir }}"
+  ignore_errors: yes  # For reruns only.
+
+- name: Install pip requirements.
+  pip:
+    requirements: "{{ scantron_dir }}/requirements/{{ application_environment }}.txt"
+    virtualenv: "{{ venv_dir }}"
+    virtualenv_python: "{{ venv_python }}"
+  tags: update_code
+
+# https://github.com/django-recurrence/django-recurrence/issues/160
+- name: Modify recurrence.js until django-recurrence maintainers address issue 160.
+  lineinfile:
+    path: "{{ venv_dir }}/lib/python3.6/site-packages/recurrence/static/recurrence/js/recurrence.js"
+    regexp: '        var language_code = recurrence.language_code;'
+    line: '        var language_code = "en";'
+    backup: yes
+
+- name: Change ownership of "{{ scantron_dir }}" folder.
+  file:
+    path: "{{ scantron_dir }}"
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    recurse: yes
+  tags: update_code
+
+
+# PostgreSQL
+############
+- name: Create database "{{ scantron_secrets['production']['DATABASE_NAME'] }}".
+  postgresql_db:
+    name: "{{ scantron_secrets['production']['DATABASE_NAME'] }}"
+    state: present
+  become_user: postgres
+  become: yes
+
+- name: Configure a new user "{{ scantron_secrets['production']['DATABASE_USER'] }}".
+  postgresql_user:
+    db: "{{ scantron_secrets['production']['DATABASE_NAME'] }}"
+    name: "{{ scantron_secrets['production']['DATABASE_USER'] }}"
+    password: "{{ scantron_secrets['production']['DATABASE_PASSWORD'] }}"
+    encrypted: yes
+    priv: ALL
+    role_attr_flags: NOSUPERUSER
+  become_user: postgres
+  become: yes
+
+- name: Ensure "{{ scantron_secrets['production']['DATABASE_USER'] }}" does not have unnecessary privileges.
+  postgresql_user:
+    name: "{{ scantron_secrets['production']['DATABASE_USER'] }}"
+    role_attr_flags: NOSUPERUSER,NOCREATEDB
+  become_user: postgres
+  become: yes
+
+- name: Configure host based authentication (if entries are configured).
+  template:
+    src: templates/etc/postgresql/pg_hba.conf.j2
+    dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
+    backup: yes
+    owner: postgres
+    group: postgres
+    mode: 0640
+  when: postgresql_hba_entries
+
+- name: Restart postgresql and ensure postgresql is enabled at boot.
+  service:
+    name: postgresql
+    state: restarted
+    enabled: yes
+
+
+# Django
+########
+- name: Create /var/log/webapp folder.
+  file:
+    path: /var/log/webapp
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create /var/log/webapp/django_scantron.log file.
+  file:
+    path: /var/log/webapp/django_scantron.log
+    state: touch
+    owner: www-data
+    group: www-data
+    mode: 0660
+
+- name: Update manage.py with local/production environment variable.
+  template:
+    src: templates/manage.py.j2
+    dest: "{{ scantron_dir }}/manage.py"
+    backup: no
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    mode: 0644
+  tags: update_code
+
+- name: Update production.py with local/production environment variable.
+  template:
+    src: templates/production.py.j2
+    dest: "{{ scantron_dir }}/config/settings/production.py"
+    backup: no
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    mode: 0644
+  when: application_environment == "production"
+  tags: update_code
+
+- name: Update django_connector.py with local/production environment variable.
+  template:
+    src: templates/django_connector.py.j2
+    dest: "{{ scantron_dir }}/django_connector.py"
+    backup: no
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    mode: 0644
+  tags: update_code
+
+- name: Executing "{{ venv_python }} {{ scantron_dir }}/manage.py makemigrations {{ django_project_name }}"
+  command: "{{ venv_python }} {{ scantron_dir }}/manage.py makemigrations {{ django_project_name }}"
+  args:
+    chdir: "{{ scantron_dir }}"
+  tags: update_code
+
+- name: Executing "{{ venv_python }} {{ scantron_dir }}/manage.py makemigrations"
+  command: "{{ venv_python }} {{ scantron_dir }}/manage.py makemigrations"
+  args:
+    chdir: "{{ scantron_dir }}"
+  tags: update_code
+
+- name: Executing "{{ venv_python }} {{ scantron_dir }}/manage.py migrate"
+  command: "{{ venv_python }} {{ scantron_dir }}/manage.py migrate"
+  args:
+    chdir: "{{ scantron_dir }}"
+  tags: update_code
+
+- name: Create folder for Django static files.
+  file:
+    path: /var/www/static
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Consolidating static files into /var/www/static
+  command: "{{ venv_python }} {{ scantron_dir }}/manage.py collectstatic --noinput"
+  args:
+    chdir: "{{ scantron_dir }}"
+
+- name: Create initial "{{ django_super_user }}" superuser.
+  shell: echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ scantron_secrets["django_super_user"] }}', '{{ scantron_secrets["django_super_user_email"] }}', '{{ scantron_secrets["django_super_user_password"] }}')" | {{ venv_python }} {{ scantron_dir }}/manage.py shell
+  args:
+    chdir: "{{ scantron_dir }}"
+  ignore_errors: yes  # Only applicable if playbook has already been run.  Use 'python manage.py change changepassword admin'.
+
+- name: Create "{{ django_user }}" user.
+  shell: echo "from django.contrib.auth.models import User; User.objects.create_user('{{ scantron_secrets["django_user"] }}', '{{ scantron_secrets["django_user_email"] }}', '{{ scantron_secrets['django_user_password']  }}')" | {{ venv_python }} {{ scantron_dir }}/manage.py shell
+  args:
+    chdir: "{{ scantron_dir }}"
+  ignore_errors: yes  # Only applicable if playbook has already been run.  Use 'python manage.py changepassword scantron'.
+
+
+# uWSGI
+#######
+- name: Install system-wide uWSGI python pip3 package.
+  pip:
+    name: uWSGI
+    version: "{{ uwsgi_version }}"
+    executable: /usr/bin/pip3
+
+- name: Update "{{ scantron_dir }}/config/wsgi.py" with Django local/production environment variable.
+  template:
+    src: templates/wsgi.py.j2
+    dest: "{{ scantron_dir }}/config/wsgi.py"
+    backup: no
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Update uwsgi.service.
+  template:
+    src: templates/uwsgi.service.j2
+    dest: "{{ scantron_dir }}/uwsgi.service"
+    backup: no
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    mode: 0644
+
+- name: Create symbolic link for uWSGI service configuration file -- "{{ scantron_dir }}/uwsgi.service" --> /lib/systemd/system/uwsgi.service
+  file:
+    src: "{{ scantron_dir }}/uwsgi.service"
+    dest: /lib/systemd/system/uwsgi.service
+    owner: root
+    group: root
+    state: link
+
+- name: Update scantron_uwsgi.ini with "{{ scantron_dir }}" directory.
+  template:
+    src: templates/scantron_uwsgi.ini.j2
+    dest: "{{ scantron_dir }}/scantron_uwsgi.ini"
+    backup: no
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    mode: 0644
+
+- name: Enable uWSGI, and restart it.
+  service:
+    name: uwsgi.service
+    state: restarted
+    enabled: yes
+  tags: update_code
+
+
+# POSTFIX
+#########
+- name: Update postfix main.cf configuration file.
+  template:
+    src: etc/postfix/main.cf.j2
+    dest: /etc/postfix/main.cf
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Restart postfix.
+  service:
+    name: postfix
+    state: restarted
+
+- name: Ensure postfix is started and enabled at boot.
+  service:
+    name: postfix
+    state: started
+    enabled: yes
+
+
+# REDIS
+#######
+# redis service
+- name: Restart redis.
+  service:
+    name: redis
+    state: restarted
+
+- name: Ensure redis is started and enabled at boot.
+  service:
+    name: redis
+    state: started
+    enabled: yes
+
+# rqworker service
+- name: Update rqworker service configuration file.
+  template:
+    src: rqworker@.service.j2
+    dest: "{{ scantron_dir }}/rqworker@.service"
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create symbolic link for rqworker service configuration file -- "{{ scantron_dir }}/rqworker@.service" --> /lib/systemd/system/rqworker@.service
+  file:
+    src: "{{ scantron_dir }}/rqworker@.service"
+    dest: /lib/systemd/system/rqworker@.service
+    owner: root
+    group: root
+    state: link
+
+- name: Restart rqworker service worker.
+  service:
+    name: rqworker@1
+    state: restarted
+
+- name: Ensure rqworker is started and enabled at boot.
+  service:
+    name: rqworker@1
+    state: started
+    enabled: yes
+
+
+# NFS
+#####
+- name: Upload /etc/exports.
+  template:
+    src: templates/etc/exports.j2
+    dest: /etc/exports
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Change ownership of target_files
+  file:
+    path: "/home/{{ non_root_user }}/console/target_files"
+    owner: nobody
+    group: nogroup
+    recurse: yes
+
+- name: Change ownership of scan_results
+  file:
+    path: "/home/{{ non_root_user }}/console/scan_results"
+    owner: nobody
+    group: nogroup
+    recurse: yes
+
+- name: Restart NFS service.
+  service:
+    name: nfs-kernel-server
+    state: restarted
+    enabled: yes
+
+- name: Allow TCP 2049 through firewall only from localhost.
+  ufw:
+    rule: allow
+    port: 2049
+    proto: tcp
+    from_ip: 127.0.0.1
+    to_ip: 127.0.0.1
+    comment: nfs
+  when: enable_ufw_firewall
+
+- name: Upload /etc/rc.local
+  template:
+    src: templates/etc/rc.local.j2
+    dest: /etc/rc.local
+    backup: yes
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Make nmap_to_csv.sh and nmap_to_csv.py executable.
+  file:
+    path: "/home/{{ non_root_user }}/console/scan_results/{{ item }}"
+    owner: root
+    group: root
+    mode: 0700
+  with_items:
+    - nmap_to_csv.sh
+    - nmap_to_csv.py
+    - masscan_json_to_csv.sh
+    - masscan_json_to_csv.py
+    - xml_to_json_nmap_results.py
+
+- name: chown-ing console files to root in "/home/{{ non_root_user }}/console"
+  file:
+    path: "/home/{{ non_root_user }}/console/{{ item }}"
+    owner: root
+    group: root
+    mode: 0700
+  with_items:
+    - clean_reboot.sh
+    - scantron_secrets.json
+
+- name: Change owner of autossh.key to autossh.
+  file:
+    path: "{{ scantron_dir }}/autossh.key"
+    owner: autossh
+    group: autossh
+
+- name: Add crontab entry for scan_scheduler.sh
+  cron:
+    name: Schedule any new scans every minute.
+    minute: "*"
+    hour: "*"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: "{{ scantron_dir }}/scan_scheduler.sh"
+    user: root
+
+- name: Add crontab entry for nmap_to_csv.sh
+  cron:
+    name: Convert nmap scan files for big data analytics platform ingestion every minute.
+    minute: "*"
+    hour: "*"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: "{{ scantron_dir }}/scan_results/nmap_to_csv.sh"
+    user: root
+
+- name: Add crontab entry for masscan_json_to_csv.sh
+  cron:
+    name: Convert masscan json scan files for big data analytics platform ingestion every minute.
+    minute: "*"
+    hour: "*"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: "{{ scantron_dir }}/scan_results/masscan_json_to_csv.sh"
+    user: root
+
+- name: Disable MAILTO for root's crontab.
+  cronvar:
+    name: MAILTO
+    value: '""'
+    user: root
+
+- name: Copying custom logrotate configuration file to /etc/logrotate.d/
+  copy:
+    src: "files/etc/logrotate.d/uwsgi"
+    dest: "/etc/logrotate.d/uwsgi"
+    owner: root
+    group: root
+    mode: 0644  # Must be 0644 or 0444
+
+- name: Generate graph models using django-extensions's graph_models.
+  command: "{{ venv_python }} {{ scantron_dir }}/manage.py graph_models --pygraphviz --output scantron_model_graph.png django_scantron"
+  args:
+     chdir: "{{ scantron_dir }}"
+
+- name: Determine the API token for the "engine1" user.
+  shell: echo "from rest_framework.authtoken.models import Token; print(Token.objects.filter(user__username='engine1')[0].key)" | {{ venv_python }} {{ scantron_dir }}/manage.py shell
+  args:
+    chdir: "{{ scantron_dir }}"
+  register: api_key_output
+  when: utilize_static_api_token_across_engines
+
+- name: Copy the API key to scantron/ansible-playbooks/group_vars/static_api_key
+  local_action: copy content="{{ api_key_output.stdout_lines[1] }}" dest="group_vars/static_api_key"
+  when: utilize_static_api_token_across_engines
+
+- name: Reboot the box in 1 minute.
+  command: shutdown -r 1
+  when: reboot_box

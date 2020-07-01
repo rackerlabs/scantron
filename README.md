@@ -1,6 +1,6 @@
 # Scantron
 
-![logo](./master/django_scantron/static/scantron/img/scantron_300x300.jpg)
+![logo](./console/django_scantron/static/scantron/img/scantron_300x300.jpg)
 
 <p align="left">
 <a href=""><img alt="Python 3.6" src="https://img.shields.io/badge/python-3.6-green.svg"></a>
@@ -9,12 +9,13 @@
 
 ## Overview
 
-Scantron is a distributed nmap and masscan scanner comprised of two components.  The first is a Master node that
+Scantron is a distributed nmap and masscan scanner comprised of two components.  The first is a console node that
 consists of a web front end used for scheduling scans and storing nmap scan targets and results.  The second component
-is an agent that pulls scan jobs from Master and conducts the actual nmap scanning.  A majority of the application's
-logic is purposely placed on Master to make the agent(s) as "dumb" as possible.  All nmap target files and nmap results
-reside on Master and are shared through a network file share (NFS) leveraging SSH tunnels.  The agents call back to
-Master periodically using a REST API to check for scan tasks and provide scan status updates.
+is an engine that pulls scan jobs from the console and conducts the actual nmap scanning.  A majority of the
+application's logic is purposely placed on the console to make the engine(s) as "dumb" as possible.  All nmap target
+files and nmap results reside on the console and are shared through a network file share (NFS) leveraging SSH tunnels.  
+The engines call back to the console periodically using a REST API to check for scan tasks and provide scan status
+updates.
 
 Checkout the Python [Scantron API client](https://github.com/rackerlabs/scantron/tree/master/scantron_api_client) for
 interacting with the Scantron API and driving automated workflows.
@@ -33,8 +34,8 @@ compatible with other operating systems.  Scantron's inspiration comes from:
 
 ![results](./img/results.png)
 
-Scantron relies heavily on utilizing SSH port forwards (-R / -L) as an umbilical cord to the agents.  Either an SSH
-connection from `Master --> agent` or `agent --> Master` is acceptable and may be required depending on different
+Scantron relies heavily on utilizing SSH port forwards (-R / -L) as an umbilical cord to the engines.  Either an SSH
+connection from `console --> engine` or `engine --> console` is acceptable and may be required depending on different
 firewall rules, but tweaking the port forwards and autossh commands will be necessary.  If you are unfamiliar with these
 concepts, there are some great overviews and tutorials out there:
 
@@ -55,12 +56,12 @@ is also available for creating, retrieving, updating, or deleting sites, scan co
 
 ## Hardware Requirements
 
-* Agent: If you plan on compiling masscan on an agent, you'll need at least 1024 MB of memory.  It fails to build with
-only 512 MB.  If you do not want to build masscan, set `install_masscan_on_agent` to `False` in
+* Engine: If you plan on compiling masscan on an engine, you'll need at least 1024 MB of memory.  It fails to build with
+only 512 MB.  If you do not want to build masscan, set `install_masscan_on_engine` to `False` in
 `ansible-playbooks/group_vars/all`
 
-* Master: 512 MB of memory was the smallest amount successfully tested, however, if you plan on processing large scan
-files (using the scripts found in `master/scan_results`: `masscan_json_to_csv.py`, `nmap_to_csv.py` or
+* Console: 512 MB of memory was the smallest amount successfully tested, however, if you plan on processing large scan
+files (using the scripts found in `console/scan_results`: `masscan_json_to_csv.py`, `nmap_to_csv.py` or
 `xml_to_json_nmap_results.py`), you'll need more memory.
 
 ## Ansible Deployment Server and Initial Setup
@@ -85,9 +86,9 @@ as possible has been made.
 
 #### NAT'd instances
 
-If the Master server is actually a RFC1918 IP and not the public IP (because of NAT), the NAT'd RFC1918 IP
+If the console server is actually a RFC1918 IP and not the public IP (because of NAT), the NAT'd RFC1918 IP
 (e.g., 10.1.1.2) will have to be added to the `ALLOWED_HOSTS` in
-`ansible-playbooks/roles/master/templates/production.py.j2`
+`ansible-playbooks/roles/console/templates/production.py.j2`
 
 This is common in AWS and GCP environments.
 
@@ -112,32 +113,32 @@ Edit the hosts in this file:
 
 * `ansible-playbooks/hosts`
 
-### Master Installation
+### Console Installation
 
-The recommendation is to deploy Master first.  
+The recommendation is to deploy the console first.  
 
-#### Update Master Ansible Variables
+#### Update Console Ansible Variables
 
 Edit any variables in these files before running playbook:
 
 * `ansible-playbooks/group_vars/all`
   
-If you plan on utilizing the same API key across all agents (not recommended, but easier for automated deployments),
-change `utilize_static_api_token_across_agents` to `True`.  This prevents you from having to log into each agent and
-update `agent_config.json` with the corresponding API key.  The `group_vars/static_api_key` will be created by the
-Master ansible playbook.  The Ansible agent playbook will autofill the `agent_config.json.j2` template with the API key
-found in `group_vars/static_api_key`.
+If you plan on utilizing the same API key across all engines (not recommended, but easier for automated deployments),
+change `utilize_static_api_token_across_engines` to `True`.  This prevents you from having to log into each engine and
+update `engine_config.json` with the corresponding API key.  The `group_vars/static_api_key` will be created by the
+the console ansible playbook.  The Ansible engine playbook will autofill the `engine_config.json.j2` template with the
+API key found in `group_vars/static_api_key`.
 
-**WARNING**: The `agent_config.json.j2` will generate a random `scan_agent` (e.g., `agent-847623`), so if you deploy
-more than 1 agent, you won't run into complications with agent name collisions.  You will, however, need to add create
-the user on Master, since Master returns scheduled jobs to the agent based off the agent's name!
+**WARNING**: The `engine_config.json.j2` will generate a random `scan_engine` (e.g., `engine-847623`), so if you deploy
+more than 1 engine, you won't run into complications with engine name collisions.  You will, however, need to add create
+the user on the console, since the console returns scheduled jobs to the engine based off the engine's name!
 
-Rename `master/scantron_secrets.json.empty` to `master/scantron_secrets.json` (should be done for you by
+Rename `console/scantron_secrets.json.empty` to `console/scantron_secrets.json` (should be done for you by
 `initial_setup.sh`)
 
-#### Update Master Secrets Variables
+#### Update Console Secrets Variables
 
-Update all the values `master/scantron_secrets.json` if you do not like ones generated using `initial_setup.sh`.  Only
+Update all the values `console/scantron_secrets.json` if you do not like ones generated using `initial_setup.sh`.  Only
 the `production` values are used.
 
 * All Scantron Django passwords have a minimum password length of 12.
@@ -159,42 +160,42 @@ pip3 install passlib
 python3 -c "from passlib.hash import sha512_crypt; import getpass; print(sha512_crypt.encrypt(getpass.getpass()))"
 ```
 
-#### Execute Master Ansible Playbook
+#### Execute Console Ansible Playbook
 
-Ensure you have a SSH key (or username/password) to access the Master box, specified by `--private-key` in the Ansible
+Ensure you have a SSH key (or username/password) to access the console box, specified by `--private-key` in the Ansible
 command.  User must also have password-less sudo privileges.
 
 ```bash
 cd ansible-playbooks
 
 # non-root user with password-less sudo capabilities.
-ansible-playbook master.yml -u ubuntu --become --private-key=<agent SSH key>
+ansible-playbook console.yml -u ubuntu --become --private-key=<engine SSH key>
 
 # root user.
-ansible-playbook master.yml -u root --private-key=<agent SSH key>
+ansible-playbook console.yml -u root --private-key=<engine SSH key>
 ```
 
 #### Change Django user passwords with manage.py (optional)
 
-cd into the master directory `scantron/master` and run the following to change the `admin` (or whatever user needs
+cd into the console directory `scantron/console` and run the following to change the `admin` (or whatever user needs
 their password changed) user password.
 
 ```bash
 python3 manage.py changepassword admin
 ```
 
-### Agent Installation
+### Engine Installation
 
-#### Update Agent Ansible Variables
+#### Update Engine Ansible Variables
 
 Edit any variables in these files before running playbook:
 
 * `ansible-playbooks/group_vars/all`
-* `ansible-playbooks/roles/agent/vars/main.yml`
+* `ansible-playbooks/roles/engine/vars/main.yml`
 
 #### Ensure proper user permissions
 
-Ensure you have a SSH key (or username/password) to access the agent box, specified by `--private-key` in the Ansible
+Ensure you have a SSH key (or username/password) to access the engine box, specified by `--private-key` in the Ansible
 command.  The user **must** also have password-less sudo privileges.  If you are creating the boxes on AWS, then the
 user is `ubuntu` for Ubuntu distros and the user already has password-less sudo capabilities.  If you need to add
 password-less sudo capability to a user, create a `/etc/sudoder.d/<USERNAME>` file, where `<USERNAME>` is the actual
@@ -206,96 +207,96 @@ user, and populate it with:
 
 SSH-ing in as `root` will also work for the Ansible deployment, but is not generally recommended.
 
-#### Execute Agent Ansible Playbook
+#### Execute Engine Ansible Playbook
 
 ```bash
 cd ansible-playbooks
 
 # non-root user with password-less sudo capabilities.
-ansible-playbook agent.yml -u ubuntu --become --private-key=<agent SSH key>
+ansible-playbook engine.yml -u ubuntu --become --private-key=<engine SSH key>
 
 # root user.
-ansible-playbook agent.yml -u root --private-key=<agent SSH key>
+ansible-playbook engine.yml -u root --private-key=<engine SSH key>
 ```
 
-## Adding additional agents
+## Adding additional engines
 
-A Scantron agent is synonymous with a user.
+A Scantron engine is synonymous with a user.
 
 ```none
-Agents <--> Users
+engines <--> users
 ```
 
-Users / agents are added through the webapp, so once a user / agent is added, an API token is automatically generated
-for that user / agent.  The user's / agent's password is not necessary for Scantron to function since all user / agent
-authentication is done using the API token.  The username and password can be used to login to the webapp to test API
-functionality.  More API testing information can be found in the **Test Agent API** section of this README.
+Users / engines are added through the webapp, so once a user / engine is added, an API token is automatically generated
+for that user / engine.  The user's / engine's password is not necessary for Scantron to function since all user /
+engine authentication is done using the API token.  The username and password can be used to login to the webapp to test
+API functionality.  More API testing information can be found in the **Test Engine API** section of this README.
 
-### Update /etc/rc.local with agent IPs for autossh
+### Update /etc/rc.local with engine IPs for autossh
 
-This is done automatically for one agent through Ansible.  You may have to add additional lines and update SSH keys for
-each agent if they are different.  These commands are for Master connecting to the agents.  
+This is done automatically for one engine through Ansible.  You may have to add additional lines and update SSH keys for
+each engine if they are different.  These commands are for the console connecting to the engines.  
 
 In this example:
 
-* Master - 192.168.1.99
-* agent1 - 192.168.1.100
-* agent2 - 192.168.1.101
+* console - 192.168.1.99
+* engine1 - 192.168.1.100
+* engine2 - 192.168.1.101
 
 ```bash
-# Master --> Agent 1
+# console --> engine 1
 su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" \
     -o "ServerAliveCountMax 3" -p 22 -R 4430:127.0.0.1:443 -R 2049:127.0.0.1:2049 \
-    -i /home/scantron/master/autossh.key autossh@192.168.1.100'
+    -i /home/scantron/console/autossh.key autossh@192.168.1.100'
 
-# Master --> Agent 2
+# console --> engine 2
 su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" \
     -o "ServerAliveCountMax 3" -p 22 -R 4430:127.0.0.1:443 -R 2049:127.0.0.1:2049 \
-    -i /home/scantron/master/autossh.key autossh@192.168.1.101'
+    -i /home/scantron/console/autossh.key autossh@192.168.1.101'
 ```
 
-If Master cannot SSH to an agent, then the autossh command will be run on the agent and the port forwards will be local
-(`-L`) instead of remote (`-R`).
+If the console cannot SSH to an engine, then the autossh command will be run on the engine and the port forwards will be
+local (`-L`) instead of remote (`-R`).
 
 ```bash
-# Master <-- Agent 1
+# console <-- engine 1
 su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -o "ServerAliveInterval 60" \
     -o "ServerAliveCountMax 3" -p 22 -L 4430:127.0.0.1:443 -L 2049:127.0.0.1:2049 \
-    -i /home/scantron/master/autossh.key autossh@192.168.1.99'
+    -i /home/scantron/console/autossh.key autossh@192.168.1.99'
 ```
 
-## Agents
+## Engines
 
-### Agent's agent_config.json
+### Engine's engine_config.json
 
-agent_config.json is a configuration file used by agents to provide basic settings and bootstrap communication with
-Master.  Each agent can have a different configuration file.  
+engine_config.json is a configuration file used by engines to provide basic settings and bootstrap communication with
+the console.  Each engine can have a different configuration file.  
 
 ```none
-The "api_token" will have to be modified on all the agents after deploying Master!
+The "api_token" will have to be modified on all the engines after deploying the console!
 ```
 
-Agent settings:
+Engine settings:
 
-**scan_agent:** Name of the agent.  This name is also used in the agent's HTTP `User-Agent` string to help identify
-agents calling back in the nginx web logs.
+**scan_engine:** Name of the engine.  This name is also used in the engine's HTTP `User-Agent` string to help identify
+engines calling back in the nginx web logs.
 
-**api_token:** Used to authenticate agents.  Recommend different API Tokens per agent, but the same one could be used.
+**api_token:** Used to authenticate engines.  Recommend different API Tokens per engine, but the same one could be used.
 
-**master_address:** Web address of Master.  Could be 127.0.0.1 if agent traffic is tunneled to Master through an SSH
-port forward.
+**console_address:** Web address of the console.  Could be 127.0.0.1 if engine traffic is tunneled to the console
+through an SSH port forward.
 
-**master_port:** Web port Master is listening on.
+**console_port:** Web port the console is listening on.
 
-**callback_interval_in_seconds:** Number of seconds agents wait before calling back for scan jobs.
+**callback_interval_in_seconds:** Number of seconds engines wait before calling back for scan jobs.
 
 **number_of_threads:** Number of threads used to execute/kill scan jobs.
 
-**target_files_dir:** Name of actual agent `target_files` directory on the agent box.
+**target_files_dir:** Name of actual engine `target_files` directory on the engine box.
 
-**scan_results_dir:** Name of actual agent `scan_results` directory on the agent box.
+**scan_results_dir:** Name of actual engine `scan_results` directory on the engine box.
 
-**log_verbosity:** Desired log level for logs/agent.log
+**log_verbosity:** Desired log level for logs/engine.log
 
 ```bash
 # Level     Numeric value
@@ -309,74 +310,75 @@ port forward.
 **http_useragent:** HTTP User-Agent used instead of nmap's default
 `Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)`.
 
-**supported_scan_binaries** Experimental.  Supported scan binaries advertised by the agent.
+**supported_scan_binaries** Experimental.  Supported scan binaries advertised by the engine.
 
-### Agent Execution
+### Engine Execution
 
-Update all the agents' agent_config.json files with their respective `api_token` for the agent by logging in as `admin`
-and browsing to `https://<HOST>/scantron-admin/authtoken/token` to see the corresponding API token for each user / agent.
+Update all the engines' engine_config.json files with their respective `api_token` for the engine by logging in as
+`admin` and browsing to `https://<HOST>/scantron-admin/authtoken/token` to see the corresponding API token for each
+user / engine.
 
-#### Option 1: Run agent as a service
+#### Option 1: Run engine as a service
 
-Enable scantron-agent service at startup.
+Enable scantron-engine service at startup.
 
 ```bash
-systemctl daemon-reload  # Required if scantron-agent.service changed.
-systemctl enable scantron-agent
+systemctl daemon-reload  # Required if scantron-engine.service changed.
+systemctl enable scantron-engine
 ```
 
-Disable scantron-agent service at startup.
+Disable scantron-engine service at startup.
 
 ```bash
-systemctl disable scantron-agent
+systemctl disable scantron-engine
 ```
 
 Scantron service troubleshooting commands.
 
 ```bash
-systemctl status scantron-agent
-systemctl start scantron-agent
-systemctl stop scantron-agent
-systemctl restart scantron-agent
+systemctl status scantron-engine
+systemctl start scantron-engine
+systemctl stop scantron-engine
+systemctl restart scantron-engine
 ```
 
-#### Option 2: Run agent as standalone script
+#### Option 2: Run engine as standalone script
 
 Use `screen` to avoid the script dying after disconnecting through SSH.
 
 ```bash
-screen -S agent1  # Create a screen session and name it agent1, if using screen.
+screen -S engine1  # Create a screen session and name it engine1, if using screen.
 
-cd agent
+cd engine
 source .venv/bin/activate
-python agent.py -c agent_config.json
+python engine.py -c engine_config.json
 
 CTRL + a + d  # Break out of screen session, if using screen.
 screen -ls  # View screen job, if using screen.
 
-screen -r agent1  # Resume named screen session, if using screen.
+screen -r engine1  # Resume named screen session, if using screen.
 ```
 
-### Agent Troubleshooting
+### Engine Troubleshooting
 
-Verify SSH connection from Master with reverse port redirect is up on each agent.  Any traffic hitting 127.0.0.1:4430
-will be tunneled back to Master.  This port is for communicating with the API.  Any traffic hitting 127.0.0.1:2049 will
-connect back to the NFS share on Master.
+Verify SSH connection from the console with reverse port redirect is up on each engine.  Any traffic hitting
+127.0.0.1:4430 will be tunneled back to the console.  This port is for communicating with the API.  Any traffic hitting
+127.0.0.1:2049 will connect back to the NFS share on the console.
 
 ```bash
 tcp    0    0 127.0.0.1:4430    0.0.0.0:*    LISTEN    1399/sshd: autossh
 tcp    0    0 127.0.0.1:2049    0.0.0.0:*    LISTEN    1399/sshd: autossh
 ```
 
-Check each agent's root crontab to ensure `nfs_watcher.sh` is being run every minute.
+Check each engine's root crontab to ensure `nfs_watcher.sh` is being run every minute.
 
 ```bash
 crontab -l -u root
 ```
 
-### Test Agent API
+### Test Engine API
 
-If you need to test the API without running the agent, ensure there is a 'pending' scan set to start earlier than the
+If you need to test the API without running the engine, ensure there is a 'pending' scan set to start earlier than the
 current date and time.  The server only returns scan jobs that have a 'pending' status and start datetime earlier than
 the current datetime.
 
@@ -388,22 +390,22 @@ curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://192.168.1.99:
 curl -k -X GET -H 'Authorization: Token <VALID API TOKEN>' https://127.0.0.1:4430/api/scheduled_scans
 ```
 
-You can also log into the webapp using the agent name and password and browse to `/api/?format=json` to view any scan
-jobs.  The username and agent name are the same from the webapp's point of view.
+You can also log into the webapp using the engine name and password and browse to `/api/?format=json` to view any scan
+jobs.  The username and engine name are the same from the webapp's point of view.
 
-## Master
+## Console
 
-### Master `target_files` Folder
+### Console `target_files` Folder
 
-* Place files with target IPs/hosts (fed to nmap `-iL` switch) in `master/target_files/`
-* `target_files` is an NFS share on Master that the agent reads from through an SSH tunnel.
+* Place files with target IPs/hosts (fed to nmap `-iL` switch) in `console/target_files/`
+* `target_files` is an NFS share on the console that the engine reads from through an SSH tunnel.
 
-### Master `scan_results` folder
+### Console `scan_results` folder
 
-* nmap scan results from agents go here.
-* `master/scan_results/` is an NFS share on Master that the agent writes to through an SSH tunnel.
+* nmap scan results from engines go here.
+* `console/scan_results/` is an NFS share on the console that the engine writes to through an SSH tunnel.
 
-### Master Troubleshooting
+### Console Troubleshooting
 
 1). Ensure SSH tunnels setup in `/etc/rc.local` are up.
 
@@ -414,27 +416,28 @@ ps -ef | egrep autossh
 
 2). Django logs can be found here: `/var/log/webapp/django_scantron.log`
 
-3). Check nginx logs for agent name in User-Agent field to determine which agents are calling home.
+3). Check nginx logs for engine name in User-Agent field to determine which engines are calling home.
 nginx logs: `tail -f /var/log/nginx/{access,error}.log`
 
-4). uwsgi logs: `/home/scantron/master/logs`
+4). uwsgi logs: `/home/scantron/console/logs`
 
-### Known issues with Master NFS share
+### Known issues with the console NFS share
 
 If you need to reboot a box, do it with the provided `clean_reboot.sh` script that will stop all relevant services.
 Without stopping the `nfs-kernel-server` service gracefully, sometimes the OS will hang and get angry.
 
 ## Email Alerts
 
-A vanilla Postfix instance is installed on Master that can be used to send email alerts when a scan starts, errors out,
-or finishes.  Email settings and credentials are kept in the `scantron_secrets.json` file.  Out of the box, most mail
-will likely be marked as spam/junk.  The recommendation is to use a credentialed account to send email alerts to users.
+A vanilla Postfix instance is installed on the console that can be used to send email alerts when a scan starts, errors
+out, or finishes.  Email settings and credentials are kept in the `scantron_secrets.json` file.  Out of the box, most
+mail will likely be marked as spam/junk.  The recommendation is to use a credentialed account to send email alerts to
+users.
 
 ## Miscellaneous
 
 ### Updating nmap version
 
-Ubuntu's nmap version pulled using `apt` is fairly out-of-date and the recommendation for Scantron's agents is to pull
+Ubuntu's nmap version pulled using `apt` is fairly out-of-date and the recommendation for Scantron's engines is to pull
 the latest version.
 
 For RPM-based Distributions, the latest `.rpm` packages can be found here <https://nmap.org/dist/?C=M&O=D>.  However,
@@ -523,9 +526,9 @@ the 1st or 9th ports.
 
 ## Workflow
 
-1. Create user/agent.  By default, Ansible creates `agent1`.
+1. Create user/engine.  By default, Ansible creates `engine1`.
 
-    ![create_user_agent](./img/create_user_agent.png)
+    ![create_user_engine](./img/create_user_engine.png)
 
 2. Create scan command
 
@@ -535,7 +538,7 @@ the 1st or 9th ports.
 
     * IPs, IP subnets, and FQDNs are allowed.
     * IP ranges (`192.168.1.0-10`) are not currently supported.
-    * The targets and excluded_targets are validated using `master/extract_targets.py`, which can also be used as a
+    * The targets and excluded_targets are validated using `console/extract_targets.py`, which can also be used as a
       stand alone script.
 
     ![create_site](./img/create_site.png)
@@ -545,36 +548,36 @@ the 1st or 9th ports.
     * Add start date
     * Add recurrence rules (if applicable)
 
-    The `/home/scantron/master/scan_scheduler.sh` cronjob checks every minute to determine if any scans need to be
-    queued.  If scans are found, it schedules them to be picked up by the agents.
+    The `/home/scantron/console/scan_scheduler.sh` cronjob checks every minute to determine if any scans need to be
+    queued.  If scans are found, it schedules them to be picked up by the engines.
 
     ![create_scan](./img/create_scan.png)
 
 5. View currently executing scan results
 
     ```bash
-    cd /home/scantron/master/scan_results/pending
+    cd /home/scantron/console/scan_results/pending
     ls -lart
     ```
 
-    Completed scans are moved to the `/home/scantron/master/scan_results/completed` directory.
+    Completed scans are moved to the `/home/scantron/console/scan_results/completed` directory.
 
 6. Process scans
 
     Scan files are moved between a few folders.
 
-    `/home/scantron/master/scan_results/pending` - Pending scan files from agents are stored here before being moved to
-    `scan_results/complete`
+    `/home/scantron/console/scan_results/pending` - Pending scan files from engines are stored here before being moved
+    to `scan_results/complete`
 
-    `/home/scantron/master/scan_results/complete` - Completed scan files from agents are stored here before being
+    `/home/scantron/console/scan_results/complete` - Completed scan files from engines are stored here before being
     processed by `nmap_to_csv.py`
 
     The `scantron` user executes a cron job (`nmap_to_csv.sh` which calls `nmap_to_csv.py`) every 5 minutes that will
     process the `.xml` scan results found in the `complete` directory and move them to the `processed` directory.
 
-    `/home/scantron/master/scan_results/processed` - nmap scan files already processed by `nmap_to_csv.py` reside here.
+    `/home/scantron/console/scan_results/processed` - nmap scan files already processed by `nmap_to_csv.py` reside here.
 
-    `/home/scantron/master/for_bigdata_analytics` - .csv files for big data analytics ingestion if applicable
+    `/home/scantron/console/for_bigdata_analytics` - .csv files for big data analytics ingestion if applicable
 
 ## Scantron API Client
 

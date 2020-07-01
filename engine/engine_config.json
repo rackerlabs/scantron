@@ -1,0 +1,16 @@
+{
+    "scan_engine": "engine1",
+    "api_token": "",
+    "console_address": "https://127.0.0.1",
+    "console_port": 4430,
+    "callback_interval_in_seconds": 60,
+    "number_of_threads": 8,
+    "target_files_dir": "./target_files",
+    "scan_results_dir": "./scan_results",
+    "log_verbosity": 20,
+    "http_useragent": "user-agent",
+    "supported_scan_binaries": [
+        "nmap",
+        "masscan"
+    ]
+}

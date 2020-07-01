@@ -1,9 +1,0 @@
----
-- hosts: master
-  roles:
-    - name: common
-      tags: [ common ]
-    - name: add_users
-      tags: [ add_users ]
-    - name: master
-      tags: [ master ]

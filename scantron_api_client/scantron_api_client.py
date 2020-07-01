@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "1.35"
+__version__ = "1.36"
 
 
 class ScantronClient:
@@ -231,43 +231,43 @@ class ScantronClient:
 
         return scan_results
 
-    # AGENTS
+    # ENGINES
     ########
-    # Agents - CRUD functions.
-    def create_agent(self):
+    # Engines - CRUD functions.
+    def create_engine(self):
         """Create a scan command."""
-        print("no create function, an Agent is created when a Django User is created.")
+        print("no create function, an Engine is created when a Django User is created.")
         return None
 
-    def retrieve_agent(self, agent_id):
-        """Retrieve an agent."""
-        return self.scantron_api_query(f"/api/agents/{agent_id}", method="GET")
+    def retrieve_engine(self, engine_id):
+        """Retrieve an engine."""
+        return self.scantron_api_query(f"/api/engines/{engine_id}", method="GET")
 
-    def update_agent(self, agent_id, payload):
-        """Update an agent."""
-        return self.scantron_api_query(f"/api/agents/{agent_id}", method="PATCH", payload=payload)
+    def update_engine(self, engine_id, payload):
+        """Update an engine."""
+        return self.scantron_api_query(f"/api/engines/{engine_id}", method="PATCH", payload=payload)
 
-    def delete_agent(self, agent_id):
-        """Delete an agent."""
-        return self.scantron_api_query(f"/api/agents/{agent_id}", method="DELETE")
+    def delete_engine(self, engine_id):
+        """Delete an engine."""
+        return self.scantron_api_query(f"/api/engines/{engine_id}", method="DELETE")
 
-    # Agents - Miscellaneous functions.
-    def retrieve_agents(self):
-        """Retrieve information for all the agents."""
-        return self.scantron_api_query("/api/agents").json()
+    # Engines - Miscellaneous functions.
+    def retrieve_engines(self):
+        """Retrieve information for all the engines."""
+        return self.scantron_api_query("/api/engines").json()
 
-    def retrieve_agent_id_from_agent_name(self, agent_name):
-        """Retrieve the agent ID, given an agent name."""
+    def retrieve_engine_id_from_engine_name(self, engine_name):
+        """Retrieve the engine ID, given an engine name."""
 
-        agents = self.retrieve_agents()
+        engines = self.retrieve_engines()
 
-        agent_id = None
+        engine_id = None
 
-        for agent in agents:
-            if agent["scan_agent"].lower() == agent_name.lower():
-                agent_id = agent["id"]
+        for engine in engines:
+            if engine["scan_engine"].lower() == engine_name.lower():
+                engine_id = engine["id"]
 
-        return agent_id
+        return engine_id
 
     # GLOBALLY EXCLUDED TARGETS
     ###########################
@@ -414,13 +414,13 @@ class ScantronClient:
         all_scantron_information = {}
 
         try:
-            agents = self.retrieve_agents()
+            engines = self.retrieve_engines()
             scan_commands = self.retrieve_scan_commands()
             scans = self.retrieve_scans()
             scheduled_scans = self.retrieve_scheduled_scans()
             sites = self.retrieve_sites()
 
-            all_scantron_information["agents"] = agents
+            all_scantron_information["engines"] = engines
             all_scantron_information["scan_commands"] = scan_commands
             all_scantron_information["scans"] = scans
             all_scantron_information["scheduled_scans"] = scheduled_scans

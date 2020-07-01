@@ -1,0 +1,49 @@
+[uwsgi]
+
+# Base directory
+base = {{ scantron_dir }}
+
+# Change directory
+chdir = %(base)
+
+# Django's wsgi file, %(base)/config/wsgi.py
+module = config.wsgi
+
+# Path to a virtual environment
+home = %(base)/.venv/
+
+# Tell uwsgi to spawn a master process, that will dynamically spawn new child processes for server requests
+master = true
+
+# Maximum number of processes
+processes = 4
+
+# Threads
+threads = 2
+
+# PID file
+pidfile = /tmp/scantron-console.pid
+
+# Respawn processes taking more than 120 seconds
+harakiri = 120
+
+# Respawn processes after serving 50 requests
+max-requests = 50
+
+# Socket file
+socket = /tmp/uwsgi.sock
+chmod-socket = 600
+
+# If running as root
+uid = www-data
+gid = www-data
+
+# Set the max size of a request (request-body excluded), this generally maps to the size of request headers.
+buffer-size = 32768
+
+# Log output to a file
+plugin = logfile
+logto = %(base)/logs/uwsgi.log
+
+# Clear environment on exit
+vacuum = true

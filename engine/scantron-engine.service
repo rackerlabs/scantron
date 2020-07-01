@@ -1,0 +1,14 @@
+[Unit]
+Description=Scantron engine.py service
+
+[Service]
+WorkingDirectory=/root/engine
+ExecStart=/root/engine/.venv/bin/python engine.py -c engine_config.json
+Restart=always
+Type=simple
+StandardOutput=null
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

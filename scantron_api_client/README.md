@@ -1,14 +1,14 @@
 # Scantron API Client
 
-A Python API client for interacting with the Scantron Master.  For Create/Retrieve/Update/Delete functions, a Python
+A Python API client for interacting with the Scantron console.  For Create/Retrieve/Update/Delete functions, a Python
 `requests` object is returned with the standard `requests` attributes:
 
 ```python
 import scantron_api_client
 
 sc = scantron_api_client.ScantronClient()
-agent_id = 3
-response = sc.retrieve_agent(agent_id)
+engine_id = 3
+response = sc.retrieve_engine(engine_id)
 
 print(response.status_code)
 print(response.json())
@@ -37,7 +37,7 @@ be 40 characters.
 
 ```json
 {
-    "host": "scantron-master.mydomain.com",
+    "host": "scantron-console.mydomain.com",
     "port": 443,
     "token": "7a4d...b388"
 }
@@ -72,15 +72,15 @@ print(response.status_code)
 print(response.json())
 ```
 
-### Retrieve all agents
+### Retrieve all engines
 
 ```python
-agents = sc.retrieve_agents()
+engines = sc.retrieve_engines()
 ```
 
 ### Create a site
 
-It requires the Scan Command ID and Scan Agent ID.
+It requires the Scan Command ID and Scan Engine ID.
 
 ```python
 payload = {
@@ -89,7 +89,7 @@ payload = {
   "targets": "192.168.1.1/24 fw1.example.com",
   "excluded_targets": "192.168.1.100",
   "scan_command": 1,
-  "scan_agent": 1,
+  "scan_engine": 1,
   "email_scan_alerts": True,
   "email_alert_addresses": "alice@example.com,bob@example.com",
 }

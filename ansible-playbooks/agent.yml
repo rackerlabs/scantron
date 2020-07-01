@@ -1,7 +1,0 @@
----
-- hosts: agent
-  roles:
-    - name: common
-      tags: [ common ]
-    - name: agent
-      tags: [ agent ]

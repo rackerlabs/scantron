@@ -1,0 +1,24 @@
+---
+enable_ufw_firewall: true
+reboot_box: true
+
+install_packages:
+  - autossh
+  - curl
+  - nfs-common
+  - nmap
+  - python-dev
+  - python3-pip
+  - python-virtualenv
+  - screen
+
+masscan_install_packages:
+  - git
+  - gcc
+  - libpcap-dev
+  - make
+
+# Python virtual environment.
+engine_dir: /root/engine
+venv_dir: "{{ engine_dir }}/.venv"
+venv_python: "{{ venv_dir }}/bin/python3.6"

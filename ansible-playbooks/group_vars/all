@@ -9,17 +9,17 @@ non_root_user: scantron
 application_environment: production
 
 # IPs
-master_external_ip: "{{ groups.master[0] }}"  # Read from hosts file.
-master_internal_ip: "{{ groups.master[0] }}"  # Read from hosts file, change if dual-NIC'd.
-master_fqdn: "{{ groups.master[0] }}"  # master_fqdn: scantron.yourdomain.com.
+console_external_ip: "{{ groups.console[0] }}"  # Read from hosts file.
+console_internal_ip: "{{ groups.console[0] }}"  # Read from hosts file, change if dual-NIC'd.
+console_fqdn: "{{ groups.console[0] }}"  # console_fqdn: scantron.yourdomain.com.
 
-agent_exteral_ip: "{{ groups.agent[0] }}"  # Read from hosts file.
-agent_interal_ip: "{{ groups.agent[0] }}"  # Change if dual-NIC'd.
+engine_exteral_ip: "{{ groups.engine[0] }}"  # Read from hosts file.
+engine_interal_ip: "{{ groups.engine[0] }}"  # Change if dual-NIC'd.
 
 # masscan - installation requires a minimum amount of 1 GB of memory.
-install_masscan_on_agent: True
+install_masscan_on_engine: True
 
-# If you want to set one standard API token for all agents
-# instead of having to logging into every agent and updating agent/agent_config.json
+# If you want to set one standard API token for all engines
+# instead of having to logging into every engine and updating engine/engine_config.json
 # This is less secure!
-utilize_static_api_token_across_agents: False
+utilize_static_api_token_across_engines: False
