@@ -1,0 +1,9 @@
+---
+- hosts: console
+  roles:
+    - name: common
+      tags: [ common ]
+    - name: add_users
+      tags: [ add_users ]
+    - name: console
+      tags: [ console ]

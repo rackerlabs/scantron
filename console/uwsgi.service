@@ -1,0 +1,16 @@
+# Actual file used is kept in scantron/ansible-playbooks/roles/console/templates/uwsgi.service.j2
+# Modifying this file will do nothing if you are using the Ansible playbook.
+[Unit]
+Description=uWSGI
+After=syslog.target
+
+[Service]
+ExecStart=/usr/local/bin/uwsgi --ini /home/scantron/console/scantron_uwsgi.ini
+Restart=always
+KillSignal=SIGQUIT
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target

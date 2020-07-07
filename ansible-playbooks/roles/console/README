@@ -1,0 +1,5 @@
+Installs console role.
+
+1) Edit vars/main.yml with any changes:
+
+2) Execute console.yml

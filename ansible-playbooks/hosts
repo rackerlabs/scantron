@@ -1,5 +1,5 @@
-[agent]
+[engine]
 192.168.169.165
 
-[master]
+[console]
 192.168.169.164

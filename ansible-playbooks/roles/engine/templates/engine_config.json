@@ -1,0 +1,12 @@
+{
+    "scan_engine": "engine-{{ random_engine_number }}",
+    "api_token": "{{ lookup('file', '../../../group_vars/static_api_key') }}",
+    "console_address": "https://127.0.0.1",
+    "console_port": 4430,
+    "callback_interval_in_seconds": 60,
+    "number_of_threads": 1,
+    "target_files_dir": "./target_files",
+    "scan_results_dir": "./scan_results",
+    "log_verbosity": 20,
+    "http_userengine": "user-engine"
+}

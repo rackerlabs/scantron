@@ -2,4 +2,4 @@ Installs baseline configuration for boxes.
 
 1) Edit vars/main.yml with any changes:
 
-2) Ensure role is uncommented in [agent|master].yml
+2) Ensure role is uncommented in [engine|console].yml
