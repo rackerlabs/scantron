@@ -13,7 +13,7 @@ Scantron is a distributed nmap and masscan scanner comprised of two components. 
 consists of a web front end used for scheduling scans and storing nmap scan targets and results.  The second component
 is an engine that pulls scan jobs from the console and conducts the actual nmap scanning.  A majority of the
 application's logic is purposely placed on the console to make the engine(s) as "dumb" as possible.  All nmap target
-files and nmap results reside on the console and are shared through a network file share (NFS) leveraging SSH tunnels.  
+files and nmap results reside on the console and are shared through a network file share (NFS) leveraging SSH tunnels.
 The engines call back to the console periodically using a REST API to check for scan tasks and provide scan status
 updates.
 
