@@ -22,7 +22,7 @@ import threading
 import time
 import urllib.request
 
-__version__ = "1.01"
+__version__ = "1.02"
 
 # Disable SSL/TLS verification.
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -543,8 +543,27 @@ if __name__ == "__main__":
         default="engine_config.json",
         help="Configuration file.  Defaults to 'engine_config.json'",
     )
+    parser.add_argument(
+        "-v",
+        dest="version",
+        action="store_true",
+        required=False,
+        help="Print engine version",
+    )
 
     args = parser.parse_args()
+
+    if args.version:
+        print(f"Scantron engine version: {__version__}")
+        sys.exit(0)
+
+    if not shutil.which("nmap"):
+        print(f"Path for nmap cannot be found.  Exiting...")
+        sys.exit(0)
+
+    if not shutil.which("masscan"):
+        print(f"Path for masscan cannot be found.  Exiting...")
+        sys.exit(0)
 
     # Log level is controlled in engine_config.json and assigned after reading that file.
     # Setup file logging
