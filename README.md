@@ -314,12 +314,11 @@ through an SSH port forward.
 
 ### Standalone Engine Binary
 
-This repo also contains a stand-alone binary `standalone_engine_binary/engine` that can be used for the engine.  This
-allows for a quicker deployment if managing the Python environment
-is difficult.  The basic requirements are:
+This repo also contains a stand-alone binary `engine/engine` that can be used for the engine.  This
+allows for a quicker deployment if managing the Python environment is difficult.  The basic requirements are:
 
 * nmap and masscan must exist on the system
-* the `engine_config.json` file is also provided
+* the `engine_config.json` file exists
 * An SSH tunnel to/from the console still exists to read target files and write scan results
 
 #### Creating the standalone binary
