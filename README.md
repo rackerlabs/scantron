@@ -312,6 +312,32 @@ through an SSH port forward.
 
 **supported_scan_binaries** Experimental.  Supported scan binaries advertised by the engine.
 
+### Standalone Engine Binary
+
+This repo also contains a stand-alone binary `engine/engine` that can be used for the engine.  This
+allows for a quicker deployment if managing the Python environment is difficult or cumbersome.  The basic requirements
+are:
+
+* nmap and masscan must exist on the system
+* the `engine_config.json` file exists
+* An SSH tunnel to/from the console still exists to read target files and write scan results
+
+#### Creating the standalone binary
+
+The standalone binaries can be generated on a local box.
+
+```bash
+cd engine
+virtualenv -p python3.6 .venv
+source .venv/bin/activate
+pip install pyinstaller
+pyinstaller --onefile engine.py --name engine
+
+./engine -v > standalone_engine_binary.txt
+echo -e "MD5     `md5sum engine`" >> standalone_engine_binary.txt
+echo -e "SHA-256 `sha256sum engine`" >> standalone_engine_binary.txt
+```
+
 ### Engine Execution
 
 Update all the engines' engine_config.json files with their respective `api_token` for the engine by logging in as
