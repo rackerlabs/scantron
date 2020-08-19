@@ -500,32 +500,34 @@ class ScantronClient:
             for port in ip["udp"]:
                 all_open_udp_ports.add(port)
 
-        all_open_tcp_ports_csv = ",".join(list(map(str, sorted(all_open_tcp_ports))))
-        all_open_udp_ports_csv = ",".join(list(map(str, sorted(all_open_udp_ports))))
+        all_open_tcp_ports_list = sorted(all_open_tcp_ports)
+        all_open_udp_ports_list = sorted(all_open_udp_ports)
+        all_open_tcp_ports_csv = ",".join(list(map(str, all_open_tcp_ports_list)))
+        all_open_udp_ports_csv = ",".join(list(map(str, all_open_udp_ports_list)))
 
         all_targets_with_an_open_port_dict = {
             "all_targets_with_an_open_port_list": all_targets_with_an_open_port,
             "all_targets_with_an_open_port_csv": ",".join(all_targets_with_an_open_port),
             "all_targets_with_an_open_port_size": len(all_targets_with_an_open_port),
-            "all_open_tcp_ports_list": sorted(all_open_tcp_ports),
-            "all_open_udp_ports_list": sorted(all_open_udp_ports),
+            "all_open_tcp_ports_list": all_open_tcp_ports_list,
+            "all_open_udp_ports_list": all_open_udp_ports_list,
             "all_open_tcp_ports_csv": all_open_tcp_ports_csv,
             "all_open_udp_ports_csv": all_open_udp_ports_csv,
             "unique_open_tcp_ports": len(all_open_tcp_ports),
             "unique_open_udp_ports": len(all_open_udp_ports),
         }
 
-        scanner_string = ""
+        scanner_port_string = ""
 
         if all_open_tcp_ports:
-            scanner_string = f"T:{all_open_tcp_ports_csv}"
+            scanner_port_string = f"T:{all_open_tcp_ports_csv}"
 
         if all_open_udp_ports:
             if all_open_tcp_ports:
-                scanner_string += ","
-            scanner_string += f"U:{all_open_udp_ports_csv}"
+                scanner_port_string += ","
+            scanner_port_string += f"U:{all_open_udp_ports_csv}"
 
-        all_targets_with_an_open_port_dict["scanner_string"] = scanner_string
+        all_targets_with_an_open_port_dict["scanner_port_string"] = scanner_port_string
 
         return all_targets_with_an_open_port_dict
 
