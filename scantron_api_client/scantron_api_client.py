@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "1.36"
+__version__ = "1.37"
 
 
 class ScantronClient:
@@ -486,14 +486,46 @@ class ScantronClient:
         return masscan_dict
 
     def retrieve_all_masscan_targets_with_an_open_port(self, masscan_dict):
-        """Extracts all the targets with at least 1 open port."""
+        """Extracts all the targets with at least 1 open port and a lists of all UDP and TCP open ports found."""
 
         all_targets_with_an_open_port = sorted(list(set(masscan_dict.keys())))
+
+        # Use sets to keep ports unique.
+        all_open_tcp_ports = set()
+        all_open_udp_ports = set()
+
+        for ip in masscan_dict.values():
+            for port in ip["tcp"]:
+                all_open_tcp_ports.add(port)
+            for port in ip["udp"]:
+                all_open_udp_ports.add(port)
+
+        all_open_tcp_ports_csv = ",".join(list(map(str, sorted(all_open_tcp_ports))))
+        all_open_udp_ports_csv = ",".join(list(map(str, sorted(all_open_udp_ports))))
+
         all_targets_with_an_open_port_dict = {
             "all_targets_with_an_open_port_list": all_targets_with_an_open_port,
             "all_targets_with_an_open_port_csv": ",".join(all_targets_with_an_open_port),
             "all_targets_with_an_open_port_size": len(all_targets_with_an_open_port),
+            "all_open_tcp_ports_list": sorted(all_open_tcp_ports),
+            "all_open_udp_ports_list": sorted(all_open_udp_ports),
+            "all_open_tcp_ports_csv": all_open_tcp_ports_csv,
+            "all_open_udp_ports_csv": all_open_udp_ports_csv,
+            "unique_open_tcp_ports": len(all_open_tcp_ports),
+            "unique_open_udp_ports": len(all_open_udp_ports),
         }
+
+        scanner_string = ""
+
+        if all_open_tcp_ports:
+            scanner_string = f"T:{all_open_tcp_ports_csv}"
+
+        if all_open_udp_ports:
+            if all_open_tcp_ports:
+                scanner_string += ","
+            scanner_string += f"U:{all_open_udp_ports_csv}"
+
+        all_targets_with_an_open_port_dict["scanner_string"] = scanner_string
 
         return all_targets_with_an_open_port_dict
 
