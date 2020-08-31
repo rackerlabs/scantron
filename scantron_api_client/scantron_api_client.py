@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "1.37"
+__version__ = "1.38"
 
 
 class ScantronClient:
@@ -436,12 +436,18 @@ class ScantronClient:
 
         return all_scantron_information
 
-    def generate_masscan_dict_from_masscan_result(self, scan_results_json):
-        """Distills masscan json object into relevent fields."""
+    def generate_masscan_dict_from_masscan_result(self, scan_results_json, exclude_ips=[]):
+        """Distills masscan json object into relevent fields.  An optional exclude_ips list of IP strings can be passed
+        to ignore and not return results"""
 
         masscan_dict = {}
 
         for result in scan_results_json:
+
+            # Ignore specific IPs.
+            if result["ip"] in exclude_ips:
+                print(f"Skipping IP: {result['ip']}")
+                continue
 
             # Create an empty dictionary per target.
             # Duplicates ignored because data structure is a set.
