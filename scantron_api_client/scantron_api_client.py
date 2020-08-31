@@ -438,7 +438,7 @@ class ScantronClient:
 
     def generate_masscan_dict_from_masscan_result(self, scan_results_json, exclude_ips=[]):
         """Distills masscan json object into relevent fields.  An optional exclude_ips list of IP strings can be passed
-        to ignore and not return results"""
+        to ignore and not return results for specific IPs"""
 
         masscan_dict = {}
 
