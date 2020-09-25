@@ -256,7 +256,7 @@
   shell: echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ scantron_secrets["django_super_user"] }}', '{{ scantron_secrets["django_super_user_email"] }}', '{{ scantron_secrets["django_super_user_password"] }}')" | {{ venv_python }} {{ scantron_dir }}/manage.py shell
   args:
     chdir: "{{ scantron_dir }}"
-  ignore_errors: yes  # Only applicable if playbook has already been run.  Use 'python manage.py change changepassword admin'.
+  ignore_errors: yes  # Only applicable if playbook has already been run.  Use 'python manage.py changepassword admin'.
 
 - name: Create "{{ django_user }}" user.
   shell: echo "from django.contrib.auth.models import User; User.objects.create_user('{{ scantron_secrets["django_user"] }}', '{{ scantron_secrets["django_user_email"] }}', '{{ scantron_secrets['django_user_password']  }}')" | {{ venv_python }} {{ scantron_dir }}/manage.py shell
@@ -400,6 +400,7 @@
     owner: nobody
     group: nogroup
     recurse: yes
+  tags: update_code
 
 - name: Change ownership of scan_results
   file:
@@ -407,6 +408,7 @@
     owner: nobody
     group: nogroup
     recurse: yes
+  tags: update_code
 
 - name: Restart NFS service.
   service:
@@ -465,6 +467,7 @@
 - name: Add crontab entry for scan_scheduler.sh
   cron:
     name: Schedule any new scans every minute.
+    disabled: false
     minute: "*"
     hour: "*"
     day: "*"
@@ -476,6 +479,7 @@
 - name: Add crontab entry for nmap_to_csv.sh
   cron:
     name: Convert nmap scan files for big data analytics platform ingestion every minute.
+    disabled: false
     minute: "*"
     hour: "*"
     day: "*"
@@ -487,6 +491,7 @@
 - name: Add crontab entry for masscan_json_to_csv.sh
   cron:
     name: Convert masscan json scan files for big data analytics platform ingestion every minute.
+    disabled: false
     minute: "*"
     hour: "*"
     day: "*"

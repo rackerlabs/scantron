@@ -52,6 +52,20 @@ class Engine(models.Model):
         verbose_name_plural = "Engines"
 
 
+class EnginePool(models.Model):
+    """Model for an Engine Pool"""
+
+    id = models.AutoField(primary_key=True, verbose_name="Engine Pool ID")
+    engine_pool_name = models.CharField(unique=True, max_length=255, verbose_name="Engine Pool Name")
+    scan_engines = models.ManyToManyField(Engine, verbose_name="Scan engines in pool",)
+
+    def __str__(self):
+        return str(self.engine_pool_name)
+
+    class Meta:
+        verbose_name_plural = "Engine Pools"
+
+
 class GloballyExcludedTarget(models.Model):
     """Model for globally excluded targets."""
 
@@ -163,7 +177,10 @@ class Site(models.Model):
         verbose_name="Excluded targets",
     )
     scan_command = models.ForeignKey(ScanCommand, on_delete=models.CASCADE, verbose_name="Scan binary and name")
-    scan_engine = models.ForeignKey(Engine, on_delete=models.CASCADE, verbose_name="Scan Engine")
+    scan_engine = models.ForeignKey(Engine, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Scan Engine")
+    scan_engine_pool = models.ForeignKey(
+        EnginePool, blank=True, null=True, on_delete=models.CASCADE, verbose_name="Scan Engine Pool"
+    )
     email_scan_alerts = models.BooleanField(verbose_name="Email scan alerts?")
     email_alert_addresses = models.CharField(
         unique=False, blank=True, max_length=4096, verbose_name="Email alert addresses, comma separated"
@@ -171,6 +188,16 @@ class Site(models.Model):
 
     def clean(self):
         """Checks for any invalid IPs, IP subnets, or FQDNs in the targets and excluded_targets fields."""
+
+        # Ensure only 1 scan engine / scan engine pool is selected.
+        if self.scan_engine and self.scan_engine_pool:
+            raise ValidationError("Only select a single scan engine or scan engine pool.")
+
+        # Ensure a scan engine or scan engine pool is selected.  Can't enforce within models.ForeignKey using
+        # blank=False and null=False, because they could be blank/empty if the other scan engine or scan engine pool is
+        # selected.
+        if not self.scan_engine and not self.scan_engine_pool:
+            raise ValidationError("Select a single scan engine or scan engine pool.")
 
         # Targets
         target_extractor = extract_targets.TargetExtractor(

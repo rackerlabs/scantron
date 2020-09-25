@@ -25,6 +25,11 @@ class EngineAdmin(admin.ModelAdmin):
     readonly_fields = ("id", "scan_engine", "api_token", "last_checkin")
 
 
+class EnginePoolAdmin(admin.ModelAdmin):
+
+    list_display = ("id", "engine_pool_name")
+
+
 class GloballyExcludedTargetAdmin(admin.ModelAdmin):
 
     list_display = ("id", "globally_excluded_targets", "note", "last_updated")
@@ -51,6 +56,7 @@ class SiteAdmin(admin.ModelAdmin):
         "excluded_targets",
         "scan_command",
         "scan_engine",
+        "scan_engine_pool",
         "email_scan_alerts",
         "email_alert_addresses",
     )
@@ -84,6 +90,7 @@ def _register(model, admin_class):
 _register(Session, SessionAdmin)
 
 _register(models.Engine, EngineAdmin)
+_register(models.EnginePool, EnginePoolAdmin)
 _register(models.GloballyExcludedTarget, GloballyExcludedTargetAdmin)
 _register(models.ScanCommand, ScanCommandAdmin)
 _register(models.Scan, ScanAdmin)

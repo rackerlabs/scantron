@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from django_scantron.models import (
     Engine,
+    EnginePool,
     GloballyExcludedTarget,
     ScanCommand,
     Scan,
@@ -19,6 +20,12 @@ class EngineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Engine
         fields = ("id", "scan_engine", "description", "api_token", "last_checkin")
+
+
+class EnginePoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EnginePool
+        fields = ("id", "engine_pool_name", "scan_engines")
 
 
 class GloballyExcludedTargetSerializer(serializers.ModelSerializer):
@@ -66,6 +73,8 @@ class SiteSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Checks for any invalid IPs, IP subnets, or FQDNs in the targets or excluded_targets fields."""
+
+        # TODO add scan engine / scan engine pool checks.
 
         # Targets
         if "targets" in attrs:
@@ -123,6 +132,7 @@ class SiteSerializer(serializers.ModelSerializer):
             "excluded_targets",
             "scan_command",
             "scan_engine",
+            "scan_engine_pool",
             "email_scan_alerts",
             "email_alert_addresses",
         )
