@@ -191,13 +191,13 @@ class Site(models.Model):
 
         # Ensure only 1 scan engine / scan engine pool is selected.
         if self.scan_engine and self.scan_engine_pool:
-            raise ValidationError(f"Only select a single scan engine or scan engine pool.")
+            raise ValidationError("Only select a single scan engine or scan engine pool.")
 
         # Ensure a scan engine or scan engine pool is selected.  Can't enforce within models.ForeignKey using
         # blank=False and null=False, because they could be blank/empty if the other scan engine or scan engine pool is
         # selected.
         if not self.scan_engine and not self.scan_engine_pool:
-            raise ValidationError(f"Select a single scan engine or scan engine pool.")
+            raise ValidationError("Select a single scan engine or scan engine pool.")
 
         # Targets
         target_extractor = extract_targets.TargetExtractor(
