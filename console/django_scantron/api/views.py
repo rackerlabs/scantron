@@ -13,6 +13,7 @@ import rq
 # Custom Python libraries.
 from django_scantron.api.serializers import (
     EngineSerializer,
+    EnginePoolSerializer,
     GloballyExcludedTargetSerializer,
     ScanCommandSerializer,
     ScanSerializer,
@@ -21,6 +22,7 @@ from django_scantron.api.serializers import (
 )
 from django_scantron.models import (
     Engine,
+    EnginePool,
     GloballyExcludedTarget,
     ScanCommand,
     Scan,
@@ -66,6 +68,15 @@ class EngineViewSet(DefaultsMixin, viewsets.ModelViewSet):
     model = Engine
     serializer_class = EngineSerializer
     queryset = Engine.objects.all()
+    permission_classes = (IsAuthenticated, IsAdminUser)
+
+
+class EnginePoolViewSet(DefaultsMixin, viewsets.ModelViewSet):
+    """API CRUD operations for EnginePool Model."""
+
+    model = EnginePool
+    serializer_class = EnginePoolSerializer
+    queryset = EnginePool.objects.all()
     permission_classes = (IsAuthenticated, IsAdminUser)
 
 
