@@ -80,8 +80,8 @@ def schedule_scan(scan_dict):
     # expose the other models, so we populate that ScheduledScan model instead.  The actual exposed fields for the API
     # are controlled using console/api/serializers.py.
 
-    # Ensure none of the values are empty.  blank=False is only enforced through forms, which this method of
-    # creating a scheduled scan does not honor.
+    # Ensure none of the values are empty.  blank=False is only enforced through forms, which this method of creating a
+    # scheduled scan does not honor.
     empty_scan_dict_value_detected = False
 
     for key, value in scan_dict.items():
@@ -128,7 +128,6 @@ def main():
         .filter(start_time__minute=now_time_minute)
         .filter(enable_scan=True)
     )
-    # scans = django_connector.Scan.objects.all()
 
     if not scans:
         ROOT_LOGGER.info(f"No scans scheduled to start at this time: {now_time:%H}:{now_time:%M}.")
@@ -261,10 +260,6 @@ def main():
         # Scan Engine / Scan Engine Pool Logic
         ######################################
 
-        # import ipdb
-
-        # ipdb.set_trace()
-
         # Single scan engine selected.
         if scan.site.scan_engine:
             scan_engine = scan.site.scan_engine.scan_engine
@@ -312,7 +307,7 @@ def main():
             # total_scan_engines_in_pool = 3
             total_scan_engines_in_pool = scan_engines_in_pool.count()
 
-            # Create a list of the max number of elements per sliced list.
+            # Create a list of the number of targets per engine.
             # number_of_targets_per_scan_engine = [5, 4, 4]
             number_of_targets_per_scan_engine = distribute(included_targets_as_list_size, total_scan_engines_in_pool)
 
@@ -326,22 +321,22 @@ def main():
             # included_targets_iterator must be assigned outside of itertools.islice()
             included_targets_iterator = iter(included_targets_as_list)
             targets_per_scan_engine = [
-                list(itertools.islice(included_targets_iterator, elem)) for elem in number_of_targets_per_scan_engine
+                list(itertools.islice(included_targets_iterator, i)) for i in number_of_targets_per_scan_engine
             ]
 
             # Loop through the list of lists to add new scan jobs.
-            for index, included_target_slice in enumerate(targets_per_scan_engine):
+            for index, targets_scanned_by_scan_engine in enumerate(targets_per_scan_engine):
 
-                # Since targets_per_scan_engine is already broken down into total_scan_engines_in_pool chunks, just use
+                # Since targets_per_scan_engine is already broken down into total_scan_engines_in_pool lists, just use
                 # the index to assign an engine.
                 scan_engine = scan_engines_in_pool[index].scan_engine
 
                 # Build result_file_base_name file.
                 result_file_base_name = f"{clean_text(site_name)}__{clean_text(scan_engine)}__{index + 1}_of_{total_scan_engines_in_pool}_{timestamp}"
-                print(index, included_target_slice, result_file_base_name)
+                # print(index, targets_scanned_by_scan_engine, result_file_base_name)
 
                 # Convert list of targets back to a string.
-                included_targets = " ".join(included_target_slice).strip()
+                included_targets = " ".join(targets_scanned_by_scan_engine).strip()
 
                 scan_dict = {
                     "site_name": site_name,
