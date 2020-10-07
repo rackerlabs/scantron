@@ -46,9 +46,11 @@ def write_results_to_csv_file(results_list, csv_file_name):
             for result in results_list:
                 writer.writerow(result)
 
+        # Rackspace specific column, feel free to disregard.
         # There are no open ports, but still write a value "no" to the file for the "openports" column.  This allows the
-        # big data analytics platform to distinguish no actual open ports from "did the scan actually work and we didn't
-        # receive any results?".
+        # big data analytics platform agent to identify a non-empty file, consume it, and send to the platform.
+        # Otherwise, it would ignore the empty .csv file, in which we can't distinguish if there are no actual open
+        # ports from "did the scan actually work and we didn't receive any results?".
         else:
             writer.writerow({"openports": "no"})
 
@@ -94,7 +96,7 @@ def main():
                     for service in host.services:
 
                         result_dict = {
-                            "openports": "yes",
+                            "openports": "yes",  # Rackspace specific column, feel free to disregard.
                             "start_time": report.started,
                             "end_time": report.endtime,
                             "site_name": site_name,
