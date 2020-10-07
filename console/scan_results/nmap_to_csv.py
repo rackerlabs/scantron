@@ -56,9 +56,9 @@ def write_results_to_csv_file(results_list, csv_file_name):
 
 
 def main():
-    root_dir = "/home/scantron/console"
 
     # Build directory paths.
+    root_dir = "/home/scantron/console"
     complete_dir = os.path.join(root_dir, "scan_results", "complete")
     processed_dir = os.path.join(root_dir, "scan_results", "processed")
     bigdata_analytics_dir = os.path.join(root_dir, "for_bigdata_analytics")
@@ -85,7 +85,7 @@ def main():
             results_list = []
             report = NmapParser.parse_fromfile(scan)
 
-            # Loop though all hosts in xml file. Create result_dict objects storing the necessary information.
+            # Loop through all hosts in xml file. Create result_dict objects storing the necessary information.
             for host in report.hosts:
 
                 # Loop through services for each host.
@@ -103,7 +103,7 @@ def main():
                             "target": host.address,
                             "protocol": service.protocol,
                             "port": service.port,
-                            "service_name": service.service,  # Populated below.
+                            "service_name": service.service,
                             "banner": "",  # Populated below.
                             "state": service.state,
                         }

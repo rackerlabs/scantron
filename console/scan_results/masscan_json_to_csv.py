@@ -98,9 +98,8 @@ def write_results_to_csv_file(results_list, csv_file_name):
 
 def main():
 
-    root_dir = "/home/scantron/console"
-
     # Build directory paths.
+    root_dir = "/home/scantron/console"
     complete_dir = os.path.join(root_dir, "scan_results", "complete")
     processed_dir = os.path.join(root_dir, "scan_results", "processed")
     bigdata_analytics_dir = os.path.join(root_dir, "for_bigdata_analytics")
@@ -108,12 +107,11 @@ def main():
     # Grab a list of json files from the "complete" folder.
     json_scans = glob.glob(os.path.join(complete_dir, "*.json"))
 
-    # Loop through all valid .json files and export them to .csv files.
-    # Then move them to the "processed" directory.
+    # Loop through all valid .json files and export them to .csv files.  Then move them to the "processed" directory.
     for scan in json_scans:
 
         try:
-            # Variables used for every file.
+
             base_scan_file_name = os.path.basename(scan).split(".json")[0]
             csv_file_name = f"{base_scan_file_name}.csv"
             results_list = []
