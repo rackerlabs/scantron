@@ -141,7 +141,7 @@ def main():
                                     "openports": "yes",
                                     "start_time": result["timestamp"],
                                     "end_time": result["timestamp"],
-                                    "site_name": site_name.lower(),
+                                    "site_name": site_name,
                                     "engine": engine,
                                     "scan_binary": "masscan",
                                     "target": result["ip"],
