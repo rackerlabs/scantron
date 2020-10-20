@@ -10,7 +10,7 @@ install_packages:
   - nginx
   - nmap
   - postfix
-  - postgresql-contrib
+  - "postgresql-contrib-{{ postgresql_version }}"
   - python-dev
   - python3-pip
   - python-virtualenv
