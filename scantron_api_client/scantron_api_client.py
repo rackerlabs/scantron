@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "1.38"
+__version__ = "0.0.1"
 
 
 class ScantronClient:
