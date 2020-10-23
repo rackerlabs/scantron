@@ -22,3 +22,7 @@ masscan_install_packages:
 engine_dir: /root/engine
 venv_dir: "{{ engine_dir }}/.venv"
 venv_python: "{{ venv_dir }}/bin/python3.6"
+
+# Additional nmap .nse script file URLs.  Will be saved in /usr/share/nmap/scripts/
+nse_script_urls:
+  - https://raw.githubusercontent.com/theMiddleBlue/nmap-elasticsearch-nse/master/elasticsearch.nse
