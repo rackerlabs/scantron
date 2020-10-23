@@ -3,25 +3,19 @@ Various utility methods.
 """
 # Standard Python libraries.
 import ipaddress
-import pprint
 import time
 
 # Third party Python libraries.
+from requests_toolbelt.utils import dump
 
 # Custom Python libraries.
 
 
-def debug_requests_response(response, endpoint="", payload="", parameters=""):
+def debug_requests_response(response):
     """Provide debug print info for a requests response object."""
 
-    print(f"HTTP server returned error HTTP {response.status_code} - {http_status_code(response.status_code)}")
-    print(f"ENDPOINT: {endpoint}")
-    print(f"PAYLOAD: {payload}")
-    print(f"PARAMETERS: {parameters}")
-    print("HEADERS:")
-    print(pprint.pformat(response.headers))
-    print("RESPONSE:")
-    print(pprint.pformat(response.text))
+    data = dump.dump_all(response)
+    print(data.decode("utf-8"))
 
 
 def get_timestamp():
