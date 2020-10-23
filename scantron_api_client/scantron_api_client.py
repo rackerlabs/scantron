@@ -66,6 +66,8 @@ class ScantronClient:
         if self.api_self_signed:
             urllib3.disable_warnings()
 
+        self.debug_print = False
+
     def scantron_api_query(self, endpoint, **kwargs):
         """Executes a properly formatted API call to the Scantron API with the supplied arguments."""
 
@@ -110,7 +112,7 @@ class ScantronClient:
                     )
 
                     if response.status_code != 200:
-                        utility.debug_requests_response(response, endpoint, payload, parameters)
+                        utility.debug_requests_response(response)
 
                     break
 
@@ -125,7 +127,7 @@ class ScantronClient:
                     )
 
                     if response.status_code != 201:
-                        utility.debug_requests_response(response, endpoint, payload, parameters)
+                        utility.debug_requests_response(response)
 
                     break
 
@@ -140,7 +142,7 @@ class ScantronClient:
                     )
 
                     if response.status_code != 200:
-                        utility.debug_requests_response(response, endpoint, payload, parameters)
+                        utility.debug_requests_response(response)
 
                     break
 
@@ -155,7 +157,7 @@ class ScantronClient:
                     )
 
                     if response.status_code != 200:
-                        utility.debug_requests_response(response, endpoint, payload, parameters)
+                        utility.debug_requests_response(response)
 
                     break
 
@@ -170,7 +172,7 @@ class ScantronClient:
                     )
 
                     if response.status_code != 204:
-                        utility.debug_requests_response(response, endpoint, payload, parameters)
+                        utility.debug_requests_response(response)
 
                     break
 
@@ -191,6 +193,9 @@ class ScantronClient:
                     sys.exit(1)
                 else:
                     print("Packet loss when attempting to reach the Scantron API.")
+
+        if self.debug_print:
+            utility.debug_requests_response(response)
 
         return response
 
