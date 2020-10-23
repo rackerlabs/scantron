@@ -19,7 +19,6 @@ Scheduled Scans
             <th>Site Name</th>
             <th>Scan Engine</th>
             <th>Scheduled Start Time</th>
-            <th>Scan Binary</th>
             <th>Scan Command</th>
             <th>Scan Status</th>
             <th>Completion Time</th>
@@ -34,7 +33,6 @@ Scheduled Scans
             <td>{{ scan.site_name }}</td>
             <td>{{ scan.scan_engine }}</td>
             <td>{{ scan.start_datetime|date:"D Y-m-j H:i:s" }} </td>
-            <td>{{ scan.scan_binary }}</td>
             <td>{{ scan.scan_binary }} {{ scan.scan_command | truncatechars:255 }}</td>
             <td>{{ scan.scan_status }}</td>
             <td>{{ scan.completed_time|date:"D Y-m-j H:i:s" }}</td>
