@@ -239,6 +239,7 @@ class Site(models.Model):
 
     class Meta:
         verbose_name_plural = "Sites"
+        ordering = ["site_name"]
 
 
 class Scan(models.Model):

@@ -163,7 +163,7 @@
     owner: postgres
     group: postgres
     mode: 0640
-  when: postgresql_hba_entries
+  when: postgresql_hba_entries | bool
 
 - name: Restart postgresql and ensure postgresql is enabled at boot.
   service:
