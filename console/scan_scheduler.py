@@ -28,9 +28,13 @@ def clean_text(uncleaned_text):
         .replace(" - ", "_")
         .replace("-", "_")
         .replace(" ", "_")
-        .replace("__", "_")
         .replace("/", "_")
     )
+
+    # Ensures __ can be used as a delimiter to extract site name, engine, and timestamp in the
+    # console/scan_results/masscan_json_to_csv.py and console/scan_results/nmap_to_csv.py scripts.
+    while "__" in cleaned_text:
+        cleaned_text = cleaned_text.replace("__", "_")
 
     return cleaned_text
 
