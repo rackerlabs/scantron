@@ -33,11 +33,11 @@ Scheduled Scans
             <td>{{ scan.id }}</td>
             <td>{{ scan.site_name }}</td>
             <td>{{ scan.scan_engine }}</td>
-            <td>{{ scan.start_time|date:"H:i" }}</td>
+            <td>{{ scan.start_datetime|date:"D Y-m-j H:i:s" }} </td>
             <td>{{ scan.scan_binary }}</td>
             <td>{{ scan.scan_binary }} {{ scan.scan_command | truncatechars:255 }}</td>
             <td>{{ scan.scan_status }}</td>
-            <td>{{ scan.completed_time|date:"Y-m-j H:i:s" }}</td>
+            <td>{{ scan.completed_time|date:"D Y-m-j H:i:s" }}</td>
             {% if scan.scan_binary == "nmap" %}
                 {% if scan.scan_status == "completed" %}
                 <td>
