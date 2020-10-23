@@ -146,6 +146,16 @@
     mode: 0700
   ignore_errors: True  # For rerun conflicts.
 
+- name: Download additional Nmap Scripting Engine (NSE) scripts.
+  get_url:
+    validate_certs: True
+    url: "{{ item }}"
+    dest: /usr/share/nmap/scripts/
+    mode: 0644
+    owner: root
+    group: root
+  loop: "{{ nse_script_urls }}"
+
 - name: Reboot the box in 1 minute.
   command: shutdown -r 1
   when: reboot_box
