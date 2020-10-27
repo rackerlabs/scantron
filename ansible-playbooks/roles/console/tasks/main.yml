@@ -479,7 +479,7 @@
 - name: Add crontab entry for nmap_to_csv.sh
   cron:
     name: Convert nmap scan files for big data analytics platform ingestion every minute.
-    disabled: false
+    disabled: true
     minute: "*"
     hour: "*"
     day: "*"
@@ -491,7 +491,7 @@
 - name: Add crontab entry for masscan_json_to_csv.sh
   cron:
     name: Convert masscan json scan files for big data analytics platform ingestion every minute.
-    disabled: false
+    disabled: true
     minute: "*"
     hour: "*"
     day: "*"
