@@ -438,15 +438,16 @@
 - name: Make nmap_to_csv.sh and nmap_to_csv.py executable.
   file:
     path: "/home/{{ non_root_user }}/console/scan_results/{{ item }}"
-    owner: root
-    group: root
-    mode: 0700
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    mode: 0755
   with_items:
     - nmap_to_csv.sh
     - nmap_to_csv.py
     - masscan_json_to_csv.sh
     - masscan_json_to_csv.py
     - xml_to_json_nmap_results.py
+  tags: update_code
 
 - name: chown-ing console files to root in "/home/{{ non_root_user }}/console"
   file:
