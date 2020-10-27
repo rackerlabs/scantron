@@ -170,7 +170,7 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
                 completed_files_dir = os.path.join(scan_results_dir, "complete")
                 cancelled_files_dir = os.path.join(scan_results_dir, "cancelled")
 
-                if new_scan_status == "cancel":
+                if new_scan_status == "cancelled":
                     # Move scan files to the "cancelled" directory for historical purposes.
                     utility.move_wildcard_files(
                         f"{scheduled_scan_dict['result_file_base_name']}*", pending_files_dir, cancelled_files_dir
