@@ -14,7 +14,7 @@ from django.core.mail import send_mail
 
 # Custom Python libraries.
 import django_connector
-
+from scan_results import nmap_to_csv, masscan_json_to_csv
 
 # Setup logging configuration.
 logger = logging.getLogger("rq.worker")
@@ -103,5 +103,11 @@ NMAP: https://{console_fqdn}/results/{scheduled_scan_id}?file_type=nmap
 
         logger.info(f"Successfully sent email for Scheduled Scan ID: {scheduled_scan_id}")
 
-    # 2 Do other stuff
-    # TODO
+    # 2) Convert scan results to .csv for big data analytics.
+    # Calling the functions here instead of relying on cron job that runs every minute.  The scripts also moves the
+    # .xml files from console/scan_results/complete to console/scan_results/processed
+    if scan_status == "completed":
+        if scan_binary == "nmap":
+            nmap_to_csv.main()
+        elif scan_binary == "masscan":
+            masscan_json_to_csv.main()
