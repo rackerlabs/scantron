@@ -176,7 +176,6 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
                         f"{scheduled_scan_dict['result_file_base_name']}*", pending_files_dir, cancelled_files_dir
                     )
 
-                # Update the scheduled_scan_dict with the completed scan time.
                 if new_scan_status == "completed":
                     # Move files from "pending" directory to "complete" directory.
                     utility.move_wildcard_files(
