@@ -436,7 +436,7 @@
     group: root
     mode: 0755
 
-- name: Change Python script owners and file permissions.
+- name: Change Python scripts owner and file permissions.
   file:
     path: "/home/{{ non_root_user }}/console/scan_results/{{ item }}"
     owner: "{{ non_root_user }}"
