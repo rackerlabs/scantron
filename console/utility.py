@@ -40,8 +40,6 @@ logging.basicConfig(
 )
 # fmt: on
 
-# https://github.com/pennersr/django-allauth/blob/7b81531bc89ae98dc6f687611743db5b36cda9a2/allauth/account/adapter.py#L448
-
 
 def move_wildcard_files(wildcard_filename, source_directory, destination_directory):
     """Move files with supported fnmatch patterns (* and ?)."""
