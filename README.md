@@ -332,10 +332,13 @@ virtualenv -p python3.6 .venv
 source .venv/bin/activate
 pip install pyinstaller
 pyinstaller --onefile engine.py --name engine
+mv dist/engine .
 
 ./engine -v > standalone_engine_binary.txt
 echo -e "MD5     `md5sum engine`" >> standalone_engine_binary.txt
 echo -e "SHA-256 `sha256sum engine`" >> standalone_engine_binary.txt
+
+rm -rf __pycache__ build dist engine.spec .venv
 ```
 
 ### Engine Execution

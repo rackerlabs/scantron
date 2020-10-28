@@ -2,7 +2,10 @@
 Utility methods for other scripts to use.
 """
 # Standard Python libraries.
+import fnmatch
 import logging
+import os
+import shutil
 from logging import handlers
 
 # Third party Python libraries.
@@ -11,7 +14,7 @@ from django.core.mail import send_mail
 
 # Custom Python libraries.
 import django_connector
-
+from scan_results import nmap_to_csv, masscan_json_to_csv
 
 # Setup logging configuration.
 logger = logging.getLogger("rq.worker")
@@ -37,7 +40,15 @@ logging.basicConfig(
 )
 # fmt: on
 
-# https://github.com/pennersr/django-allauth/blob/7b81531bc89ae98dc6f687611743db5b36cda9a2/allauth/account/adapter.py#L448
+
+def move_wildcard_files(wildcard_filename, source_directory, destination_directory):
+    """Move files with supported fnmatch patterns (* and ?)."""
+
+    file_list = os.listdir(source_directory)
+
+    for file_name in file_list:
+        if fnmatch.fnmatch(file_name, wildcard_filename):
+            shutil.move(os.path.join(source_directory, file_name), os.path.join(destination_directory, file_name))
 
 
 def process_scan_status_change(scheduled_scan_dict):
@@ -90,5 +101,11 @@ NMAP: https://{console_fqdn}/results/{scheduled_scan_id}?file_type=nmap
 
         logger.info(f"Successfully sent email for Scheduled Scan ID: {scheduled_scan_id}")
 
-    # 2 Do other stuff
-    # TODO
+    # 2) Convert scan results to .csv for big data analytics.
+    # Calling the functions here instead of relying on cron job that runs every minute.  The scripts also moves the
+    # .xml files from console/scan_results/complete to console/scan_results/processed
+    if scan_status == "completed":
+        if scan_binary == "nmap":
+            nmap_to_csv.main()
+        elif scan_binary == "masscan":
+            masscan_json_to_csv.main()

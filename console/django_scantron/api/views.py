@@ -1,5 +1,6 @@
 # Standard Python libraries.
 import datetime
+import os
 import pytz
 
 # Third party Python libraries.
@@ -163,8 +164,33 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
 
                     return JsonResponse(response_dict)
 
-                # Update the scheduled_scan_dict with the most recent scan_status state from the PUT request.  When
-                # originally querying above, the old state is passed to utility.py unless it is updated.
+                # Setup folder directories.
+                scan_results_dir = "/home/scantron/console/scan_results"
+                pending_files_dir = os.path.join(scan_results_dir, "pending")
+                completed_files_dir = os.path.join(scan_results_dir, "complete")
+                cancelled_files_dir = os.path.join(scan_results_dir, "cancelled")
+
+                if new_scan_status == "cancelled":
+                    # Move scan files to the "cancelled" directory for historical purposes.
+                    utility.move_wildcard_files(
+                        f"{scheduled_scan_dict['result_file_base_name']}*", pending_files_dir, cancelled_files_dir
+                    )
+
+                if new_scan_status == "completed":
+                    # Move files from "pending" directory to "complete" directory.
+                    utility.move_wildcard_files(
+                        f"{scheduled_scan_dict['result_file_base_name']}*", pending_files_dir, completed_files_dir
+                    )
+
+                    # Django compliant pre-formated datetimestamp.
+                    now_datetime = get_current_time()
+                    ScheduledScan.objects.filter(scan_engine=request.user).filter(pk=pk).update(
+                        completed_time=now_datetime
+                    )
+
+                # Update the scheduled_scan_dict with the most recent scan_status state from the PATCH request.  When
+                # originally querying above, the old state would passed to utility.py since it hasn't officially been
+                # updated by Django's .update() yet.
                 scheduled_scan_dict["scan_status"] = new_scan_status
 
                 # Create a redis connection object.

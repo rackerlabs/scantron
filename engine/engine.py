@@ -7,8 +7,6 @@
 
 # Standard Python libraries.
 import argparse
-import datetime
-import fnmatch
 import json
 import logging
 import os
@@ -22,7 +20,7 @@ import threading
 import time
 import urllib.request
 
-__version__ = "1.02"
+__version__ = "1.03"
 
 # Disable SSL/TLS verification.
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -35,13 +33,6 @@ LOG_FORMATTER = logging.Formatter(
 
 # Track scan process IDs, subprocess.Popen() objects, and scan status state.
 SCAN_PROCESS_DICT = {}
-
-
-def get_current_time():
-    """Retrieve a Django compliant pre-formated datetimestamp."""
-
-    now_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return now_datetime
 
 
 def build_masscan_command(scan_command, target_file, excluded_target_file, json_file, http_useragent):
@@ -57,16 +48,6 @@ def build_masscan_command(scan_command, target_file, excluded_target_file, json_
     masscan_command = f"masscan {scan_command} {file_options}"
 
     return masscan_command
-
-
-def move_wildcard_files(wildcard_filename, source_directory, destination_directory):
-    """Move files with supported fnmatch patterns (* and ?)."""
-
-    file_list = os.listdir(source_directory)
-
-    for file_name in file_list:
-        if fnmatch.fnmatch(file_name, wildcard_filename):
-            shutil.move(os.path.join(source_directory, file_name), os.path.join(destination_directory, file_name))
 
 
 def check_for_scan_jobs():
@@ -179,8 +160,6 @@ def scan_job_handler(scan_job_dict):
 
         # Setup folder directories.
         pending_files_dir = os.path.join(scan_results_dir, "pending")
-        completed_files_dir = os.path.join(scan_results_dir, "complete")
-        cancelled_files_dir = os.path.join(scan_results_dir, "cancelled")
 
         if scan_binary not in supported_scan_binaries:
             ROOT_LOGGER.error(f"Invalid scan binary specified: {scan_binary}")
@@ -248,9 +227,6 @@ def scan_job_handler(scan_job_dict):
                     SCAN_PROCESS_DICT.pop(scan_binary_process_id)
 
                     if scan_status == "cancel":
-                        # Move scan files to the "cancelled" directory for historical purposes.
-                        move_wildcard_files(f"{result_file_base_name}*", pending_files_dir, cancelled_files_dir)
-
                         updated_scan_status = "cancelled"
 
                     elif scan_status == "pause":
@@ -400,15 +376,9 @@ def scan_job_handler(scan_job_dict):
                 # check ensures the scan status of a masscan process isn't "paused".
                 if SCAN_PROCESS_DICT[scan_binary_process_id]["scan_status"] == "started":
 
-                    # Move files from "pending" directory to "complete" directory.
-                    move_wildcard_files(f"{result_file_base_name}*", pending_files_dir, completed_files_dir)
-
-                    # Update completed_time, scan_status, and result_file_base_name.
-                    now_datetime = get_current_time()
+                    # Update scan_status.
                     update_info = {
-                        "completed_time": now_datetime,
                         "scan_status": "completed",
-                        "result_file_base_name": result_file_base_name,
                     }
 
                     update_scan_information(scan_job, update_info)
@@ -544,11 +514,7 @@ if __name__ == "__main__":
         help="Configuration file.  Defaults to 'engine_config.json'",
     )
     parser.add_argument(
-        "-v",
-        dest="version",
-        action="store_true",
-        required=False,
-        help="Print engine version",
+        "-v", dest="version", action="store_true", required=False, help="Print engine version",
     )
 
     args = parser.parse_args()
@@ -564,6 +530,10 @@ if __name__ == "__main__":
     if not shutil.which("masscan"):
         print(f"Path for masscan cannot be found.  Exiting...")
         sys.exit(0)
+
+    if not os.path.isdir("./logs"):
+        print("./logs directory does not exist, creating it.")
+        os.mkdir("./logs", mode=0o700)
 
     # Log level is controlled in engine_config.json and assigned after reading that file.
     # Setup file logging
