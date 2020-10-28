@@ -531,6 +531,10 @@ if __name__ == "__main__":
         print(f"Path for masscan cannot be found.  Exiting...")
         sys.exit(0)
 
+    if not os.path.isdir("./logs"):
+        print("./logs directory does not exist, creating it.")
+        os.mkdir("./logs", mode=0o700)
+
     # Log level is controlled in engine_config.json and assigned after reading that file.
     # Setup file logging
     log_file_handler = logging.FileHandler(os.path.join("logs", "engine.log"))
