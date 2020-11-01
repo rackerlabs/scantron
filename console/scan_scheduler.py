@@ -336,7 +336,8 @@ def main():
                 scan_engine = scan_engines_in_pool[index].scan_engine
 
                 # Build result_file_base_name file.
-                result_file_base_name = f"{clean_text(site_name)}__{clean_text(scan_engine)}__{index + 1}_of_{total_scan_engines_in_pool}_{timestamp}"
+                # result_file_base_name = f"{clean_text(site_name)}__{clean_text(scan_engine)}__{index + 1}_of_{total_scan_engines_in_pool}_{timestamp}"
+                result_file_base_name = f"{clean_text(site_name)}__{clean_text(scan_engine)}__{timestamp}.part{index + 1}"
                 # print(index, targets_scanned_by_scan_engine, result_file_base_name)
 
                 # Convert list of targets back to a string.
