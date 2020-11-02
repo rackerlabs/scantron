@@ -10,15 +10,15 @@ xml_scans = [
     "/home/scantron/console/scan_results/complete/test__engine3__3_of_3_20200924_1533.xml",
 ]
 
-merge_xml.main(xml_scans, "my_combined_scans.xml")
+merge_nmap_xml_files.main(xml_files=xml_files, merged_filename="my_combined_scans.xml")
 """
 # Standard Python libraries.
 import argparse
 import logging
 import os
+import sys
 import time
 import xml.etree.ElementTree as ET
-import sys
 
 # Third party Python libraries.
 
@@ -194,5 +194,5 @@ if __name__ == "__main__":
         print(f"Not a directory: {args.directory}")
         sys.exit(1)
 
-    # Pass set of xml files to main.
+    # Pass set of XML files to main.
     main(xml_files_set)

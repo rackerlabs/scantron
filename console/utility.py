@@ -14,7 +14,7 @@ from django.core.mail import send_mail
 
 # Custom Python libraries.
 import django_connector
-from scan_results import merge_nmap_xml_files, masscan_json_to_csv, nmap_to_csv
+from scan_results import masscan_json_to_csv, merge_masscan_json_files, merge_nmap_xml_files, nmap_to_csv
 
 # Setup logging configuration.
 logger = logging.getLogger("rq.worker")
@@ -105,6 +105,8 @@ NMAP: https://{console_fqdn}/results/{scheduled_scan_id}?file_type=nmap
     # If a scan engine pool is used, ensure all the pooled scans are complete before combining the XML/JSON files.
     if site.scan_engine_pool and scan_status == "completed":
 
+        pooled_scan_result_file_base_name = scheduled_scan_dict["pooled_scan_result_file_base_name"]
+
         # Ensure no scans are still running in the pool.  To do that, filter on the site name, start date, and start
         # time.  Can't filter on the start_datetime datetime.datetime object directly, must be broken up into the
         # .date() and .time() components.
@@ -157,13 +159,12 @@ NMAP: https://{console_fqdn}/results/{scheduled_scan_id}?file_type=nmap
                 logger.error(f"No files to merge with match criteria: {match_criteria}")
                 return
 
-            # Generate the merged file name to use.  Only use the site name and start date.  Replacing the engine used
-            # with "__pooled__".  Whatever is used, there must be "__" surrounding it since those are used to .split()
-            # in console/scan_results/nmap_to_csv.py
-            merged_filename = f"{base_name_parts[0]}__pooled__{base_name_parts[2]}.xml"
+            # Convert from a set to a list.
+            files_to_merge = list(files_to_merge)
 
+            # Merge into 1 final XML file.
             final_merged_filename = merge_nmap_xml_files.main(
-                xml_files=files_to_merge, merged_filename=os.path.join(complete_dir, merged_filename)
+                xml_files=files_to_merge, merged_filename=os.path.join(complete_dir, pooled_scan_result_file_base_name)
             )
 
             # merge_nmap_xml_files.main() returns an empty string if it is not successful.
@@ -184,10 +185,21 @@ NMAP: https://{console_fqdn}/results/{scheduled_scan_id}?file_type=nmap
                 logger.error(f"No files to merge with match criteria: {match_criteria}")
                 return
 
-            # Generate the merged file name to use.  Only use the site name and start date.
-            merged_filename = f"{base_name_parts[0]}__pooled__{base_name_parts[2]}.json"
+            # Convert from a set to a list.
+            files_to_merge = list(files_to_merge)
 
-            # TODO - call a json merge function.
+            # Merge into 1 final JSON file.
+            final_merged_filename = merge_masscan_json_files.main(
+                json_files=files_to_merge,
+                merged_filename=os.path.join(complete_dir, pooled_scan_result_file_base_name),
+                pretty_print_json=True,
+            )
+
+            if final_merged_filename:
+                logger.info(f"Successfully merged JSON files {files_to_merge} into {final_merged_filename}")
+            else:
+                logger.error(f"Error merging JSON files {files_to_merge}")
+                return
 
     # 2) Convert scan results to .csv for big data analytics.
     # Calling the functions here instead of relying on cron job that runs every minute.  The scripts also moves the

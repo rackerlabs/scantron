@@ -77,6 +77,7 @@ class ScheduledScanAdmin(admin.ModelAdmin):
         "scan_status",
         "completed_time",
         "result_file_base_name",
+        "pooled_scan_result_file_base_name",
         "scan_binary_process_id",
     )
 

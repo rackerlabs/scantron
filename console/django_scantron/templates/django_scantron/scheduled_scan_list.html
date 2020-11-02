@@ -40,19 +40,35 @@ Scheduled Scans
                 {% if scan.scan_status == "completed" %}
                 <td>
                     <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=nmap">{{ scan.result_file_base_name }}.nmap</a><br>
-                    <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=xml">{{ scan.result_file_base_name }}.xml</a>
+                    <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=xml">{{ scan.result_file_base_name }}.xml<br></a>
+                    {% if scan.pooled_scan_result_file_base_name %}
+                        <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=pooled">{{ scan.pooled_scan_result_file_base_name }}<br></a>
+                    {% endif %}
                 </td>
                 {% else %}
                 <td>
                     {{ scan.result_file_base_name }}.nmap<br>
-                    {{ scan.result_file_base_name }}.xml
+                    {{ scan.result_file_base_name }}.xml<br>
+                    {% if scan.pooled_scan_result_file_base_name %}
+                        {{ scan.pooled_scan_result_file_base_name }}<br>
+                    {% endif %}
                 </td>
                 {% endif %}
             {% elif scan.scan_binary == "masscan" %}
                 {% if scan.scan_status == "completed" %}
-                <td><a href="{% url 'retrieve_scan_file' scan.id %}?file_type=json">{{ scan.result_file_base_name }}.json</a></td>
+                <td>
+                    <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=json">{{ scan.result_file_base_name }}.json<br></a>
+                    {% if scan.pooled_scan_result_file_base_name %}
+                        <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=pooled">{{ scan.pooled_scan_result_file_base_name }}<br></a>
+                    {% endif %}
+                </td>
                 {% else %}
-                <td>{{ scan.result_file_base_name }}.json</td>
+                <td>
+                    {{ scan.result_file_base_name }}.json<br>
+                    {% if scan.pooled_scan_result_file_base_name %}
+                        {{ scan.pooled_scan_result_file_base_name }}<br>
+                    {% endif %}
+                </td>
             {% endif %}
             {% else %}
                 <td>Unknown scan_binary</td>
