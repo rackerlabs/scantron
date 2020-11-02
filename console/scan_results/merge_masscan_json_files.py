@@ -2,7 +2,7 @@
 """
 If you want to use this as a module you need to pass main a list of masscan .json files.
 
-xml_scans = [
+json_files = [
     "/home/scantron/console/scan_results/complete/test__engine1__1_of_3_20200924_1533.json",
     "/home/scantron/console/scan_results/complete/test__engine2__2_of_3_20200924_1533.json",
     "/home/scantron/console/scan_results/complete/test__engine3__3_of_3_20200924_1533.json",
