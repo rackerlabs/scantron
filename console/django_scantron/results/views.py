@@ -19,9 +19,12 @@ def retrieve_scan_file(request, id):
     # Extract file_type from ?file_type query parameter.
     file_type = request.GET.get("file_type", "")
 
-    result_file_base_name = requested_scan.result_file_base_name
-
-    scan_file = f"{result_file_base_name}.{file_type}"
+    # Pooled scan.
+    if file_type == "pooled":
+        scan_file = requested_scan.pooled_scan_result_file_base_name
+    else:
+        result_file_base_name = requested_scan.result_file_base_name
+        scan_file = f"{result_file_base_name}.{file_type}"
 
     # Serve file using nginx X-Accel-Redirect.
     # https://wellfire.co/learn/nginx-django-x-accel-redirects/

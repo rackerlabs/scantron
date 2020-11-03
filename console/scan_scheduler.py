@@ -23,13 +23,7 @@ ROOT_LOGGER = logging.getLogger()
 def clean_text(uncleaned_text):
     """Clean text by replacing specific characters."""
 
-    cleaned_text = (
-        uncleaned_text.lower()
-        .replace(" - ", "_")
-        .replace("-", "_")
-        .replace(" ", "_")
-        .replace("/", "_")
-    )
+    cleaned_text = uncleaned_text.lower().replace(" - ", "_").replace("-", "_").replace(" ", "_").replace("/", "_")
 
     # Ensures __ can be used as a delimiter to extract site name, engine, and timestamp in the
     # console/scan_results/masscan_json_to_csv.py and console/scan_results/nmap_to_csv.py scripts.
@@ -91,7 +85,7 @@ def schedule_scan(scan_dict):
     for key, value in scan_dict.items():
 
         # Ignore fields that are allowed to be empty.
-        if key in ["excluded_targets", "scan_binary_process_id"]:
+        if key in ["excluded_targets", "pooled_scan_result_file_base_name", "scan_binary_process_id"]:
             continue
 
         if not value:
@@ -282,6 +276,7 @@ def main():
                 "targets": included_targets,
                 "excluded_targets": all_excluded_targets_string,
                 "result_file_base_name": result_file_base_name,
+                "pooled_scan_result_file_base_name": "",
                 "scan_status": "pending",
                 "scan_binary_process_id": 0,
             }
@@ -290,6 +285,12 @@ def main():
 
         # Scan engine pool selected.
         elif scan.site.scan_engine_pool:
+
+            # Create the pooled scan file that will contain the other pooled scans.
+            if scan_binary == "nmap":
+                pooled_scan_result_file_base_name = f"{clean_text(site_name)}__pooled__{timestamp}.xml"
+            elif scan_binary == "masscan":
+                pooled_scan_result_file_base_name = f"{clean_text(site_name)}__pooled__{timestamp}.json"
 
             """This is bit confusing to follow, but this code evenly distributes the targets among X number of scan
             engines.  An example list of "targets" [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] is used to assist in
@@ -336,7 +337,9 @@ def main():
                 scan_engine = scan_engines_in_pool[index].scan_engine
 
                 # Build result_file_base_name file.
-                result_file_base_name = f"{clean_text(site_name)}__{clean_text(scan_engine)}__{index + 1}_of_{total_scan_engines_in_pool}_{timestamp}"
+                result_file_base_name = (
+                    f"{clean_text(site_name)}__{clean_text(scan_engine)}__{timestamp}.part{index + 1}"
+                )
                 # print(index, targets_scanned_by_scan_engine, result_file_base_name)
 
                 # Convert list of targets back to a string.
@@ -352,6 +355,7 @@ def main():
                     "targets": included_targets,
                     "excluded_targets": all_excluded_targets_string,
                     "result_file_base_name": result_file_base_name,
+                    "pooled_scan_result_file_base_name": pooled_scan_result_file_base_name,
                     "scan_status": "pending",
                     "scan_binary_process_id": 0,
                 }

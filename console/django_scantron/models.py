@@ -344,6 +344,9 @@ class ScheduledScan(models.Model):
     )
     completed_time = models.DateTimeField(null=True, blank=True, verbose_name="Scan completion time")
     result_file_base_name = models.CharField(max_length=255, blank=False, verbose_name="Result file base name")
+    pooled_scan_result_file_base_name = models.CharField(
+        max_length=255, blank=True, verbose_name="Pooled scan result file base name"
+    )
     scan_binary_process_id = models.IntegerField(
         validators=[MinValueValidator(limit_value=0, message="Process ID must be a positive integer")],
         verbose_name="Scan binary process ID.",

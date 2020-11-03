@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 
 class ScantronClient:
@@ -410,6 +410,25 @@ class ScantronClient:
                 site_id = site["id"]
 
         return site_id
+
+    # ENGINE POOLS
+    ###############
+    # Engine Pools - CRUD functions.
+    def create_engine_pool(self, payload):
+        """Create an engine pool."""
+        return self.scantron_api_query("/api/engine_pools", method="POST", payload=payload)
+
+    def retrieve_engine_pool(self, engine_pool_id):
+        """Retrieve engine pool."""
+        return self.scantron_api_query(f"/api/engine_pools/{engine_pool_id}", method="GET").json()
+
+    def update_engine_pool(self, engine_pool_id, payload):
+        """Update engine pool for specific engine pool ID."""
+        return self.scantron_api_query(f"/api/engine_pools/{engine_pool_id}", method="PATCH", payload=payload)
+
+    def delete_engine_pool(self, engine_pool_id):
+        """Delete an engine pool."""
+        return self.scantron_api_query(f"/api/engine_pools/{engine_pool_id}", method="DELETE")
 
     def retrieve_all_scantron_information(
         self, write_to_file=False, json_dump_file_name="all_scantron_information.json"
