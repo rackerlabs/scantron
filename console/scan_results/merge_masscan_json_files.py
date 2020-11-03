@@ -44,6 +44,11 @@ def main(json_files, merged_filename="", pretty_print_json=True):
         final_json_list = []
 
         for json_file in json_files:
+
+            if os.path.getsize(json_file) == 0:
+                print(f"File is 0 bytes: {json_file}")
+                continue
+
             with open(json_file, "r") as fh_json_file:
                 final_json_list.extend(json.load(fh_json_file))
 

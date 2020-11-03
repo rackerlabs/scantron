@@ -32,17 +32,17 @@ Scheduled Scans
             <td>{{ scan.id }}</td>
             <td>{{ scan.site_name }}</td>
             <td>{{ scan.scan_engine }}</td>
-            <td>{{ scan.start_datetime|date:"D Y-m-j H:i:s" }} </td>
+            <td>{{ scan.start_datetime|date:"D Y-m-d H:i:s" }} </td>
             <td>{{ scan.scan_binary }} {{ scan.scan_command | truncatechars:255 }}</td>
             <td>{{ scan.scan_status }}</td>
-            <td>{{ scan.completed_time|date:"D Y-m-j H:i:s" }}</td>
+            <td>{{ scan.completed_time|date:"D Y-m-d H:i:s" }}</td>
             {% if scan.scan_binary == "nmap" %}
                 {% if scan.scan_status == "completed" %}
                 <td>
                     <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=nmap">{{ scan.result_file_base_name }}.nmap</a><br>
                     <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=xml">{{ scan.result_file_base_name }}.xml<br></a>
                     {% if scan.pooled_scan_result_file_base_name %}
-                        <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=pooled">{{ scan.pooled_scan_result_file_base_name }}<br></a>
+                        Pooled: <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=pooled">{{ scan.pooled_scan_result_file_base_name }}<br></a>
                     {% endif %}
                 </td>
                 {% else %}
@@ -50,7 +50,7 @@ Scheduled Scans
                     {{ scan.result_file_base_name }}.nmap<br>
                     {{ scan.result_file_base_name }}.xml<br>
                     {% if scan.pooled_scan_result_file_base_name %}
-                        {{ scan.pooled_scan_result_file_base_name }}<br>
+                        Pooled: {{ scan.pooled_scan_result_file_base_name }}<br>
                     {% endif %}
                 </td>
                 {% endif %}
@@ -59,14 +59,14 @@ Scheduled Scans
                 <td>
                     <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=json">{{ scan.result_file_base_name }}.json<br></a>
                     {% if scan.pooled_scan_result_file_base_name %}
-                        <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=pooled">{{ scan.pooled_scan_result_file_base_name }}<br></a>
+                        Pooled: <a href="{% url 'retrieve_scan_file' scan.id %}?file_type=pooled">{{ scan.pooled_scan_result_file_base_name }}<br></a>
                     {% endif %}
                 </td>
                 {% else %}
                 <td>
                     {{ scan.result_file_base_name }}.json<br>
                     {% if scan.pooled_scan_result_file_base_name %}
-                        {{ scan.pooled_scan_result_file_base_name }}<br>
+                        Pooled: {{ scan.pooled_scan_result_file_base_name }}<br>
                     {% endif %}
                 </td>
             {% endif %}

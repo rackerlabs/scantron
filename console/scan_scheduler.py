@@ -85,7 +85,7 @@ def schedule_scan(scan_dict):
     for key, value in scan_dict.items():
 
         # Ignore fields that are allowed to be empty.
-        if key in ["excluded_targets", "scan_binary_process_id"]:
+        if key in ["excluded_targets", "pooled_scan_result_file_base_name", "scan_binary_process_id"]:
             continue
 
         if not value:
