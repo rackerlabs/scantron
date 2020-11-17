@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 
 class ScantronClient:
@@ -396,7 +396,7 @@ class ScantronClient:
     # Sites - Miscellaneous functions.
     def retrieve_sites(self):
         """Retrieve information for all the sites."""
-        return self.scantron_api_query(f"/api/sites").json()
+        return self.scantron_api_query("/api/sites").json()
 
     def retrieve_site_id_from_site_name(self, site_name):
         """Retrieve the site ID, given a site name."""
@@ -430,6 +430,11 @@ class ScantronClient:
         """Delete an engine pool."""
         return self.scantron_api_query(f"/api/engine_pools/{engine_pool_id}", method="DELETE")
 
+    # Engine Pools - Miscellaneous functions.
+    def retrieve_engine_pools(self):
+        """Retrieve information for all the engine pools."""
+        return self.scantron_api_query("/api/engine_pools").json()
+
     def retrieve_all_scantron_information(
         self, write_to_file=False, json_dump_file_name="all_scantron_information.json"
     ):
@@ -443,12 +448,16 @@ class ScantronClient:
             scans = self.retrieve_scans()
             scheduled_scans = self.retrieve_scheduled_scans()
             sites = self.retrieve_sites()
+            globally_excluded_targets = self.retrieve_globally_excluded_targets()
+            engine_pools = self.retrieve_engine_pools()
 
             all_scantron_information["engines"] = engines
             all_scantron_information["scan_commands"] = scan_commands
             all_scantron_information["scans"] = scans
             all_scantron_information["scheduled_scans"] = scheduled_scans
             all_scantron_information["sites"] = sites
+            all_scantron_information["globally_excluded_targets"] = globally_excluded_targets
+            all_scantron_information["engine_pools"] = engine_pools
 
         except Exception as e:
             print(f"Exception: {e}")
@@ -624,8 +633,8 @@ class ScantronClient:
         scan_results_json = self.retrieve_scan_results(scan_id, "json")
         masscan_dict = self.generate_masscan_dict_from_masscan_result(scan_results_json)
 
-        all_targets_with_a_specific_port_and_protocol_dict = self.retrieve_all_masscan_targets_with_a_specific_port_and_protocol(
-            masscan_dict, port, protocol
+        all_targets_with_a_specific_port_and_protocol_dict = (
+            self.retrieve_all_masscan_targets_with_a_specific_port_and_protocol(masscan_dict, port, protocol)
         )
 
         # Add scan ID to returned dictionary.
