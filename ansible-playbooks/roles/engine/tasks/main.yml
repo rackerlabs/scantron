@@ -57,10 +57,14 @@
     group: root
     mode: 0755
 
-- name: rsync engine files to server.
-  synchronize:
+- name: Copy engine files to server.
+  copy:
     src: ../../../../engine
     dest: /root
+    owner: root
+    group: root
+    mode: 0700
+    backup: false
   # Only required if re-running Ansible on an engine that already has comms with console.
   # Ansible will get angry since it can't chown /root/engine/scan_results and /root/engine/target_files
   ignore_errors: yes
