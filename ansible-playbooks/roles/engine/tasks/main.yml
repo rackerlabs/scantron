@@ -93,8 +93,8 @@
     mode: 0700
   when: utilize_static_api_token_across_engines
 
-- name: Copy random_engine_number into group_vars/<engine_exteral_ip>.txt
-  local_action: copy content="engine-{{ random_engine_number }}" dest="group_vars/{{ engine_exteral_ip }}.txt"
+- name: Copy random_engine_number into group_vars/<engine_external_ip>.txt
+  local_action: copy content="engine-{{ random_engine_number }}" dest="group_vars/{{ engine_external_ip }}.txt"
   when: utilize_static_api_token_across_engines
 
 - name: Create "{{ venv_dir }}" virtualenv directory.
