@@ -43,11 +43,11 @@ logging.basicConfig(
 # fmt: on
 
 
-def datetime_object_to_string_converter(object):
+def datetime_object_to_string_converter(datetime_object):
     """Convert a datetime object to a string."""
 
-    if isinstance(object, datetime.datetime):
-        return object.__str__()
+    if isinstance(datetime_object, datetime.datetime):
+        return datetime_object.__str__()
 
 
 def move_wildcard_files(wildcard_filename, source_directory, destination_directory):
@@ -105,7 +105,7 @@ NMAP: https://{console_fqdn}/results/{scheduled_scan_id}?file_type=nmap
 
         # Add additional scan info.
         body += f"""
-Debug info:
+Debug scan info:
 {json.dumps(scheduled_scan_dict, indent=4, sort_keys=False, default=datetime_object_to_string_converter)}
 """
         logger.info(f"Email body: {body}")
