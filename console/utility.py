@@ -2,7 +2,9 @@
 Utility methods for other scripts to use.
 """
 # Standard Python libraries.
+import datetime
 import fnmatch
+import json
 import logging
 import os
 import shutil
@@ -41,6 +43,13 @@ logging.basicConfig(
 # fmt: on
 
 
+def datetime_object_to_string_converter(datetime_object):
+    """Convert a datetime object to a string."""
+
+    if isinstance(datetime_object, datetime.datetime):
+        return datetime_object.__str__()
+
+
 def move_wildcard_files(wildcard_filename, source_directory, destination_directory):
     """Move files with supported fnmatch patterns (* and ?)."""
 
@@ -75,7 +84,7 @@ def process_scan_status_change(scheduled_scan_dict):
         console_fqdn = settings.CONSOLE_FQDN
         from_address = settings.EMAIL_HOST_USER
         to_addresses = site.email_alert_addresses.split(",")
-        subject = f"Scantron scan {scan_status.upper()}: {site.site_name}"
+        subject = f"Scantron scan {scan_status.upper()}: {site_name}"
 
         if scan_status == "completed":
 
@@ -88,14 +97,27 @@ NMAP: https://{console_fqdn}/results/{scheduled_scan_id}?file_type=nmap
                 body = f"""Results: https://{console_fqdn}/results/{scheduled_scan_id}?file_type=json"""
 
         elif scan_status in ["started", "paused", "cancelled", "error"]:
-            body = f""""""
+            body = """"""
 
         # Ignore "pending" status.  Shouldn't ever reach this branch.
         else:
             pass
 
+        # Add additional scan info.
+        body += f"""
+Debug scan info:
+{json.dumps(scheduled_scan_dict, indent=4, sort_keys=False, default=datetime_object_to_string_converter)}
+"""
+        logger.info(f"Email body: {body}")
+
         # email_sent_successfully = custom_send_email(to_addresses, subject=subject, body=body)
-        email_sent_successfully = send_mail(subject, body, from_address, to_addresses, fail_silently=False,)
+        email_sent_successfully = send_mail(
+            subject,
+            body,
+            from_address,
+            to_addresses,
+            fail_silently=False,
+        )
 
         if not email_sent_successfully:
             logger.error(f"Issue sending the email for Scheduled Scan ID: {scheduled_scan_id}")
