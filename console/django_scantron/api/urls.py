@@ -6,17 +6,15 @@ from rest_framework import permissions, routers
 from django_scantron.api import views
 
 # Create a router and register our viewsets with it.
-# base_name requirement: http://www.django-rest-framework.org/api-guide/routers/#usage
+# basename requirement: http://www.django-rest-framework.org/api-guide/routers/#usage
 router = routers.DefaultRouter(trailing_slash=False)
-router.register(r"engines", views.EngineViewSet, base_name="engines")
-router.register(r"engine_pools", views.EnginePoolViewSet, base_name="engine_pools")
-router.register(
-    r"globally_excluded_targets", views.GloballyExcludedTargetViewSet, base_name="globally_excluded_targets"
-)
-router.register(r"scan_commands", views.ScanCommandViewSet, base_name="scan_commands")
-router.register(r"scans", views.ScanViewSet, base_name="scans")
-router.register(r"scheduled_scans", views.ScheduledScanViewSet, base_name="scheduled_scans")
-router.register(r"sites", views.SiteViewSet, base_name="sites")
+router.register(r"engines", views.EngineViewSet, basename="engines")
+router.register(r"engine_pools", views.EnginePoolViewSet, basename="engine_pools")
+router.register(r"globally_excluded_targets", views.GloballyExcludedTargetViewSet, basename="globally_excluded_targets")
+router.register(r"scan_commands", views.ScanCommandViewSet, basename="scan_commands")
+router.register(r"scans", views.ScanViewSet, basename="scans")
+router.register(r"scheduled_scans", views.ScheduledScanViewSet, basename="scheduled_scans")
+router.register(r"sites", views.SiteViewSet, basename="sites")
 
 schema_view = get_schema_view(
     openapi.Info(
