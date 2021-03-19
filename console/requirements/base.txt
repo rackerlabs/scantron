@@ -1,38 +1,38 @@
 # Password storage
-argon2-cffi==19.2.0
+argon2-cffi==20.1.0
 
 # Django
-Django==2.2.13
+Django==2.2.18
 
 # Forms
-django-crispy-forms==1.8.1
+django-crispy-forms==1.11.1
 
 # Django debug toolbar
-django-debug-toolbar==2.2
+django-debug-toolbar==3.2
 
 # Django environ
 django-environ==0.4.5
 
 # Django Extensions
-django-extensions==2.2.5
+django-extensions==3.1.1
 
 # Django filters for API
-django-filter==2.2.0
+django-filter==2.4.0
 
 # Django recurrences for periodic tasks
-django-recurrence==1.10.1
+django-recurrence==1.10.3
 
 # SAML
 django_saml2_auth==2.2.1
 
 # Django REST Framework
-djangorestframework==3.9.2
+djangorestframework==3.12.2
 
 # Yet another Swagger generator
-drf-yasg==1.16.1
+drf-yasg==1.20.0
 
 # fqdn
-fqdn==1.4.0
+fqdn==1.5.1
 
 # ipython
 ipython
@@ -41,19 +41,19 @@ ipython
 packaging
 
 # Python-PostgreSQL Database Adapter
-psycopg2-binary==2.8.4
+psycopg2-binary==2.8.6
 
 # Used for django-extensions graph_models
-pygraphviz==1.5
+pygraphviz==1.6
 
 # nmap
-python-libnmap==0.7.0
+python-libnmap==0.7.2
 
 # redis
-redis==3.4.1
+redis==3.5.3
 
 # python-rq - Redis Queue
-rq==1.2.2
+rq==1.7.0
 
 # XML to JSON
-xmljson==0.2.0
+xmljson==0.2.1
