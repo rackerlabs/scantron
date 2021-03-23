@@ -57,7 +57,7 @@ class EnginePool(models.Model):
 
     id = models.AutoField(primary_key=True, verbose_name="Engine Pool ID")
     engine_pool_name = models.CharField(unique=True, max_length=255, verbose_name="Engine Pool Name")
-    scan_engines = models.ManyToManyField(Engine, verbose_name="Scan engines in pool",)
+    scan_engines = models.ManyToManyField(Engine, verbose_name="Scan engines in pool")
 
     def __str__(self):
         return str(self.engine_pool_name)
@@ -185,6 +185,12 @@ class Site(models.Model):
     email_alert_addresses = models.CharField(
         unique=False, blank=True, max_length=4096, verbose_name="Email alert addresses, comma separated"
     )
+    email_scan_diff = models.BooleanField(
+        verbose_name="Email nmap scan diff after each scan? (Only applies to nmap scans"
+    )
+    email_scan_diff_addresses = models.CharField(
+        unique=False, blank=True, max_length=4096, verbose_name="Email nmap scan diff addresses, comma separated"
+    )
 
     def clean(self):
         """Checks for any invalid IPs, IP subnets, or FQDNs in the targets and excluded_targets fields."""
@@ -225,13 +231,24 @@ class Site(models.Model):
 
         # Email scan alerts and email addresses.
         if self.email_scan_alerts and not self.email_alert_addresses:
-            raise ValidationError(f"Provide an email address if enabling 'Email scan alerts'")
+            raise ValidationError("Provide an email address if enabling 'Email scan alerts'")
 
         # Check for valid email addresseses string.
         if self.email_alert_addresses:
             """Checks that email addresses are valid and returns a cleaned up string of them to save to the database."""
             self.email_alert_addresses = email_validation_utils.validate_string_of_email_addresses(
                 self.email_alert_addresses
+            )
+
+        # Email nmap_scan diff and email addresses.
+        if self.email_scan_diff and not self.email_scan_diff_addresses:
+            raise ValidationError("Provide an email address if enabling 'Email nmap scan diff'")
+
+        # Check for valid email addresseses string.
+        if self.email_scan_diff_addresses:
+            """Checks that email addresses are valid and returns a cleaned up string of them to save to the database."""
+            self.email_scan_diff_addresses = email_validation_utils.validate_string_of_email_addresses(
+                self.email_scan_diff_addresses
             )
 
     def __str__(self):
@@ -379,8 +396,8 @@ class ScheduledScan(models.Model):
                 f"to: {valid_scan_states}"
             )
 
-        # If a scan is paused and needs to be cancelled, don't set the state to "cancel", because the engine will try and
-        # cancel a running process that doesn't exist and error out.  Just bypass the "cancel" state and set it to
+        # If a scan is paused and needs to be cancelled, don't set the state to "cancel", because the engine will try
+        # and cancel a running process that doesn't exist and error out.  Just bypass the "cancel" state and set it to
         # "cancelled".  This logic is not needed on the client / API side in the ScheduledScanViewSet class in
         # console/django_scantron/api/views.py.
         if current_scan_status == "paused" and self.scan_status == "cancel":

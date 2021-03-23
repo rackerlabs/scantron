@@ -12,10 +12,11 @@
 Scantron is a distributed nmap and masscan scanner comprised of two components.  The first is a console node that
 consists of a web front end used for scheduling scans and storing nmap scan targets and results.  The second component
 is an engine that pulls scan jobs from the console and conducts the actual nmap scanning.  A majority of the
-application's logic is purposely placed on the console to make the engine(s) as "dumb" as possible.  All nmap target
-files and nmap results reside on the console and are shared through a network file share (NFS) leveraging SSH tunnels.
+application's logic is purposely placed on the console to make the engine(s) as "dumb" as possible.  All scan target
+files and scan results reside on the console and are shared through a network file share (NFS) leveraging SSH tunnels.
 The engines call back to the console periodically using a REST API to check for scan tasks and provide scan status
-updates.
+updates.  There is also an option to generate have nmap scan diffs emailed to you using the
+[pyndiff](https://github.com/rackerlabs/pyndiff) library.
 
 Checkout the Python [Scantron API client](https://github.com/rackerlabs/scantron/tree/master/scantron_api_client) for
 interacting with the Scantron API and driving automated workflows.
@@ -47,8 +48,9 @@ concepts, there are some great overviews and tutorials out there:
 
 Scantron is not engineered to be quickly deployed to a server to scan for a few minutes, then torn down and destroyed.  
 It's better suited for having a set of static scanners (e.g., "internal-scanner", "external-scanner") with a relatively
-static set of assets to scan.  A [Scantron API client](https://github.com/rackerlabs/scantron/tree/master/scantron_api_client)
-is also available for creating, retrieving, updating, or deleting sites, scan commands, scans, etc.
+static set of assets to scan.
+A [Scantron API client](https://github.com/rackerlabs/scantron/tree/master/scantron_api_client) is also available for
+creating, retrieving, updating, or deleting sites, scan commands, scans, etc.
 
 ## Architecture Diagram
 
@@ -111,7 +113,7 @@ to
 
 Edit the hosts in this file:
 
-* `ansible-playbooks/hosts`
+* `ansible-playbooks/hosts.ini`
 
 ### Console Installation
 
@@ -269,7 +271,7 @@ su - autossh -s /bin/bash -c 'autossh -M 0 -f -N -o "StrictHostKeyChecking no" -
 
 ### Engine's engine_config.json
 
-engine_config.json is a configuration file used by engines to provide basic settings and bootstrap communication with
+`engine_config.json` is a configuration file used by engines to provide basic settings and bootstrap communication with
 the console.  Each engine can have a different configuration file.  
 
 ```none
@@ -318,8 +320,8 @@ This repo also contains a stand-alone binary `engine/engine` that can be used fo
 allows for a quicker deployment if managing the Python environment is difficult or cumbersome.  The basic requirements
 are:
 
-* nmap and masscan must exist on the system
-* the `engine_config.json` file exists
+* `nmap` and `masscan` must exist on the system
+* the `engine_config.json` file exists and the `scan_engine` and `api_token` values have been updated
 * An SSH tunnel to/from the console still exists to read target files and write scan results
 
 #### Creating the standalone binary
@@ -343,7 +345,7 @@ rm -rf __pycache__ build dist engine.spec .venv
 
 ### Engine Execution
 
-Update all the engines' engine_config.json files with their respective `api_token` for the engine by logging in as
+Update all the engines' `engine_config.json` files with their respective `api_token` for the engine by logging in as
 `admin` and browsing to `https://<HOST>/scantron-admin/authtoken/token` to see the corresponding API token for each
 user / engine.
 
@@ -380,7 +382,10 @@ screen -S engine1  # Create a screen session and name it engine1, if using scree
 
 cd engine
 source .venv/bin/activate
+# Option 1: Python virtual environment
 python engine.py -c engine_config.json
+# Option 2: Stand alone binary
+./engine -c engine_config.json
 
 CTRL + a + d  # Break out of screen session, if using screen.
 screen -ls  # View screen job, if using screen.
@@ -407,7 +412,7 @@ crontab -l -u root
 
 ### Test Engine API
 
-If you need to test the API without running the engine, ensure there is a 'pending' scan set to start earlier than the
+If you need to test the API without running the engine, ensure there is a "pending" scan set to start earlier than the
 current date and time.  The server only returns scan jobs that have a 'pending' status and start datetime earlier than
 the current datetime.
 
@@ -532,11 +537,10 @@ Source: <https://security.stackexchange.com/questions/78618/is-there-a-nmap-comm
 
 ## nmap_port_range_carver
 
-A standalone [script](https://github.com/rackerlabs/scantron/tree/master/nmap_port_range_carver)
- to carve out a range of the top TCP/UDP ports according to the nmap-services file.
+A standalone [script](https://github.com/rackerlabs/scantron/tree/master/nmap_port_range_carver) to carve out a range
+of the top TCP/UDP ports according to the nmap-services file.
 
-This is useful
-when:
+This is useful when:
 
 1. You want to scan a subset of the ports specified in `--top-ports`, say the 10th through 20th top TCP ports, but not
 the 1st or 9th ports.

@@ -120,6 +120,24 @@ class SiteSerializer(serializers.ModelSerializer):
                 email_alert_addresses
             )
 
+        # Email nmap_scan diff and email addresses.
+        if ("email_scan_diff" in attrs) and ("email_scan_diff_addresses" in attrs):
+
+            email_scan_diff = attrs["email_scan_diff"]
+            email_scan_diff_addresses = attrs["email_scan_diff_addresses"]
+
+            if email_scan_diff and not email_scan_diff_addresses:
+                raise serializers.ValidationError(f"Provide an email address if enabling 'Email nmap scan diff'")
+
+        # Check for valid email addresseses string.
+        if "email_scan_diff_addresses" in attrs:
+            """Checks that email addresses are valid and returns a cleaned up string of them to save to the database."""
+
+            email_scan_diff_addresses = attrs["email_scan_diff_addresses"]
+            attrs["email_scan_diff_addresses"] = email_validation_utils.validate_string_of_email_addresses(
+                email_scan_diff_addresses
+            )
+
         return attrs
 
     class Meta:
@@ -135,6 +153,8 @@ class SiteSerializer(serializers.ModelSerializer):
             "scan_engine_pool",
             "email_scan_alerts",
             "email_alert_addresses",
+            "email_scan_diff",
+            "email_scan_diff_addresses",
         )
 
 

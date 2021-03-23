@@ -16,6 +16,7 @@ from django.core.mail import send_mail
 
 # Custom Python libraries.
 import django_connector
+import pyndiff
 from scan_results import masscan_json_to_csv, merge_masscan_json_files, merge_nmap_xml_files, nmap_to_csv
 
 # Setup logging configuration.
@@ -70,6 +71,7 @@ def process_scan_status_change(scheduled_scan_dict):
     scan_status = scheduled_scan_dict["scan_status"]
     scan_binary = scheduled_scan_dict["scan_binary"]
     start_datetime = scheduled_scan_dict["start_datetime"]
+    result_file_base_name = scheduled_scan_dict["result_file_base_name"]
 
     # Retrieve site information.
     site_name = scheduled_scan_dict["site_name"]
@@ -231,3 +233,98 @@ Debug scan info:
             nmap_to_csv.main()
         elif scan_binary == "masscan":
             masscan_json_to_csv.main()
+
+    # 3) Does an nmap scan diff need to be sent?
+    # Determine if site has email_scan_alerts enabled.
+    email_scan_diff = site.email_scan_diff
+
+    if scan_binary == "nmap" and email_scan_diff and scan_status == "completed":
+
+        # Determining the previous scan is a little trickier with pooled scans.
+        if site.scan_engine_pool:
+
+            # Retrieve all past scans, sorted by most recent to oldest.
+            past_scans = django_connector.ScheduledScan.objects.filter(site_name=site_name).order_by("-completed_time")
+
+            # Assign latest_scans_pooled_scan_result_file_base_name to the most recent scan's
+            # pooled_scan_result_file_base_name value.
+            latest_scans_pooled_scan_result_file_base_name = past_scans[0].pooled_scan_result_file_base_name
+
+            # Loop through the remaining scans, starting at the next one.  Once the pooled_scan_result_file_base_name
+            # value changes, the previous scan has been found, so bail on the for loop.
+            for past_scan in past_scans[1:]:
+                if past_scan.pooled_scan_result_file_base_name != latest_scans_pooled_scan_result_file_base_name:
+                    break
+
+            previous_scan = past_scan
+
+            logger.info(f"previous scan ID: {previous_scan}")
+
+        else:
+            # Retrieve the previous ScheduledScan object for a Site.  [0] will be the scan that just completed, so use
+            # [1] to retrieve the previous one.
+            try:
+                previous_scan = django_connector.ScheduledScan.objects.filter(site_name=site_name).order_by(
+                    "-completed_time"
+                )[1]
+                logger.info(f"previous scan ID: {previous_scan}")
+
+            except IndexError:
+                logger.warning("This is the first scan to complete for the site, there are no previous ones")
+                return
+
+        # Specify root path to files.
+        root_dir = "/home/scantron/console/scan_results/processed"
+
+        # Previous scan file.
+        # Handle pooled scan results.
+        if site.scan_engine_pool:
+            previous_scan_result_file_name = f"{previous_scan.pooled_scan_result_file_base_name}"
+        # Non-pooled scan results.
+        else:
+            previous_scan_result_file_name = f"{previous_scan.result_file_base_name}.xml"
+
+        previous_scan_result_file_path = os.path.join(root_dir, f"{previous_scan_result_file_name}")
+        logger.info(f"previous_scan_result_file_path: {previous_scan_result_file_path}")
+
+        # Latest scan file.
+        # Pooled scan result.
+        if site.scan_engine_pool and final_merged_filename:
+            latest_scan_result_file_name = scheduled_scan_dict["pooled_scan_result_file_base_name"]
+        # Non-pooled scan results.
+        else:
+            latest_scan_result_file_name = f"{result_file_base_name}.xml"
+
+        latest_scan_result_file_path = os.path.join(root_dir, f"{latest_scan_result_file_name}")
+        logger.info(f"latest_scan_result_file_path: {latest_scan_result_file_path}")
+
+        # Compare nmap XML files.
+        change_summary = pyndiff.generate_diff(
+            previous_scan_result_file_path,
+            latest_scan_result_file_path,
+            ignore_udp_open_filtered=False,
+            output_type="xml",
+            write_summary_to_disk_for_xml_output_type=False,
+            verbose=False,
+            step_debug=False,
+        )
+
+        logger.info(f"pyndiff results:\n\n{change_summary}")
+
+        from_address = settings.EMAIL_HOST_USER
+        to_addresses = site.email_scan_diff_addresses.split(",")
+        subject = f"Scantron diff results for {site_name}"
+
+        email_sent_successfully = send_mail(
+            subject,
+            change_summary,
+            from_address,
+            to_addresses,
+            fail_silently=False,
+        )
+
+        if not email_sent_successfully:
+            logger.error(f"Issue sending scan diff email to: {to_addresses}")
+            return
+
+        logger.info(f"Successfully sent scan diff email to: {to_addresses}")

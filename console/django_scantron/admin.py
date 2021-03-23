@@ -59,6 +59,8 @@ class SiteAdmin(admin.ModelAdmin):
         "scan_engine_pool",
         "email_scan_alerts",
         "email_alert_addresses",
+        "email_scan_diff",
+        "email_scan_diff_addresses",
     )
 
 

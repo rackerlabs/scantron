@@ -40,6 +40,9 @@ ipython
 # packaging required for drf-yasg, adding this to be safe
 packaging
 
+# Generate human-readable ndiff output when comparing 2 nmap XML scan files.
+pyndiff==1.0.1
+
 # Python-PostgreSQL Database Adapter
 psycopg2-binary==2.8.6
 
