@@ -250,15 +250,23 @@ Debug scan info:
             # pooled_scan_result_file_base_name value.
             latest_scans_pooled_scan_result_file_base_name = past_scans[0].pooled_scan_result_file_base_name
 
-            # Loop through the remaining scans, starting at the next one.  Once the pooled_scan_result_file_base_name
-            # value changes, the previous scan has been found, so bail on the for loop.
+            # Loop through the remaining scans, starting at the next one.  If the pooled_scan_result_file_base_name
+            # value changes, the previous scan has been found, so set previous_scan_found to True and bail on the for
+            # loop.
+            previous_scan_found = False
+
             for past_scan in past_scans[1:]:
                 if past_scan.pooled_scan_result_file_base_name != latest_scans_pooled_scan_result_file_base_name:
+                    previous_scan_found = True
                     break
 
-            previous_scan = past_scan
+            if previous_scan_found:
+                previous_scan = past_scan
+                logger.info(f"previous scan ID: {previous_scan}")
 
-            logger.info(f"previous scan ID: {previous_scan}")
+            else:
+                logger.warning("This is the first scan to complete for the site, there are no previous ones")
+                return
 
         else:
             # Retrieve the previous ScheduledScan object for a Site.  [0] will be the scan that just completed, so use

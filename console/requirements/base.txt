@@ -37,9 +37,6 @@ fqdn==1.5.1
 # ipython
 ipython
 
-# packaging required for drf-yasg, adding this to be safe
-packaging
-
 # Generate human-readable ndiff output when comparing 2 nmap XML scan files.
 pyndiff==1.0.1
 
