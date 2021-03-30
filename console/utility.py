@@ -243,8 +243,12 @@ Debug scan info:
         # Determining the previous scan is a little trickier with pooled scans.
         if site.scan_engine_pool:
 
-            # Retrieve all past scans, sorted by most recent to oldest.
-            past_scans = django_connector.ScheduledScan.objects.filter(site_name=site_name).order_by("-completed_time")
+            # Retrieve all past scans, sorted by most recent to oldest.  Ensure completed_time is not NULL.
+            past_scans = (
+                django_connector.ScheduledScan.objects.filter(site_name=site_name)
+                .filter(completed_time__isnull=False)
+                .order_by("-completed_time")
+            )
 
             # Assign latest_scans_pooled_scan_result_file_base_name to the most recent scan's
             # pooled_scan_result_file_base_name value.
@@ -317,22 +321,27 @@ Debug scan info:
             step_debug=False,
         )
 
-        logger.info(f"pyndiff results:\n\n{change_summary}")
+        # Ensure change_summary actually has information.
+        if change_summary:
+            logger.info(f"pyndiff results:\n\n{change_summary}")
 
-        from_address = settings.EMAIL_HOST_USER
-        to_addresses = site.email_scan_diff_addresses.split(",")
-        subject = f"Scantron diff results for {site_name}"
+            from_address = settings.EMAIL_HOST_USER
+            to_addresses = site.email_scan_diff_addresses.split(",")
+            subject = f"Scantron diff results for {site_name}"
 
-        email_sent_successfully = send_mail(
-            subject,
-            change_summary,
-            from_address,
-            to_addresses,
-            fail_silently=False,
-        )
+            email_sent_successfully = send_mail(
+                subject,
+                change_summary,
+                from_address,
+                to_addresses,
+                fail_silently=False,
+            )
 
-        if not email_sent_successfully:
-            logger.error(f"Issue sending scan diff email to: {to_addresses}")
-            return
+            if not email_sent_successfully:
+                logger.error(f"Issue sending scan diff email to: {to_addresses}")
+                return
 
-        logger.info(f"Successfully sent scan diff email to: {to_addresses}")
+            logger.info(f"Successfully sent scan diff email to: {to_addresses}")
+
+        else:
+            logger.info("change_summary value from pyndiff is empty...not sending an email")

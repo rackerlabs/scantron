@@ -43,7 +43,7 @@ venv_python: "{{ venv_dir }}/bin/python3.6"
 django_project_name: django_scantron
 
 # uwsgi
-uwsgi_version: 2.0.18
+uwsgi_version: 2.0.19.1
 
 # postfix
 postfix_hostname: scantron

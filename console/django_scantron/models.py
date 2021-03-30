@@ -186,7 +186,7 @@ class Site(models.Model):
         unique=False, blank=True, max_length=4096, verbose_name="Email alert addresses, comma separated"
     )
     email_scan_diff = models.BooleanField(
-        verbose_name="Email nmap scan diff after each scan? (Only applies to nmap scans"
+        verbose_name="Email nmap scan diff after each scan? (Only applies to nmap scans)"
     )
     email_scan_diff_addresses = models.CharField(
         unique=False, blank=True, max_length=4096, verbose_name="Email nmap scan diff addresses, comma separated"
