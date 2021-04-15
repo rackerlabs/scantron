@@ -2,19 +2,19 @@
 argon2-cffi==20.1.0
 
 # Django
-Django==2.2.18
+Django==2.2.20
 
 # Forms
-django-crispy-forms==1.11.1
+django-crispy-forms==1.11.2
 
 # Django debug toolbar
-django-debug-toolbar==3.2
+django-debug-toolbar==3.2.1
 
 # Django environ
 django-environ==0.4.5
 
 # Django Extensions
-django-extensions==3.1.1
+django-extensions==3.1.2
 
 # Django filters for API
 django-filter==2.4.0
@@ -26,7 +26,7 @@ django-recurrence==1.10.3
 django_saml2_auth==2.2.1
 
 # Django REST Framework
-djangorestframework==3.12.2
+djangorestframework==3.12.4
 
 # Yet another Swagger generator
 drf-yasg==1.20.0
@@ -37,8 +37,8 @@ fqdn==1.5.1
 # ipython
 ipython
 
-# packaging required for drf-yasg, adding this to be safe
-packaging
+# Generate human-readable ndiff output when comparing 2 nmap XML scan files.
+pyndiff==1.0.2
 
 # Python-PostgreSQL Database Adapter
 psycopg2-binary==2.8.6
@@ -53,7 +53,7 @@ python-libnmap==0.7.2
 redis==3.5.3
 
 # python-rq - Redis Queue
-rq==1.7.0
+rq==1.8.0
 
 # XML to JSON
 xmljson==0.2.1
