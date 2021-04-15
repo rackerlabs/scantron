@@ -38,7 +38,7 @@ fqdn==1.5.1
 ipython
 
 # Generate human-readable ndiff output when comparing 2 nmap XML scan files.
-pyndiff==1.0.1
+pyndiff==1.0.2
 
 # Python-PostgreSQL Database Adapter
 psycopg2-binary==2.8.6

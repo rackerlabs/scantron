@@ -10,13 +10,12 @@
 ## Overview
 
 Scantron is a distributed nmap and masscan scanner comprised of two components.  The first is a console node that
-consists of a web front end used for scheduling scans and storing nmap scan targets and results.  The second component
-is an engine that pulls scan jobs from the console and conducts the actual nmap scanning.  A majority of the
-application's logic is purposely placed on the console to make the engine(s) as "dumb" as possible.  All scan target
-files and scan results reside on the console and are shared through a network file share (NFS) leveraging SSH tunnels.
-The engines call back to the console periodically using a REST API to check for scan tasks and provide scan status
-updates.  There is also an option to generate have nmap scan diffs emailed to you using the
-[pyndiff](https://github.com/rackerlabs/pyndiff) library.
+consists of a web front end used for scheduling scans and storing scan targets and results.  The second component is an
+engine that pulls scan jobs from the console and conducts the actual scanning.  A majority of the application's logic is
+purposely placed on the console to make the engine(s) as "dumb" as possible.  All scan target files and scan results
+reside on the console and are shared through a network file share (NFS) leveraging SSH tunnels.  The engines call back
+to the console periodically using a REST API to check for scan tasks and provide scan status updates.  There is also an
+option to generate nmap scan diffs emailed to you using the [pyndiff](https://github.com/rackerlabs/pyndiff) library.
 
 Checkout the Python [Scantron API client](https://github.com/rackerlabs/scantron/tree/master/scantron_api_client) for
 interacting with the Scantron API and driving automated workflows.
@@ -413,7 +412,7 @@ crontab -l -u root
 ### Test Engine API
 
 If you need to test the API without running the engine, ensure there is a "pending" scan set to start earlier than the
-current date and time.  The server only returns scan jobs that have a 'pending' status and start datetime earlier than
+current date and time.  The server only returns scan jobs that have a "pending" status and start datetime earlier than
 the current datetime.
 
 ```bash
@@ -577,6 +576,7 @@ the 1st or 9th ports.
     ![create_site](./img/create_site.png)
 
 4. Create scan
+
     * Select start time
     * Add start date
     * Add recurrence rules (if applicable)
@@ -604,9 +604,6 @@ the 1st or 9th ports.
 
     `/home/scantron/console/scan_results/complete` - Completed scan files from engines are stored here before being
     processed by `nmap_to_csv.py`
-
-    The `scantron` user executes a cron job (`nmap_to_csv.sh` which calls `nmap_to_csv.py`) every 5 minutes that will
-    process the `.xml` scan results found in the `complete` directory and move them to the `processed` directory.
 
     `/home/scantron/console/scan_results/processed` - nmap scan files already processed by `nmap_to_csv.py` reside here.
 
