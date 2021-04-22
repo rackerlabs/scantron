@@ -113,43 +113,95 @@ def main():
 
     # Determine time variables to assist in filtering.
     now_datetime = datetime.datetime.now()
-    now_time = now_datetime.time()
-    now_time_hour = now_time.hour
-    now_time_minute = now_time.minute
 
-    # Only filter on scans that should start at this time based off hour and minute, ignoring seconds.
-    # If minute is the time resolution, this script (wrapped with scan_scheduler.sh) must be executed every minute
-    # through cron.  Also filter on scans that are enabled.  We can't filter on occurrences using Django's filter()
-    # method; it will have to be checked using logic below.
-    scans = (
-        django_connector.Scan.objects.filter(start_time__hour=now_time_hour)
-        .filter(start_time__minute=now_time_minute)
-        .filter(enable_scan=True)
-    )
+    # Filter on enabled scans first.  We can't filter on occurrences using Django's .filter() method; it will have to
+    # be checked using logic below.  Author's reason why .filter() can't be used:
+    # https://github.com/django-recurrence/django-recurrence/issues/91#issuecomment-286890133
+    # scans = django_connector.Scan.objects.filter(enable_scan=True)
+    scans = django_connector.Scan.objects.filter(enable_scan=True).filter(start_time__minute=now_datetime.minute)
+    # scans = django_connector.Scan.objects.filter(id=11)
 
     if not scans:
-        ROOT_LOGGER.info(f"No scans scheduled to start at this time: {now_time:%H}:{now_time:%M}.")
+        # ROOT_LOGGER.info(f"No scans scheduled to start at this time: {now_time:%H}:{now_time:%M}.")
+        ROOT_LOGGER.info("No scans enabled at this time.")
         return
 
-    ROOT_LOGGER.info(f"Found {len(scans)} scans scheduled to start at {now_time:%H}:{now_time:%M}.")
+    # ROOT_LOGGER.info(f"Found {len(scans)} scans scheduled to start at {now_time:%H}:{now_time:%M}.")
+    ROOT_LOGGER.info(f"Found {len(scans)} scans enabled")
 
-    # Loop through each scan that is scheduled to start at this time.
+    # now_datetime = datetime.datetime(2021, 4, 21, 15, 37)
+
+    # Loop through each scan to determine if it's supposed to be scheduled.
     for scan in scans:
 
-        # Convoluted way of determining if a scan occurrence is today.
-        # Have fun understanding the documentation for django-recurrence.
-        # https://django-recurrence.readthedocs.io/en/latest/usage/recurrence_field.html#getting-occurrences-between-two-dates
-        # https://github.com/django-recurrence/django-recurrence/issues/50
-        beginning_of_today = now_datetime.replace(hour=0).replace(minute=0).replace(second=0).replace(microsecond=0)
-        end_of_today = now_datetime.replace(hour=23).replace(minute=59).replace(second=59).replace(microsecond=0)
-        scan_occurrence = scan.recurrences.between(beginning_of_today, end_of_today, inc=True)
+        """
+        Have fun understanding the documentation for django-recurrence!  This is a challenging library to work with
+        since the django-recurrence README states "The recurrence field only deals with recurrences not with specific
+        time information."  That's why a separate Scan.start_time field is required.  A recurrence object has a
+        granularity of a date, and does not include time, so some challenging logic is required to determine a one-off
+        scan (no recurring schedule) vs. a recurring scan (with a possible hourly frequency).  When using
+        scan.recurrence.between(), the start and end values are python datetime objects with a date granularity, so time
+        is completely ignored.
 
-        # If a scan is not supposed to occur today, then bail, otherwise extract the datetime.
-        if not scan_occurrence:
-            continue
+        The author has stated "I don't actually use this library now - so my support here is mostly just merging fixes
+        where I am comfortable with them, and pushing releases to PyPI. If someone else wants to take over ownership,
+        I'd be more than happy to hand it over."
+        (https://github.com/django-recurrence/django-recurrence/issues/163#issuecomment-604111964)
+
+        I've provided verbose comments to explain my reasoning, but every time I come back to this code and library,
+        it takes me a day to figure out what's going on.
+        """
+
+        # Single one-off scans don't have recurring rules, just rdates.  If an rrules attribute does not exist, it is
+        # likely a one-off scan.
+        if not scan.recurrences.rrules:
+            # Extract the single date the scan is supposed to start.
+            # rdate: datetime.datetime(2021, 4, 21, 5, 0, tzinfo=<UTC>)
+            rdate = scan.recurrences.rdates[0]
+
+            # Create a datetime.time object from now_datetime.
+            # now_datetime_time: datetime.time(11, 57)
+            now_datetime_time = datetime.time(now_datetime.time().hour, now_datetime.time().minute)
+
+            # Check that the scan day and times match.
+            # rdate.date() and now_datetime.date() are datetime.date objects.
+            # scan.start_time and now_datetime_time are datetime.time objects.
+            if (rdate.date() == now_datetime.date()) and (scan.start_time == now_datetime_time):
+                # Replace current hour and minute with 0 to begin the search at the beginning of the day.  We are only
+                # trying to find multiples of a date in which the time is irrelevant.
+                dtstart_datetime = (
+                    now_datetime.replace(hour=0).replace(minute=0).replace(second=0).replace(microsecond=0)
+                )
+
+                # Pare down now_datetime to include just the date and zero out the time since next_scans is a list of
+                # date and time recurrences.
+                now_datetime_stripped = datetime.datetime.combine(now_datetime.date(), datetime.time(0, 0))
+
+            # Scan does not have a recurrence, but the scan start date and start time are not correct.
+            else:
+                continue
+
         else:
-            scan_occurrence = scan_occurrence[0]
-            ROOT_LOGGER.info(f"Found scan_occurrence for today: {scan_occurrence}.")
+            # Replace current hour with 0 to begin the search at the beginning of the day.  Replace minute with the
+            # scan's start minute to try and find "multiples" of the start minute.
+            dtstart_datetime = (
+                now_datetime.replace(hour=0)
+                .replace(minute=scan.start_time.minute)
+                .replace(second=0)
+                .replace(microsecond=0)
+            )
+
+            # Pare down now_datetime to include just the date and time since next_scans is a list of date and time
+            # recurrences.
+            now_datetime_stripped = now_datetime.replace(second=0).replace(microsecond=0)
+
+        # Retrieve list of the next 25 definitive start times based off the dtstart_datetime.  For a single scan, the
+        # size of next_scans will be 1, since it only occurs on one specific date.
+        next_scans = scan.recurrences.occurrences(dtstart=dtstart_datetime)[0:25]
+
+        # If a scan is not supposed to occur at the current datetime, then bail, otherwise extract the datetime.
+        if now_datetime_stripped not in next_scans:
+            continue
 
         # Let's extract the remaining variables from existing database relationships.  Note that the Scan model has the
         # Site model as a foreign key, and in turn, the Site model has foreign keys for the Engine and ScanCommand
@@ -166,6 +218,8 @@ def main():
         # Site model.
         site_name = scan.site.site_name
 
+        ROOT_LOGGER.info(f"Found scan found for {site_name} at {scan_start_time}.")
+
         # Generate timestamps
         #####################
 
@@ -173,8 +227,7 @@ def main():
         # and a recurrence date, so we have to build a DateTimeField equivalent.
         # Build start_datetime based off Django's TIME_ZONE setting.
         # https://www.saltycrane.com/blog/2009/05/converting-time-zones-datetime-objects-python/#add-timezone-localize
-        start_datetime_tz_naive = datetime.datetime.combine(scan_occurrence.date(), scan_start_time)
-        start_datetime = pytz.timezone(settings.TIME_ZONE).localize(start_datetime_tz_naive)
+        start_datetime = pytz.timezone(settings.TIME_ZONE).localize(now_datetime)
 
         # Convert start_datetime datetime object to string for result_file_base_name.
         timestamp = datetime.datetime.strftime(start_datetime, "%Y%m%d_%H%M")
@@ -363,7 +416,7 @@ def main():
                 schedule_scan(scan_dict)
 
         else:
-            ROOT_LOGGER.critical(f"No engine or engine pool found...exiting.")
+            ROOT_LOGGER.critical("No engine or engine pool found...exiting.")
             sys.exit(1)
 
 

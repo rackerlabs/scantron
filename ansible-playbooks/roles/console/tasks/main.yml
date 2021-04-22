@@ -119,6 +119,15 @@
     line: '        var language_code = "en";'
     backup: yes
 
+# https://github.com/django-recurrence/django-recurrence/issues/155#issuecomment-806844193
+- name: Update recurrence-widget.js to support hourly frequency.
+  copy:
+    src: files/site-packages/recurrence/static/recurrence/js/recurrence-widget.js
+    dest: "{{ venv_dir }}/lib/python3.6/site-packages/recurrence/static/recurrence/js/recurrence-widget.js"
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    mode: 0644
+
 - name: Change ownership of "{{ scantron_dir }}" folder.
   file:
     path: "{{ scantron_dir }}"
