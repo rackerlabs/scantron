@@ -44,7 +44,7 @@ class ScanAdmin(admin.ModelAdmin):
 
     list_display = ("id", "site", "scan_name", "enable_scan", "start_time", "recurrences")
 
-    exclude = ("completed_time", "result_file_base_name")
+    exclude = ("completed_time", "result_file_base_name", "dtstart")
 
 
 class SiteAdmin(admin.ModelAdmin):
