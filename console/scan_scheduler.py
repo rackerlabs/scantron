@@ -112,12 +112,12 @@ def schedule_scan(scan_dict):
 
 def main():
 
-    # Set current date and time variables.
+    # Set current date and time variables.  Example datetime objects are provided throughout.
 
     # datetime.datetime(2021, 5, 3, 10, 21, 53, 197844)
     now_datetime = datetime.datetime.now()
 
-    # datetime.time(10, 21, 53, 197844
+    # datetime.time(10, 21, 53, 197844)
     now_time = now_datetime.time()
 
     # Filter on enabled scans only.  We can't filter on occurrences using Django's .filter() method; it will have to
@@ -129,7 +129,7 @@ def main():
         ROOT_LOGGER.info("No scans enabled")
         return
 
-    # Loop through each scan to determine if it is supposed to be scheduled.
+    # Loop through each scan to determine if it needs to be scheduled.
     for scan in scans:
 
         """
@@ -141,7 +141,7 @@ def main():
         deals with recurrences not with specific time information."  That's why a separate Scan.start_time field is
         required.  A recurrence object has a granularity of a date, and does not include time, so some challenging logic
         is required to determine a one-off scan (no recurring schedule) vs. a recurring scan (with a possible hourly
-        frequency).  When using scan.recurrence.between(), the start and end values are python datetime objects with a
+        frequency).  When using scan.recurrence.between(), the start and end values are Python datetime objects with a
         date granularity, so time is completely ignored.  Thus, a dtstart seed datetime object for recurrences is used.
 
         The author has stated "I don't actually use this library now - so my support here is mostly just merging fixes
@@ -149,11 +149,11 @@ def main():
         I'd be more than happy to hand it over."
         (https://github.com/django-recurrence/django-recurrence/issues/163#issuecomment-604111964)
 
-        I've tried to provide verbose comments to explain my reasoning, but every time I come back to this code and
-        library, it takes me a day to figure out what's going on.
+        I've tried to provide verbose comments to explain my reasoning and logic, but every time I come back to this
+        code and library, it takes me a day to figure out what's going on.
         """
 
-        # datetime.datetime(2021, 5, 1, 0, 0)
+        # datetime.datetime(2021, 5, 3, 0, 0)
         beginning_of_today = now_datetime.replace(hour=0).replace(minute=0).replace(second=0).replace(microsecond=0)
 
         # datetime.datetime(2021, 5, 3, 23, 59, 59)

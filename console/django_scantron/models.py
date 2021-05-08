@@ -277,8 +277,8 @@ class Scan(models.Model):
 
     # dtstart is the seed datetime object when determining scan_scheduler.py's
     # scan_occurrences = scan.recurrences.between(beginning_of_today, end_of_today, dtstart=dtstart, inc=True),
-    # dtstart is updated on every model save.  Currently, both the date and time are updated for dtstart.  Not sure if
-    # updating the date really matters.
+    # dtstart is updated on every Scan model save.  Currently, both the date and time are updated for dtstart.  Not sure
+    # if updating the date really matters.
     def save(self, *args, **kwargs):
 
         # current_scan = Scan.objects.get(pk=self.pk)
