@@ -5,11 +5,9 @@ import datetime
 import ipaddress
 import itertools
 import logging
-import pytz
 import sys
 
 # Third party Python libraries.
-from django.conf import settings
 from django.utils.timezone import localtime
 
 # Custom Python libraries.
@@ -114,8 +112,9 @@ def main():
 
     # Set current date and time variables.  Example datetime objects are provided throughout.
 
-    # datetime.datetime(2021, 5, 3, 10, 21, 53, 197844)
-    now_datetime = datetime.datetime.now()
+    # Use Django's app timezone to determine current datetime.
+    # datetime.datetime(2021, 5, 3, 10, 21, 53, 197844, tzinfo=<DstTzInfo 'America/Chicago' CDT-1 day, 19:00:00 DST>)
+    now_datetime = localtime()
 
     # datetime.time(10, 21, 53, 197844)
     now_time = now_datetime.time()
@@ -153,6 +152,12 @@ def main():
         code and library, it takes me a day to figure out what's going on.
         """
 
+        # Standardize the exdates.  Just a note: https://github.com/django-recurrence/django-recurrence/issues/70
+        for index, exdate in enumerate(scan.recurrences.exdates):
+            updated_exdate = localtime(exdate).replace(hour=now_time.hour).replace(minute=now_time.minute)
+            # print(f"Old exdate: {exdate} -- new exdate {updated_exdate}")
+            scan.recurrences.exdates[index] = updated_exdate
+
         # datetime.datetime(2021, 5, 3, 0, 0)
         beginning_of_today = now_datetime.replace(hour=0).replace(minute=0).replace(second=0).replace(microsecond=0)
 
@@ -161,8 +166,8 @@ def main():
 
         # dtstart is time zone aware since it's coming from Django.  Strip out the tzinfo to make it usable with both
         # beginning_of_today and end_of_today.
-        # datetime.datetime(2021, 5, 3, 15, 24, tzinfo=<UTC>)
-        dtstart = localtime(scan.dtstart).replace(tzinfo=None)
+        # datetime.datetime(2021, 5, 3, 15, 24, tzinfo=<DstTzInfo 'America/Chicago' CDT-1 day, 19:00:00 DST>)
+        dtstart = localtime(scan.dtstart)
 
         # Retrieve all ths scan occurrences.
         scan_occurrences = scan.recurrences.between(beginning_of_today, end_of_today, dtstart=dtstart, inc=True)
@@ -222,11 +227,8 @@ def main():
         # Generate timestamps
         #####################
 
-        # start_datetime is a DateTimeField in ScheduledScan, but the Scan model only contains start_time (TimeField)
-        # and a recurrence date, so we have to build a DateTimeField equivalent.
-        # Build start_datetime based off Django's TIME_ZONE setting.
-        # https://www.saltycrane.com/blog/2009/05/converting-time-zones-datetime-objects-python/#add-timezone-localize
-        start_datetime = pytz.timezone(settings.TIME_ZONE).localize(now_datetime)
+        # Set start_datetime to now_datetime.
+        start_datetime = now_datetime
 
         # Convert start_datetime datetime object to string for result_file_base_name.
         timestamp = datetime.datetime.strftime(start_datetime, "%Y%m%d_%H%M")
