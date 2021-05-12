@@ -11,7 +11,7 @@ import requests
 import utility
 
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 
 
 class ScantronClient:
@@ -199,6 +199,17 @@ class ScantronClient:
 
         return response
 
+    def retrieve_server_time(self):
+        """Retrieve the date and time on the server.  Useful when scheduling scans using the API.  Returns a string of
+        Django's localtime().isoformat."""
+
+        response = self.scantron_api_query(f"/api/server_time")
+
+        if response.status_code == 200:
+            server_time = response.json()["server_time"]
+
+        return server_time
+
     # Scan Results
     ##############
     def retrieve_scan_results(self, scan_id, file_type, write_to_disk=False, **kwargs):
@@ -210,7 +221,7 @@ class ScantronClient:
         file_type = file_type.lower()
         file_name = f"scan_results_{scan_id}.{file_type}"
 
-        if file_type not in ["nmap", "xml", "json"]:
+        if file_type not in ["nmap", "xml", "json", "pooled"]:
             print(f"Not a valid file type: {file_type}")
 
         else:
@@ -223,7 +234,7 @@ class ScantronClient:
                     with open(file_name, "w") as fh:
                         fh.write(scan_results)
 
-            elif response.status_code == 200 and file_type == "json":
+            elif response.status_code == 200 and file_type in ["json", "pooled"]:
                 try:
                     scan_results = response.json()
 
@@ -545,8 +556,9 @@ class ScantronClient:
         all_open_udp_ports_csv = ",".join(list(map(str, all_open_udp_ports_list)))
 
         all_targets_with_an_open_port_dict = {
-            "all_targets_with_an_open_port_list": all_targets_with_an_open_port,
-            "all_targets_with_an_open_port_csv": ",".join(all_targets_with_an_open_port),
+            "all_targets_with_an_open_port_as_list": all_targets_with_an_open_port,
+            "all_targets_with_an_open_port_as_csv": ",".join(all_targets_with_an_open_port),
+            "all_targets_with_an_open_port_as_spaced": " ".join(all_targets_with_an_open_port),
             "all_targets_with_an_open_port_size": len(all_targets_with_an_open_port),
             "all_open_tcp_ports_list": all_open_tcp_ports_list,
             "all_open_udp_ports_list": all_open_udp_ports_list,
@@ -616,7 +628,7 @@ class ScantronClient:
         return all_targets_with_a_specific_port_and_protocol_dict
 
     def retrieve_all_masscan_targets_with_a_specific_port_and_protocol_from_scan_id(
-        self, scan_id, port, protocol="tcp"
+        self, scan_id, port, protocol="tcp", file_type="json"
     ):
         """Retrieves all the targets with a specified open port and protocol given a scan ID.  Only supports masscan
         .json files."""
@@ -630,17 +642,26 @@ class ScantronClient:
             "all_targets_with_a_specific_port_and_protocol_spaced": "",
         }
 
-        scan_results_json = self.retrieve_scan_results(scan_id, "json")
+        scan_results_json = self.retrieve_scan_results(scan_id, file_type)
         masscan_dict = self.generate_masscan_dict_from_masscan_result(scan_results_json)
 
-        all_targets_with_a_specific_port_and_protocol_dict = (
-            self.retrieve_all_masscan_targets_with_a_specific_port_and_protocol(masscan_dict, port, protocol)
+        all_targets_with_a_specific_port_and_protocol_dict = self.retrieve_all_masscan_targets_with_a_specific_port_and_protocol(
+            masscan_dict, port, protocol
         )
 
         # Add scan ID to returned dictionary.
         all_targets_with_a_specific_port_and_protocol_dict["scan_id"] = scan_id
 
         return all_targets_with_a_specific_port_and_protocol_dict
+
+    def retrieve_all_masscan_targets_and_open_ports_from_scan_id(self, scan_id, file_type="json"):
+        """Retrieves all the targets and open ports given a scan ID.  Only supports masscan .json files."""
+
+        scan_results_json = self.retrieve_scan_results(scan_id, file_type)
+        masscan_dict = self.generate_masscan_dict_from_masscan_result(scan_results_json)
+        all_masscan_targets_and_open_ports = self.retrieve_all_masscan_targets_with_an_open_port(masscan_dict)
+
+        return all_masscan_targets_and_open_ports
 
     def wait_until_scheduled_scan_finishes(self, scheduled_scan_id, sleep_seconds=60):
         """Given a scheduled scan ID, sleep until the scan finishes."""

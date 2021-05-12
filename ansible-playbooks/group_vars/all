@@ -23,3 +23,9 @@ install_masscan_on_engine: True
 # instead of having to logging into every engine and updating engine/engine_config.json
 # This is less secure!
 utilize_static_api_token_across_engines: False
+
+# timezone used for the server's OS.
+timezone_server: UTC
+
+# timezone used for the Django application's TIME_ZONE setting.  Should be your local timezone.
+timezone_django: America/Chicago

@@ -120,10 +120,11 @@ The recommendation is to deploy the console first.
 
 #### Update Console Ansible Variables
 
-Edit any variables in these files before running playbook:
+Edit any variables in `ansible-playbooks/group_vars/all` before running playbook.  Note the time zone variables:
 
-* `ansible-playbooks/group_vars/all`
-  
+* `timezone_server` - Set this to be the timezone you want the server to be in, usually UTC.
+* `timezone_django` - Set this to be your local timezone.  It makes dealing with dates, times, and scheduling easier.
+
 If you plan on utilizing the same API key across all engines (not recommended, but easier for automated deployments),
 change `utilize_static_api_token_across_engines` to `True`.  This prevents you from having to log into each engine and
 update `engine_config.json` with the corresponding API key.  The `group_vars/static_api_key` will be created by the
@@ -134,10 +135,10 @@ API key found in `group_vars/static_api_key`.
 more than 1 engine, you won't run into complications with engine name collisions.  You will, however, need to add create
 the user on the console, since the console returns scheduled jobs to the engine based off the engine's name!
 
+#### Update Console Secrets Variables
+
 Rename `console/scantron_secrets.json.empty` to `console/scantron_secrets.json` (should be done for you by
 `initial_setup.sh`)
-
-#### Update Console Secrets Variables
 
 Update all the values `console/scantron_secrets.json` if you do not like ones generated using `initial_setup.sh`.  Only
 the `production` values are used.

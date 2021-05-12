@@ -124,8 +124,9 @@ SECRET_KEY = get_secret("SECRET_KEY")
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
-# TIME_ZONE = 'UTC'
-TIME_ZONE = "America/Chicago"
+# Over-ridden by setting in scantron/ansible-playbooks/roles/console/templates/production.py.j2 and
+# scantron/ansible-playbooks/roles/console/templates/local.py.j2
+TIME_ZONE = "UTC"
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#language-code
 LANGUAGE_CODE = "en-us"

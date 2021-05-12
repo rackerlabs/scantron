@@ -164,8 +164,7 @@ def main():
         # datetime.datetime(2021, 5, 3, 23, 59, 59)
         end_of_today = now_datetime.replace(hour=23).replace(minute=59).replace(second=59).replace(microsecond=0)
 
-        # dtstart is time zone aware since it's coming from Django.  Strip out the tzinfo to make it usable with both
-        # beginning_of_today and end_of_today.
+        # dtstart is time zone aware since it's coming from Django.
         # datetime.datetime(2021, 5, 3, 15, 24, tzinfo=<DstTzInfo 'America/Chicago' CDT-1 day, 19:00:00 DST>)
         dtstart = localtime(scan.dtstart)
 
