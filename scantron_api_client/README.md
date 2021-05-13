@@ -108,7 +108,6 @@ the scan through the web GUI, and inspect the POST request.  Note there is a new
 ![recurrences](recurrences.png)
 
 ```python
-
 # Option 1 - Scan at a future time.
 payload = {
     "site": 1,
@@ -128,7 +127,6 @@ payload = {
     "start_time": next_eligible_scan_string,
     "recurrences": "RRULE:FREQ=WEEKLY;BYDAY=MO",
 }
-
 
 response = sc.create_scan(payload)
 print(response.status_code)
