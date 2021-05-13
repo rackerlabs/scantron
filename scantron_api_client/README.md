@@ -103,18 +103,32 @@ print(response.json())
 
 The `recurrences` value can be tricky.  If you are using a complicated one, open developer tools in your browser, create
 the scan through the web GUI, and inspect the POST request.  Note there is a newline (`\n`) between `RRULE` and `RDATE`.
-At a minimum, you need to include `RDATE:`.
+`RRULE` isn't required, but at a minimum you need to include `RDATE:` for a single non-recurring scan.
 
 ![recurrences](recurrences.png)
 
 ```python
+
+# Option 1 - Scan at a future time.
 payload = {
     "site": 1,
     "scan_name": "DMZ Scan",
     "enable_scan": True,
-    "start_time": "16:00:00",
-    "recurrences": "RRULE:FREQ=WEEKLY;BYDAY=MO\nRDATE:20200113T060000Z",
+    "start_time": "16:00",
+    "recurrences": "RRULE:FREQ=WEEKLY;BYDAY=MO",
 }
+
+# Option 2 - Schedule at the next available start time.
+next_eligible_scan_string = sc.retrieve_next_available_scan_time()
+
+payload = {
+    "site": 1,
+    "scan_name": "DMZ Scan",
+    "enable_scan": True,
+    "start_time": next_eligible_scan_string,
+    "recurrences": "RRULE:FREQ=WEEKLY;BYDAY=MO",
+}
+
 
 response = sc.create_scan(payload)
 print(response.status_code)

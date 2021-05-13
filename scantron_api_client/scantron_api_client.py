@@ -1,4 +1,5 @@
 # Standard Python libraries.
+import datetime
 import json
 import sys
 import time
@@ -669,6 +670,39 @@ class ScantronClient:
         while self.retrieve_scheduled_scan(scheduled_scan_id).json()["scan_status"] in ["started"]:
             print(f"Scheduled scan ID {scheduled_scan_id} is still running...sleeping {sleep_seconds} seconds.")
             time.sleep(sleep_seconds)
+
+    def retrieve_next_available_scan_time(self):
+        """Retrieves the current time on the server and returns a datetime object of the next available scan time.  If
+        the current time is 11:37:04, it would return 11:38.  If the current time (11:37:46) is less than 15 seconds
+        before the next minute (11:38:00), a minute will be added as a buffer and 11:39 will be returned."""
+
+        # Retrieve the time on the server.
+        # "2021-05-13T10:29:16.644174-05:00"
+        server_time = self.retrieve_server_time()
+
+        # Convert it from a string to a datetime object.
+        # datetime.datetime(2021, 5, 13, 10, 29, 16, 644174, tzinfo=datetime.timezone(datetime.timedelta(days=-1, seconds=68400)))
+        server_time_datetime = datetime.datetime.fromisoformat(server_time)
+
+        # Extract the current minute.
+        # "29"
+        minute = server_time_datetime.minute
+
+        # Build a future time object by adding 1 minute to the current server_time_datetime object.
+        server_time_future = server_time_datetime.replace(minute=(minute + 1)).replace(second=0).replace(microsecond=0)
+
+        # If server_time_datetime is not within 15 seconds of server_time_future, use it as the next available scan
+        # datetime.
+        if (server_time_datetime + datetime.timedelta(seconds=15)) < server_time_future:
+            next_eligible_scan_datetime = server_time_future
+
+        # server_time_datetime is within 15 seconds of server_time_future, add another minute as a buffer.
+        else:
+            next_eligible_scan_datetime = server_time_future.replace(minute=(minute + 2))
+
+        next_eligible_scan_string = f"{next_eligible_scan_datetime.hour}:{next_eligible_scan_datetime.minute}"
+
+        return next_eligible_scan_string
 
 
 if __name__ == "__main__":
