@@ -32,7 +32,7 @@ def main(number_of_days_in_the_future=5, scan_id=None):
         # Standardize the exdates.  Just a note: https://github.com/django-recurrence/django-recurrence/issues/70
         for index, exdate in enumerate(scan.recurrences.exdates):
             updated_exdate = localtime(exdate).replace(hour=now_time.hour).replace(minute=now_time.minute)
-            print(f"Old exdate: {exdate} -- new exdate {updated_exdate}")
+            # print(f"Old exdate: {exdate} -- new exdate {updated_exdate}")
             scan.recurrences.exdates[index] = updated_exdate
 
         # datetime.datetime(2021, 5, 3, 0, 0)

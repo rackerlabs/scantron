@@ -587,6 +587,16 @@ the 1st or 9th ports.
 
     ![create_scan](./img/create_scan.png)
 
+    You can use the `console/scan_scheduler_visualizer.py` script found on the console to print out scheduled scan
+    times:
+
+    ```bash
+    # Print out the scan start dates and times for all enabled scans in the next 10 days.
+    cd /home/scantron/console
+    source .venv/bin/activate
+    python scan_scheduler_visualizer.py -d 10
+    ```
+
 5. View currently executing scan results
 
     ```bash
