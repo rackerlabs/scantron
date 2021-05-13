@@ -79,9 +79,9 @@
   command: update-grub2
   when: disable_ipv6
 
-- name: Set timezone.
+- name: Set server timezone.
   timezone:
-    name: "{{ timezone }}"
+    name: "{{ timezone_server }}"
 
 - name: Reboot the box in 1 minute
   command: shutdown -r 1

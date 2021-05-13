@@ -1,13 +1,12 @@
 # Standard Python libraries.
-import datetime
 import os
-import pytz
 
 # Third party Python libraries.
-from django.conf import settings
 from django.http import Http404, JsonResponse
+from django.utils.timezone import localtime
 import redis
 from rest_framework import mixins, viewsets
+from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 import rq
 
@@ -33,14 +32,16 @@ from django_scantron.models import (
 import utility
 
 
-def get_current_time():
-    """Retrieve a Django compliant pre-formated datetimestamp."""
+@api_view(["GET"])
+def get_server_time(request):
+    """Return the server time as a string according to Django's TIME_ZONE configuration setting."""
 
-    datetime_tz_naive = datetime.datetime.now()
-    django_timezone = settings.TIME_ZONE
-    datetime_tz = pytz.timezone(django_timezone).localize(datetime_tz_naive)
+    # Returns a string like "2021-05-11T16:07:34.480844-05:00".
+    results_dict = {
+        "server_time": localtime().isoformat(),
+    }
 
-    return datetime_tz
+    return JsonResponse(results_dict)
 
 
 class ListRetrieveUpdateViewSet(
@@ -183,7 +184,7 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
                     )
 
                     # Django compliant pre-formated datetimestamp.
-                    now_datetime = get_current_time()
+                    now_datetime = localtime()
                     ScheduledScan.objects.filter(scan_engine=request.user).filter(pk=pk).update(
                         completed_time=now_datetime
                     )
@@ -217,7 +218,7 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
         user = self.request.user
 
         # Django compliant pre-formated datetimestamp.
-        now_datetime = get_current_time()
+        now_datetime = localtime()
 
         # Update last_checkin time.
         Engine.objects.filter(scan_engine=user).update(last_checkin=now_datetime)

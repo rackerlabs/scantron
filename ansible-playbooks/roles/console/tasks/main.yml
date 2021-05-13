@@ -119,6 +119,15 @@
     line: '        var language_code = "en";'
     backup: yes
 
+# https://github.com/django-recurrence/django-recurrence/issues/155#issuecomment-806844193
+- name: Update recurrence-widget.js to support hourly frequency.
+  copy:
+    src: files/site-packages/recurrence/static/recurrence/js/recurrence-widget.js
+    dest: "{{ venv_dir }}/lib/python3.6/site-packages/recurrence/static/recurrence/js/recurrence-widget.js"
+    owner: "{{ non_root_user }}"
+    group: "{{ non_root_user }}"
+    mode: 0644
+
 - name: Change ownership of "{{ scantron_dir }}" folder.
   file:
     path: "{{ scantron_dir }}"
@@ -200,15 +209,17 @@
     mode: 0644
   tags: update_code
 
-- name: Update production.py with local/production environment variable.
+- name: Update local.py/production.py with Django configurations.
   template:
-    src: templates/production.py.j2
-    dest: "{{ scantron_dir }}/config/settings/production.py"
+    src: templates/{{ item }}.py.j2
+    dest: "{{ scantron_dir }}/config/settings/{{ item }}.py"
     backup: no
     owner: "{{ non_root_user }}"
     group: "{{ non_root_user }}"
     mode: 0644
-  when: application_environment == "production"
+  with_items:
+    - local
+    - production
   tags: update_code
 
 - name: Update django_connector.py with local/production environment variable.

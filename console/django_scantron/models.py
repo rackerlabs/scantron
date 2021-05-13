@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.timezone import localtime, now
 
 from recurrence.fields import RecurrenceField
 from rest_framework.authtoken.models import Token
@@ -268,19 +269,34 @@ class Scan(models.Model):
     enable_scan = models.BooleanField(verbose_name="Enable scan?")
     start_time = models.TimeField(verbose_name="Scan start time")
     recurrences = RecurrenceField(include_dtstart=False, verbose_name="Recurrences")
+    dtstart = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="dtstart is the seed datetime object for recurrences (automatically modifed)",
+    )
+
+    # dtstart is the seed datetime object when determining scan_scheduler.py's
+    # scan_occurrences = scan.recurrences.between(beginning_of_today, end_of_today, dtstart=dtstart, inc=True),
+    # dtstart is updated on every Scan model save.  Currently, both the date and time are updated for dtstart.  Not sure
+    # if updating the date really matters.
+    def save(self, *args, **kwargs):
+
+        # current_scan = Scan.objects.get(pk=self.pk)
+        # if self.start_time != current_scan.start_time:
+        # if self.recurrences != current_scan.recurrences:
+
+        now_datetime = localtime(now())
+        self.dtstart = (
+            now_datetime.replace(hour=self.start_time.hour)
+            .replace(minute=self.start_time.minute)
+            .replace(second=0)
+            .replace(microsecond=0)
+        )
+
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return str(self.id)
-
-    # def get_text_rules_inclusion(self):
-    #     schedule_scan = ScheduledScan.objects.get(id=self.id)
-    #     text_rules_inclusion = []
-    #
-    #     for rule in schedule_scan.recurrences.rrules:
-    #         text_rules_inclusion.append(rule.to_text())
-    #
-    #     print(text_rules_inclusion)
-    #     return text_rules_inclusion
 
     class Meta:
         verbose_name_plural = "Scans"
