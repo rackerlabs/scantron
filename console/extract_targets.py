@@ -211,7 +211,7 @@ class TargetExtractor:
 
             # Check if it is a FQDN.
             elif self.is_valid_fqdn(target):
-                targets_dict["domains"]["as_list"].append(target)
+                targets_dict["domains"]["as_list"].append(target.strip("."))
 
             # Not a valid target.
             else:
