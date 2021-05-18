@@ -85,7 +85,7 @@
 
 - name: Update engine_config.json configuration file with a static API token and random engine name if utilize_static_api_token_across_engines in group_vars/all is set to True.
   template:
-    src: templates/engine_config.json
+    src: templates/engine_config.json.j2
     dest: /root/engine/engine_config.json
     backup: no
     owner: root
