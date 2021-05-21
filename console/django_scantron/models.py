@@ -27,6 +27,24 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
             Engine.objects.create(scan_engine=instance, api_token=api_token)
 
 
+class Configuration(models.Model):
+    """"""
+
+    enable_scan_retention = models.BooleanField(verbose_name="Enable scan data retention?")
+    scan_retention_in_days = models.IntegerField(
+        default=365,
+        validators=[MinValueValidator(1, message="Scan retention in days must be 1 or greater.")],
+        verbose_name="Scan retention in days",
+        help_text="The number of days to retain scan data, target files, and scan result files.  Default: 365",
+    )
+
+    class Meta:
+        verbose_name_plural = "Configuration"
+
+    def __str__(self):
+        return str(self.id)
+
+
 class Engine(models.Model):
     """Model for an Engine"""
 

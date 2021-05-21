@@ -1,0 +1,4 @@
+{
+    "enable_scan_retention": false,
+    "scan_retention_in_days": 365
+}

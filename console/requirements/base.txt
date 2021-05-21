@@ -53,7 +53,7 @@ python-libnmap==0.7.2
 redis==3.5.3
 
 # python-rq - Redis Queue
-rq==1.8.0
+rq==1.8.1
 
 # XML to JSON
 xmljson==0.2.1

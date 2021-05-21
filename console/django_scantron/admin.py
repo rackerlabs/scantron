@@ -18,6 +18,11 @@ class SessionAdmin(admin.ModelAdmin):
     list_display = ["session_key", "_session_data", "expire_date"]
 
 
+class ConfigurationAdmin(admin.ModelAdmin):
+
+    list_display = ("id", "enable_scan_retention", "scan_retention_in_days")
+
+
 class EngineAdmin(admin.ModelAdmin):
 
     list_display = ("id", "scan_engine", "description", "api_token", "last_checkin")
@@ -92,6 +97,7 @@ def _register(model, admin_class):
 
 _register(Session, SessionAdmin)
 
+_register(models.Configuration, ConfigurationAdmin)
 _register(models.Engine, EngineAdmin)
 _register(models.EnginePool, EnginePoolAdmin)
 _register(models.GloballyExcludedTarget, GloballyExcludedTargetAdmin)

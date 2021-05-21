@@ -12,6 +12,7 @@ import rq
 
 # Custom Python libraries.
 from django_scantron.api.serializers import (
+    ConfigurationSerializer,
     EngineSerializer,
     EnginePoolSerializer,
     GloballyExcludedTargetSerializer,
@@ -21,6 +22,7 @@ from django_scantron.api.serializers import (
     SiteSerializer,
 )
 from django_scantron.models import (
+    Configuration,
     Engine,
     EnginePool,
     GloballyExcludedTarget,
@@ -62,6 +64,15 @@ class DefaultsMixin(object):
     paginate_by = 25
     paginate_by_param = "page_size"
     max_paginate_by = 100
+
+
+class ConfigurationViewSet(ListRetrieveUpdateViewSet):
+    """API CRUD operations for Configuration Model."""
+
+    model = Configuration
+    serializer_class = ConfigurationSerializer
+    queryset = Configuration.objects.filter(id=1)  # Only 1 configuration is used.
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
 
 class EngineViewSet(DefaultsMixin, viewsets.ModelViewSet):
