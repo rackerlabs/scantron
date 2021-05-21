@@ -275,6 +275,11 @@
     chdir: "{{ scantron_dir }}"
   ignore_errors: yes  # Only applicable if playbook has already been run.  Use 'python manage.py changepassword scantron'.
 
+- name: Populating database with initial configuration data. "scantron" database must already exist.
+  command: "{{ venv_python }} populate_database.py"
+  args:
+    chdir: "{{ scantron_dir }}"
+  tags: update_code
 
 # uWSGI
 #######
@@ -485,6 +490,18 @@
     month: "*"
     weekday: "*"
     job: "{{ scantron_dir }}/scan_scheduler.sh"
+    user: root
+
+- name: Add crontab entry for scan_retention.sh
+  cron:
+    name: If scan retention is enabled, delete any old scan data.
+    disabled: false
+    minute: "1"
+    hour: "0"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: "{{ scantron_dir }}/scan_retention.sh"
     user: root
 
 - name: Disable MAILTO for root's crontab.
