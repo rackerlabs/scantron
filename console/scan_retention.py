@@ -72,8 +72,8 @@ def main(
 
     # Filter for scans that meet the retention criteria.
     scans_older_than_retention_date = django_connector.ScheduledScan.objects.filter(
-        completed_time__lt=datetime_retention_in_minutes
-    )
+        scan_status__in=["cancelled", "completed", "error"]
+    ).filter(completed_time__lt=datetime_retention_in_minutes)
 
     if database_remove:
 
