@@ -12,7 +12,7 @@ import requests
 import utility
 
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 
 class ScantronClient:
@@ -247,6 +247,17 @@ class ScantronClient:
                     print(f"Exception decoding json for scan ID {scan_id}: {e}")
 
         return scan_results
+
+    # CONFIGURATION
+    ###############
+    # Configuration - CRUD functions.
+    def retrieve_configuration(self):
+        """Retrieve configuration.  Hard-coded to a configuration ID of 1."""
+        return self.scantron_api_query(f"/api/configuration/1", method="GET")
+
+    def update_configuration(self, payload):
+        """Update configuration.  Hard-coded to a configuration ID of 1."""
+        return self.scantron_api_query(f"/api/configuration/1", method="PATCH", payload=payload)
 
     # ENGINES
     #########
