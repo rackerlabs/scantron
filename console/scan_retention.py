@@ -75,6 +75,53 @@ def main(
         scan_status__in=["cancelled", "completed", "error"]
     ).filter(completed_time__lt=datetime_retention_in_minutes)
 
+    # Remove the files first, since they depend on the scans "result_file_base_name" attribute existing.
+    if file_remove:
+        # Build directory paths.
+        root_dir = "/home/scantron/console"
+        target_files_dir = os.path.join(root_dir, "target_files")
+        complete_dir = os.path.join(root_dir, "scan_results", "complete")
+        processed_dir = os.path.join(root_dir, "scan_results", "processed")
+        cancelled_dir = os.path.join(root_dir, "scan_results", "cancelled")
+        bigdata_analytics_dir = os.path.join(root_dir, "for_bigdata_analytics")
+
+        # Loop through each scan.
+        for scan in scans_older_than_retention_date:
+
+            result_file_base_name = scan.result_file_base_name
+
+            # Grab a list of files from the "target_files" directory.  Will capture any .excluded_targets as well.
+            target_files = glob.glob(os.path.join(target_files_dir, f"{result_file_base_name}.*targets"))
+
+            # Grab a list of files from the "complete" directory.
+            complete_dir_scans = glob.glob(os.path.join(complete_dir, f"{result_file_base_name}*"))
+
+            # Grab a list of files from the "processed" directory.
+            processed_dir_scans = glob.glob(os.path.join(processed_dir, f"{result_file_base_name}*"))
+
+            # Grab a list of files from the "cancelled" directory.
+            cancelled_dir_scans = glob.glob(os.path.join(cancelled_dir, f"{result_file_base_name}*"))
+
+            # Grab a list of .csv files from the "for_bigdata_analytics" directory.
+            bigdata_analytics_dir_csv_files = glob.glob(
+                os.path.join(bigdata_analytics_dir, f"{result_file_base_name}.csv")
+            )
+
+            for file_to_delete in (
+                target_files
+                + complete_dir_scans
+                + processed_dir_scans
+                + cancelled_dir_scans
+                + bigdata_analytics_dir_csv_files
+            ):
+                ROOT_LOGGER.debug(f"Deleting file: {file_to_delete}")
+                if disable_dryrun:
+                    try:
+                        os.remove(file_to_delete)
+                        ROOT_LOGGER.debug(f"Deleted file: {file_to_delete}")
+                    except OSError:
+                        ROOT_LOGGER.error(f"Could not delete file: {file_to_delete}")
+
     if database_remove:
 
         # Determine the total number of scans to delete.
@@ -120,44 +167,6 @@ def main(
                         ROOT_LOGGER.exception(f"Problem deleting scan from database using iterator().  Exception: {e}")
 
                 ROOT_LOGGER.info(f"Successfully deleted {total_iterator_scans_deleted} scans from the database.")
-
-    if file_remove:
-
-        # Build directory paths.
-        root_dir = "/home/scantron/console"
-        complete_dir = os.path.join(root_dir, "scan_results", "complete")
-        processed_dir = os.path.join(root_dir, "scan_results", "processed")
-        cancelled_dir = os.path.join(root_dir, "scan_results", "cancelled")
-        bigdata_analytics_dir = os.path.join(root_dir, "for_bigdata_analytics")
-
-        # Loop through each scan.
-        for scan in scans_older_than_retention_date:
-
-            result_file_base_name = scan.result_file_base_name
-
-            # Grab a list of files from the "complete" directory.
-            complete_dir_scans = glob.glob(os.path.join(complete_dir, f"{result_file_base_name}*"))
-
-            # Grab a list of files from the "processed" directory.
-            processed_dir_scans = glob.glob(os.path.join(processed_dir, f"{result_file_base_name}*"))
-
-            # Grab a list of files from the "cancelled" directory.
-            cancelled_dir_scans = glob.glob(os.path.join(cancelled_dir, f"{result_file_base_name}*"))
-
-            # Grab a list of .csv files from the "for_bigdata_analytics" directory.
-            bigdata_analytics_dir_csv_files = glob.glob(
-                os.path.join(bigdata_analytics_dir, f"{result_file_base_name}.csv")
-            )
-
-            for file_to_delete in (
-                complete_dir_scans + processed_dir_scans + cancelled_dir_scans + bigdata_analytics_dir_csv_files
-            ):
-                ROOT_LOGGER.debug(f"Deleting file: {file_to_delete}")
-                if disable_dryrun:
-                    try:
-                        os.remove(file_to_delete)
-                    except OSError:
-                        ROOT_LOGGER.error(f"Could not delete file: {file_to_delete}")
 
     ROOT_LOGGER.info(f"scan_retention_dict: {scan_retention_dict}")
     ROOT_LOGGER.info(f"{script_name} is done!")
@@ -223,5 +232,4 @@ if __name__ == "__main__":
     if (args.scan_retention_in_minutes is not None) and (args.scan_retention_in_minutes <= 0):
         print("Scan retention in days must be greater than 0...exiting.")
         sys.exit(0)
-
     main(**vars(args))
