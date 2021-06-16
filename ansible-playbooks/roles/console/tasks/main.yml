@@ -494,9 +494,12 @@
 
 - name: Add crontab entry for scan_retention.sh
   cron:
-    name: If scan retention is enabled, delete any old scan data.
+    name: >-
+      If scan retention is enabled, delete any old scan data.  Note that "0" hour is midnight for the timezone in
+      the "timezone_server" variable in ansible-playbooks/group_vars/all
     disabled: false
     minute: "1"
+    # "0" hour is midnight for the timezone in the "timezone_server" variable in ansible-playbooks/group_vars/all
     hour: "0"
     day: "*"
     month: "*"
