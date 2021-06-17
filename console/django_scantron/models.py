@@ -35,7 +35,7 @@ class Configuration(models.Model):
         default=365,
         validators=[MinValueValidator(1, message="Scan retention in days must be 1 or greater.")],
         verbose_name="Scan retention in days",
-        help_text="The number of days to retain scan data, target files, and scan result files.  Default: 365",
+        help_text="The number of days to retain scan data, target files, and scan result files.",
     )
 
     class Meta:

@@ -26,7 +26,6 @@ class ConfigurationAdmin(admin.ModelAdmin):
 class EngineAdmin(admin.ModelAdmin):
 
     list_display = ("id", "scan_engine", "description", "api_token", "last_checkin")
-
     readonly_fields = ("id", "scan_engine", "api_token", "last_checkin")
 
 
@@ -43,16 +42,18 @@ class GloballyExcludedTargetAdmin(admin.ModelAdmin):
 class ScanCommandAdmin(admin.ModelAdmin):
 
     list_display = ("id", "scan_binary", "scan_command_name", "scan_command")
+    list_filter = ("scan_binary",)
 
 
 class ScanAdmin(admin.ModelAdmin):
 
     list_display = ("id", "site", "scan_name", "enable_scan", "start_time", "recurrences")
-
+    list_filter = ("enable_scan",)
     exclude = ("completed_time", "result_file_base_name", "dtstart")
 
 
 class SiteAdmin(admin.ModelAdmin):
+
     list_display = (
         "id",
         "site_name",
@@ -87,7 +88,7 @@ class ScheduledScanAdmin(admin.ModelAdmin):
         "pooled_scan_result_file_base_name",
         "scan_binary_process_id",
     )
-
+    list_filter = ("scan_engine", "scan_binary", "scan_status")
     exclude = ("completed_time", "result_file_base_name")
 
 
