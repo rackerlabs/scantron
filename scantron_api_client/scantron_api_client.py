@@ -204,7 +204,7 @@ class ScantronClient:
         """Retrieve the date and time on the server.  Useful when scheduling scans using the API.  Returns a string of
         Django's localtime().isoformat."""
 
-        response = self.scantron_api_query(f"/api/server_time")
+        response = self.scantron_api_query("/api/server_time")
 
         if response.status_code == 200:
             server_time = response.json()["server_time"]
@@ -253,11 +253,11 @@ class ScantronClient:
     # Configuration - CRUD functions.
     def retrieve_configuration(self):
         """Retrieve configuration.  Hard-coded to a configuration ID of 1."""
-        return self.scantron_api_query(f"/api/configuration/1", method="GET")
+        return self.scantron_api_query("/api/configuration/1", method="GET")
 
     def update_configuration(self, payload):
         """Update configuration.  Hard-coded to a configuration ID of 1."""
-        return self.scantron_api_query(f"/api/configuration/1", method="PATCH", payload=payload)
+        return self.scantron_api_query("/api/configuration/1", method="PATCH", payload=payload)
 
     # ENGINES
     #########
