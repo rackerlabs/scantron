@@ -8,6 +8,7 @@ from django_scantron.api import views
 # Create a router and register our viewsets with it.
 # basename requirement: http://www.django-rest-framework.org/api-guide/routers/#usage
 router = routers.DefaultRouter(trailing_slash=False)
+router.register(r"configuration", views.ConfigurationViewSet, basename="configuration")
 router.register(r"engines", views.EngineViewSet, basename="engines")
 router.register(r"engine_pools", views.EnginePoolViewSet, basename="engine_pools")
 router.register(r"globally_excluded_targets", views.GloballyExcludedTargetViewSet, basename="globally_excluded_targets")

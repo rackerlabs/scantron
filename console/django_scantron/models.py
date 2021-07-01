@@ -27,8 +27,26 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
             Engine.objects.create(scan_engine=instance, api_token=api_token)
 
 
+class Configuration(models.Model):
+    """Model for the configuration."""
+
+    enable_scan_retention = models.BooleanField(verbose_name="Enable scan data retention?")
+    scan_retention_in_days = models.IntegerField(
+        default=365,
+        validators=[MinValueValidator(1, message="Scan retention in days must be 1 or greater.")],
+        verbose_name="Scan retention in days",
+        help_text="The number of days to retain scan data, target files, and scan result files.",
+    )
+
+    class Meta:
+        verbose_name_plural = "Configuration"
+
+    def __str__(self):
+        return str(self.id)
+
+
 class Engine(models.Model):
-    """Model for an Engine"""
+    """Model for an engine."""
 
     id = models.AutoField(primary_key=True, verbose_name="Engine ID")
     scan_engine = models.CharField(
@@ -54,7 +72,7 @@ class Engine(models.Model):
 
 
 class EnginePool(models.Model):
-    """Model for an Engine Pool"""
+    """Model for an engine pool."""
 
     id = models.AutoField(primary_key=True, verbose_name="Engine Pool ID")
     engine_pool_name = models.CharField(unique=True, max_length=255, verbose_name="Engine Pool Name")
@@ -111,7 +129,7 @@ class GloballyExcludedTarget(models.Model):
 
 
 class ScanCommand(models.Model):
-    """Model for a scan command"""
+    """Model for a scan command."""
 
     # fmt: off
     SCAN_BINARY = (
@@ -133,7 +151,7 @@ class ScanCommand(models.Model):
 
 
 class Site(models.Model):
-    """Model for a Site.  Must be defined prior to Scan model."""
+    """Model for a site.  Must be defined prior to Scan model."""
 
     id = models.AutoField(primary_key=True, verbose_name="Site ID")
     site_name = models.CharField(

@@ -13,6 +13,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
 django.setup()
 # fmt: off
 from django_scantron.models import (  # noqa
+    Configuration,
+    GloballyExcludedTarget,
     Scan,
     ScheduledScan,
     Site,

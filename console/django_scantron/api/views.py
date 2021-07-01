@@ -12,6 +12,7 @@ import rq
 
 # Custom Python libraries.
 from django_scantron.api.serializers import (
+    ConfigurationSerializer,
     EngineSerializer,
     EnginePoolSerializer,
     GloballyExcludedTargetSerializer,
@@ -21,6 +22,7 @@ from django_scantron.api.serializers import (
     SiteSerializer,
 )
 from django_scantron.models import (
+    Configuration,
     Engine,
     EnginePool,
     GloballyExcludedTarget,
@@ -62,6 +64,15 @@ class DefaultsMixin(object):
     paginate_by = 25
     paginate_by_param = "page_size"
     max_paginate_by = 100
+
+
+class ConfigurationViewSet(ListRetrieveUpdateViewSet):
+    """API CRUD operations for Configuration Model."""
+
+    model = Configuration
+    serializer_class = ConfigurationSerializer
+    queryset = Configuration.objects.filter(id=1)  # Only 1 configuration is used.
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
 
 class EngineViewSet(DefaultsMixin, viewsets.ModelViewSet):
@@ -175,6 +186,12 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
                     # Move scan files to the "cancelled" directory for historical purposes.
                     utility.move_wildcard_files(
                         f"{scheduled_scan_dict['result_file_base_name']}*", pending_files_dir, cancelled_files_dir
+                    )
+
+                    # Django compliant pre-formated datetimestamp.
+                    now_datetime = localtime()
+                    ScheduledScan.objects.filter(scan_engine=request.user).filter(pk=pk).update(
+                        completed_time=now_datetime
                     )
 
                 if new_scan_status == "completed":

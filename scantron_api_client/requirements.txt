@@ -1,4 +1,5 @@
-# ipython, not required, helpful when needing a Python shell.
+# Not required, helpful when debugging.
+ipdb
 ipython
 
 # HTTP requests

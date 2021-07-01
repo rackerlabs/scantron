@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from django_scantron.models import (
+    Configuration,
     Engine,
     EnginePool,
     GloballyExcludedTarget,
@@ -14,6 +15,12 @@ import extract_targets
 import email_validation_utils
 
 # Serializers define the API representations.
+
+
+class ConfigurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Configuration
+        fields = ("id", "enable_scan_retention", "scan_retention_in_days")
 
 
 class EngineSerializer(serializers.ModelSerializer):
