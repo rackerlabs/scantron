@@ -1,3 +1,3 @@
-Scantron engine version: 1.03
-MD5     af814d01c63926ba7927b5dc6aae894f  engine
-SHA-256 80e5689497c639bde8d5472f47254b63b55004a279b84f8055ca20c01ec7bf84  engine
+Scantron engine version: 1.0.4
+MD5     10ce119d0a943012aa3096b7bf27cfbe  engine
+SHA-256 22cf9fa28b58741564eef3d8e40f84bcd80864cd277d50e924c8ea2092e098da  engine
