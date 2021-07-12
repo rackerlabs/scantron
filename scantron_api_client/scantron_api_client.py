@@ -13,7 +13,7 @@ from requests_toolbelt.utils import dump
 # Custom Python libraries.
 
 
-__version__ = "1.0.0"
+__version__ = "1.0.7"
 
 
 def debug_requests_response(response):
