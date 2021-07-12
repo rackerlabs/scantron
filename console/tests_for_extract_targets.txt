@@ -1,0 +1,33 @@
+# Valid Dommains
+rackspace.com
+scanme.nmap.org
+
+# Invalid domains
+rackspace.comm
+
+# IPv4
+127.0.0.1  # loopback
+224.0.1.10  # multicast
+169.254.169.254  # private
+1.2.3.4
+8.8.8.8
+99.99.99.999  # Fat-fingered IP
+
+# IPv4 Networks
+7.7.7.0/24
+10.1.1.0/24  # RFC1918 private IP
+192.168.1.0/24  # RFC1918 private IP
+172.16.1.0/24  # RFC1918 private IP
+
+# IPv6
+::1  # Loopback
+2001:4860:4860::8888  # Google DNS
+
+# IPv6 Networks
+2345:425:2CA1:0000:0000:567:5673:23b5/126
+fc00::/7  # private
+
+# CDN IPs
+13.228.69.5  # AWS CloudFront
+103.31.4.105  # Cloudflare
+2405:b500:ffff:ffff:ffff:ffff:ffff:fff3  # Cloudflare
