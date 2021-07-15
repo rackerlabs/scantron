@@ -1,0 +1,31 @@
+---
+# Specify Python version to use on managed machines.
+ansible_python_interpreter: "/usr/bin/python3"
+
+# Variables listed here are applicable to all roles.
+non_root_user: scantron
+
+# "production" or "local".  Used in manage.py and config/wsgi.py files.
+application_environment: production
+
+# IPs
+console_external_ip: "{{ groups.console[0] }}"  # Read from hosts file.
+console_internal_ip: "{{ groups.console[0] }}"  # Read from hosts file, change if dual-NIC'd.
+console_fqdn: "{{ groups.console[0] }}"  # console_fqdn: scantron.yourdomain.com.
+
+engine_external_ip: "{{ groups.engine[0] }}"  # Read from hosts file.
+engine_internal_ip: "{{ groups.engine[0] }}"  # Change if dual-NIC'd.
+
+# masscan - installation requires a minimum amount of 1 GB of memory.
+install_masscan_on_engine: True
+
+# If you want to set one standard API token for all engines
+# instead of having to logging into every engine and updating engine/engine_config.json
+# This is less secure!
+utilize_static_api_token_across_engines: False
+
+# timezone used for the server's OS.
+timezone_server: UTC
+
+# timezone used for the Django application's TIME_ZONE setting.  Should be your local timezone.
+timezone_django: America/Chicago

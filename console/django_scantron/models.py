@@ -111,7 +111,7 @@ class GloballyExcludedTarget(models.Model):
 
         # Globally excluded targets.
         target_extractor = extract_targets.TargetExtractor(
-            targets_string=self.globally_excluded_targets, private_ips_allowed=True, sort_targets=True
+            targets_string=self.globally_excluded_targets, sort_targets=True
         )
         targets_dict = target_extractor.targets_dict
 
@@ -225,9 +225,7 @@ class Site(models.Model):
             raise ValidationError("Select a single scan engine or scan engine pool.")
 
         # Targets
-        target_extractor = extract_targets.TargetExtractor(
-            targets_string=self.targets, private_ips_allowed=True, sort_targets=True
-        )
+        target_extractor = extract_targets.TargetExtractor(targets_string=self.targets, sort_targets=True)
         targets_dict = target_extractor.targets_dict
 
         if targets_dict["invalid_targets"]:
@@ -237,9 +235,7 @@ class Site(models.Model):
         self.targets = targets_dict["as_nmap"]
 
         # Excluded targets
-        target_extractor = extract_targets.TargetExtractor(
-            targets_string=self.excluded_targets, private_ips_allowed=True, sort_targets=True
-        )
+        target_extractor = extract_targets.TargetExtractor(targets_string=self.excluded_targets, sort_targets=True)
         targets_dict = target_extractor.targets_dict
 
         if targets_dict["invalid_targets"]:

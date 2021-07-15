@@ -48,13 +48,15 @@ class GloballyExcludedTargetSerializer(serializers.ModelSerializer):
             globally_excluded_targets = attrs["globally_excluded_targets"]
 
             target_extractor = extract_targets.TargetExtractor(
-                targets_string=globally_excluded_targets, private_ips_allowed=True, sort_targets=True
+                targets_string=globally_excluded_targets, sort_targets=True
             )
             targets_dict = target_extractor.targets_dict
 
             if targets_dict["invalid_targets"]:
                 invalid_targets = ",".join(targets_dict["invalid_targets"])
                 raise serializers.ValidationError(f"Invalid globally excluded targets provided: {invalid_targets}")
+
+            attrs["globally_excluded_targets"] = targets_dict["as_nmap"]
 
         return attrs
 
@@ -87,27 +89,27 @@ class SiteSerializer(serializers.ModelSerializer):
         if "targets" in attrs:
             targets = attrs["targets"]
 
-            target_extractor = extract_targets.TargetExtractor(
-                targets_string=targets, private_ips_allowed=True, sort_targets=True
-            )
+            target_extractor = extract_targets.TargetExtractor(targets_string=targets, sort_targets=True)
             targets_dict = target_extractor.targets_dict
 
             if targets_dict["invalid_targets"]:
                 invalid_targets = ",".join(targets_dict["invalid_targets"])
                 raise serializers.ValidationError(f"Invalid targets provided: {invalid_targets}")
 
+            attrs["targets"] = targets_dict["as_nmap"]
+
         # Excluded targets
         if "excluded_targets" in attrs:
             excluded_targets = attrs["excluded_targets"]
 
-            target_extractor = extract_targets.TargetExtractor(
-                targets_string=excluded_targets, private_ips_allowed=True, sort_targets=True
-            )
+            target_extractor = extract_targets.TargetExtractor(targets_string=excluded_targets, sort_targets=True)
             targets_dict = target_extractor.targets_dict
 
             if targets_dict["invalid_targets"]:
                 invalid_targets = ",".join(targets_dict["invalid_targets"])
                 raise serializers.ValidationError(f"Invalid excluded targets provided: {invalid_targets}")
+
+            attrs["excluded_targets"] = targets_dict["as_nmap"]
 
         # Email scan alerts and email address.
         if ("email_scan_alerts" in attrs) and ("email_alert_addresses" in attrs):
@@ -116,7 +118,7 @@ class SiteSerializer(serializers.ModelSerializer):
             email_alert_addresses = attrs["email_alert_addresses"]
 
             if email_scan_alerts and not email_alert_addresses:
-                raise serializers.ValidationError(f"Provide an email address if enabling 'Email scan alerts'")
+                raise serializers.ValidationError("Provide an email address if enabling 'Email scan alerts'")
 
         # Check for valid email addresseses string.
         if "email_alert_addresses" in attrs:
@@ -134,7 +136,7 @@ class SiteSerializer(serializers.ModelSerializer):
             email_scan_diff_addresses = attrs["email_scan_diff_addresses"]
 
             if email_scan_diff and not email_scan_diff_addresses:
-                raise serializers.ValidationError(f"Provide an email address if enabling 'Email nmap scan diff'")
+                raise serializers.ValidationError("Provide an email address if enabling 'Email nmap scan diff'")
 
         # Check for valid email addresseses string.
         if "email_scan_diff_addresses" in attrs:

@@ -53,7 +53,10 @@ python-libnmap==0.7.2
 redis==3.5.3
 
 # python-rq - Redis Queue
-rq==1.8.1
+rq==1.9.0
+
+# Validate top level dommains
+tld==0.12.6
 
 # XML to JSON
 xmljson==0.2.1

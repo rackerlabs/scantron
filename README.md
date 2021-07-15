@@ -59,7 +59,7 @@ creating, retrieving, updating, or deleting sites, scan commands, scans, etc.
 
 * Engine: If you plan on compiling masscan on an engine, you'll need at least 1024 MB of memory.  It fails to build with
 only 512 MB.  If you do not want to build masscan, set `install_masscan_on_engine` to `False` in
-`ansible-playbooks/group_vars/all`
+`ansible-playbooks/group_vars/all.yml`
 
 * Console: 512 MB of memory was the smallest amount successfully tested, however, if you plan on processing large scan
 files (using the scripts found in `console/scan_results`: `masscan_json_to_csv.py`, `nmap_to_csv.py` or
@@ -120,7 +120,7 @@ The recommendation is to deploy the console first.
 
 #### Update Console Ansible Variables
 
-Edit any variables in `ansible-playbooks/group_vars/all` before running playbook.  Note the time zone variables:
+Edit any variables in `ansible-playbooks/group_vars/all.yml` before running playbook.  Note the time zone variables:
 
 * `timezone_server` - Set this to be the timezone you want the server to be in, usually UTC.
 * `timezone_django` - Set this to be your local timezone.  It makes dealing with dates, times, and scheduling easier.
@@ -192,7 +192,7 @@ python3 manage.py changepassword admin
 
 Edit any variables in these files before running playbook:
 
-* `ansible-playbooks/group_vars/all`
+* `ansible-playbooks/group_vars/all.yml`
 * `ansible-playbooks/roles/engine/vars/main.yml`
 
 #### Ensure proper user permissions

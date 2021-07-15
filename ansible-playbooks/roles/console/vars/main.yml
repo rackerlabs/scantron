@@ -1,6 +1,6 @@
 ---
 enable_ufw_firewall: true
-reboot_box: true
+reboot_box: false
 
 install_packages:
   - autossh
@@ -11,8 +11,8 @@ install_packages:
   - nmap
   - postfix
   - postgresql-{{ postgresql_version }}
-  - python-dev
   - python3-pip
+  - python-dev
   - python-virtualenv
   - python3-psycopg2  # python3-psycopg2 required for Ansible.
   - redis

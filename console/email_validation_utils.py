@@ -1,5 +1,5 @@
 """
-Email validation methods for models.py and DRF's serializers.py.  Not kept in utility.py because of Django project 
+Email validation methods for models.py and DRF's serializers.py.  Not kept in utility.py because of Django project
 loading issues.
 """
 # Standard Python libraries.

@@ -20,7 +20,7 @@ import threading
 import time
 import urllib.request
 
-__version__ = "1.03"
+__version__ = "1.0.4"
 
 # Disable SSL/TLS verification.
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -524,11 +524,11 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if not shutil.which("nmap"):
-        print(f"Path for nmap cannot be found.  Exiting...")
+        print("Path for nmap cannot be found.  Exiting...")
         sys.exit(0)
 
     if not shutil.which("masscan"):
-        print(f"Path for masscan cannot be found.  Exiting...")
+        print("Path for masscan cannot be found.  Exiting...")
         sys.exit(0)
 
     if not os.path.isdir("./logs"):
