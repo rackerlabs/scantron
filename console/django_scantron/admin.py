@@ -20,34 +20,34 @@ class SessionAdmin(admin.ModelAdmin):
 
 class ConfigurationAdmin(admin.ModelAdmin):
 
-    list_display = ("id", "enable_scan_retention", "scan_retention_in_days")
+    list_display = ("id", "enable_scan_retention", "scan_retention_in_days", "created", "last_updated")
 
 
 class EngineAdmin(admin.ModelAdmin):
 
-    list_display = ("id", "scan_engine", "description", "api_token", "last_checkin")
+    list_display = ("id", "scan_engine", "description", "api_token", "last_checkin", "created", "last_updated")
     readonly_fields = ("id", "scan_engine", "api_token", "last_checkin")
 
 
 class EnginePoolAdmin(admin.ModelAdmin):
 
-    list_display = ("id", "engine_pool_name")
+    list_display = ("id", "engine_pool_name", "created", "last_updated")
 
 
 class GloballyExcludedTargetAdmin(admin.ModelAdmin):
 
-    list_display = ("id", "globally_excluded_targets", "note", "last_updated")
+    list_display = ("id", "globally_excluded_targets", "note", "created", "last_updated")
 
 
 class ScanCommandAdmin(admin.ModelAdmin):
 
-    list_display = ("id", "scan_binary", "scan_command_name", "scan_command")
+    list_display = ("id", "scan_binary", "scan_command_name", "scan_command", "created", "last_updated")
     list_filter = ("scan_binary",)
 
 
 class ScanAdmin(admin.ModelAdmin):
 
-    list_display = ("id", "site", "scan_name", "enable_scan", "start_time", "recurrences")
+    list_display = ("id", "site", "scan_name", "enable_scan", "start_time", "recurrences", "created", "last_updated")
     list_filter = ("enable_scan",)
     exclude = ("completed_time", "result_file_base_name", "dtstart")
 
@@ -67,6 +67,8 @@ class SiteAdmin(admin.ModelAdmin):
         "email_alert_addresses",
         "email_scan_diff",
         "email_scan_diff_addresses",
+        "created",
+        "last_updated",
     )
 
 

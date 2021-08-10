@@ -37,6 +37,8 @@ class Configuration(models.Model):
         verbose_name="Scan retention in days",
         help_text="The number of days to retain scan data, target files, and scan result files.",
     )
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="Last updated")
 
     class Meta:
         verbose_name_plural = "Configuration"
@@ -63,6 +65,8 @@ class Engine(models.Model):
     description = models.CharField(unique=False, max_length=255, blank=True, verbose_name="Engine Description")
     api_token = models.CharField(unique=True, max_length=40, blank=False, verbose_name="API Key")
     last_checkin = models.DateTimeField(blank=True, null=True, verbose_name="Last Engine Check In")
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="Last updated")
 
     def __str__(self):
         return str(self.scan_engine)
@@ -77,6 +81,8 @@ class EnginePool(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Engine Pool ID")
     engine_pool_name = models.CharField(unique=True, max_length=255, verbose_name="Engine Pool Name")
     scan_engines = models.ManyToManyField(Engine, verbose_name="Scan engines in pool")
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="Last updated")
 
     def __str__(self):
         return str(self.engine_pool_name)
@@ -94,7 +100,7 @@ class GloballyExcludedTarget(models.Model):
     # is changed.
     globally_excluded_targets = models.CharField(
         unique=False,
-        max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
+        max_length=4_194_304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\:\- ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
@@ -104,6 +110,7 @@ class GloballyExcludedTarget(models.Model):
         verbose_name="Globally Excluded Targets",
     )
     note = models.TextField(unique=False, blank=True, verbose_name="Note")
+    created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True, verbose_name="Last updated")
 
     def clean(self):
@@ -142,6 +149,8 @@ class ScanCommand(models.Model):
     scan_binary = models.CharField(max_length=7, choices=SCAN_BINARY, default="nmap", verbose_name="Scan binary")
     scan_command_name = models.CharField(unique=True, max_length=255, verbose_name="Scan command name")
     scan_command = models.TextField(unique=False, verbose_name="Scan command")
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="Last updated")
 
     def __str__(self):
         return f"{self.scan_binary}||{self.scan_command_name}"
@@ -171,7 +180,7 @@ class Site(models.Model):
     # is changed.
     targets = models.CharField(
         unique=False,
-        max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
+        max_length=4_194_304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\:\- ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
@@ -186,7 +195,7 @@ class Site(models.Model):
     excluded_targets = models.CharField(
         unique=False,
         blank=True,
-        max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
+        max_length=4_194_304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\:\- ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
@@ -210,6 +219,8 @@ class Site(models.Model):
     email_scan_diff_addresses = models.CharField(
         unique=False, blank=True, max_length=4096, verbose_name="Email nmap scan diff addresses, comma separated"
     )
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="Last updated")
 
     def clean(self):
         """Checks for any invalid IPs, IP subnets, or FQDNs in the targets and excluded_targets fields."""
@@ -288,6 +299,8 @@ class Scan(models.Model):
         null=True,
         verbose_name="dtstart is the seed datetime object for recurrences (automatically modifed)",
     )
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="Last updated")
 
     # dtstart is the seed datetime object when determining scan_scheduler.py's
     # scan_occurrences = scan.recurrences.between(beginning_of_today, end_of_today, dtstart=dtstart, inc=True),
@@ -362,7 +375,7 @@ class ScheduledScan(models.Model):
     # is changed.
     targets = models.CharField(
         unique=False,
-        max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
+        max_length=4_194_304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
@@ -377,7 +390,7 @@ class ScheduledScan(models.Model):
     excluded_targets = models.CharField(
         unique=False,
         blank=True,
-        max_length=4194304,  # 2^22 = 4194304.  See note above if this value is changed.
+        max_length=4_194_304,  # 2^22 = 4194304.  See note above if this value is changed.
         validators=[
             RegexValidator(
                 regex="^[a-zA-Z0-9/\.\: ]*$",  # Characters to support IPv4, IPv6, and FQDNs only.  Space delimited.
