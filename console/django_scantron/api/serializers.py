@@ -20,19 +20,19 @@ import email_validation_utils
 class ConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Configuration
-        fields = ("id", "enable_scan_retention", "scan_retention_in_days")
+        fields = ("id", "enable_scan_retention", "scan_retention_in_days", "created", "last_updated")
 
 
 class EngineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Engine
-        fields = ("id", "scan_engine", "description", "api_token", "last_checkin")
+        fields = ("id", "scan_engine", "description", "api_token", "last_checkin", "created", "last_updated")
 
 
 class EnginePoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = EnginePool
-        fields = ("id", "engine_pool_name", "scan_engines")
+        fields = ("id", "engine_pool_name", "scan_engines", "created", "last_updated")
 
 
 class GloballyExcludedTargetSerializer(serializers.ModelSerializer):
@@ -62,18 +62,13 @@ class GloballyExcludedTargetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GloballyExcludedTarget
-        fields = ("id", "globally_excluded_targets", "note", "last_updated")
+        fields = ("id", "globally_excluded_targets", "note", "created", "last_updated")
 
 
 class ScanCommandSerializer(serializers.ModelSerializer):
     class Meta:
         model = ScanCommand
-        fields = (
-            "id",
-            "scan_binary",
-            "scan_command_name",
-            "scan_command",
-        )
+        fields = ("id", "scan_binary", "scan_command_name", "scan_command", "created", "last_updated")
 
 
 class SiteSerializer(serializers.ModelSerializer):
@@ -164,24 +159,15 @@ class SiteSerializer(serializers.ModelSerializer):
             "email_alert_addresses",
             "email_scan_diff",
             "email_scan_diff_addresses",
+            "created",
+            "last_updated",
         )
 
 
 class ScanSerializer(serializers.ModelSerializer):
-    # nested relationship
-    # http://www.django-rest-framework.org/api-guide/relations/#nested-relationships
-    # site = SiteSerializer(many=False)
-
     class Meta:
         model = Scan
-        fields = (
-            "id",
-            "site",
-            "scan_name",
-            "enable_scan",
-            "start_time",
-            "recurrences",
-        )
+        fields = ("id", "site", "scan_name", "enable_scan", "start_time", "recurrences", "created", "last_updated")
 
 
 class ScheduledScanSerializer(serializers.ModelSerializer):
