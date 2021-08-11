@@ -1,3 +1,10 @@
+<h3 align="center">
+    This project has been forked and will be maintained here:
+    <br>
+    <br>
+    <a href="https://github.com/opsdisk/scantron">https://github.com/opsdisk/scantron</a>
+</h3>
+
 # Scantron
 
 ![logo](./console/django_scantron/static/scantron/img/scantron_300x300.jpg)
