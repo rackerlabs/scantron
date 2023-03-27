@@ -50,7 +50,7 @@ pygraphviz==1.6
 python-libnmap==0.7.2
 
 # redis
-redis==3.5.3
+redis==4.5.3
 
 # python-rq - Redis Queue
 rq==1.9.0
