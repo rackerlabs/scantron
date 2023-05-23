@@ -3,7 +3,7 @@ ipdb
 ipython
 
 # HTTP requests
-requests==2.25.1
+requests==2.31.0
 
 # Useful for requests debugging.
 requests-toolbelt==0.9.1
