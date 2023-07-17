@@ -47,7 +47,7 @@ psycopg2-binary==2.8.6
 pygraphviz==1.6
 
 # nmap
-python-libnmap==0.7.2
+python-libnmap==0.7.3
 
 # redis
 redis==3.5.3
